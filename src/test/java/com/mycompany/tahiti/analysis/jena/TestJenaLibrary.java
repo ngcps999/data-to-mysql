@@ -5,7 +5,6 @@ import com.mycompany.tahiti.analysis.utils.FileUtils;
 import com.mycompany.tahiti.analysis.utils.Utility;
 import org.apache.jena.rdf.model.*;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +13,7 @@ public class TestJenaLibrary {
 
 
     @Test
-    public void JenaPersistence()
+    public void JenaPersistenceTest()
     {
         Configs.loadConfigFile("application.properties");
         JenaLibrary jenaLibrary = new MysqlJenaLibrary(Configs.getConfig("jenaConfigFilePath"));;
