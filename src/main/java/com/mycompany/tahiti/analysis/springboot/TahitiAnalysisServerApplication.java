@@ -1,6 +1,8 @@
 package com.mycompany.tahiti.analysis.springboot;
 
 import com.mycompany.tahiti.analysis.configuration.Configs;
+import com.mycompany.tahiti.analysis.jena.JenaLibrary;
+import com.mycompany.tahiti.analysis.jena.MysqlJenaLibrary;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -17,7 +19,11 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @ComponentScan("com.mycompany.tahiti")
 @EnableSwagger2
 public class TahitiAnalysisServerApplication {
-    //@Autowired MongodbRepo mongodbRepo;
+
+    @Bean
+    public JenaLibrary createJenaLibrary() {
+        return new MysqlJenaLibrary(Configs.getConfig("jenaConfigFilePath"));
+    }
 
     public TahitiAnalysisServerApplication(){
         Configs.loadConfigFile("application.properties");
@@ -36,5 +42,4 @@ public class TahitiAnalysisServerApplication {
     public static void main(String[] args){
         SpringApplication.run(TahitiAnalysisServerApplication.class,args);
     }
-
 }

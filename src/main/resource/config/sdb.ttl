@@ -16,10 +16,10 @@
 
 <#conn> rdf:type sdb:SDBConnection ;
     sdb:sdbType       "MySQL" ;    # Needed for JDBC URL
-    sdb:sdbHost       "localhost" ;
-    sdb:sdbName       "JenaTest" ;
+    sdb:sdbHost       "47.104.8.27" ;
+    sdb:sdbName       "bilu_jena" ;
     sdb:driver        "com.mysql.jdbc.Driver" ;
     sdb:sdbUser       "root";
-    sdb:sdbPassword   "root";
-    sdb:jdbcURL       "jdbc:mysql://localhost/jenatest?useUnicode=true&characterEncoding=utf8"   #set utf8
+    sdb:sdbPassword   "admin";
+    sdb:jdbcURL       "jdbc:mysql://47.104.8.27/bilu_jena?useUnicode=true&characterEncoding=utf8"   #set utf8
     .
