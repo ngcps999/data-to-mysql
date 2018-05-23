@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TestJenaLibrary {
-
-
     @Test
     public void JenaPersistenceTest()
     {
