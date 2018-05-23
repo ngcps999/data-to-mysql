@@ -27,7 +27,7 @@ public class TestJenaLibrary {
             model = jenaLibrary.getModel(modelName);
         }
 
-        List<String> lines = FileUtils.getFileLines(Utility.getResourcePath("jena/StatementSample.json"));
+        List<String> lines = FileUtils.getFileLines(Utility.getResourcePath("jena/StatementSample.txt"));
 
         List<Statement> statements = new ArrayList<>();
         for(String line: lines) {
