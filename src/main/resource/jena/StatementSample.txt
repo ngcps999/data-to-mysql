@@ -1,0 +1,14 @@
+http://person1    common:type.object.type    common:person.person
+http://person1    common:type.object.name    wang
+http://person1    common:person.person.identification    http://identification1
+http://identification1    common:person.identification.type    ﻿IdentityCard
+http://identification1    common:person.identification.number    ﻿1234
+http://person2    common:type.object.type    common:person.person
+http://person2    common:type.object.name    qx
+http://person2    common:person.person.identification    http://identification2
+http://identification2    common:person.identification.type    ﻿IdentityCard
+http://identification2    common:person.identification.number    ﻿5678
+http://bilu1    common:type.object.type    gongan:gongan.bilu
+http://bilu1    common:type.object.name    bilu111
+http://bilu1    common:gongan:gongan.bilu.entity    http://person1
+http://bilu1    common:gongan:gongan.bilu.entity    http://person2

@@ -1,5 +1,6 @@
 package com.mycompany.tahiti.analysis.jena;
 
+import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.utils.Utility;
 import lombok.val;
 import org.apache.jena.rdf.model.*;
@@ -165,6 +166,31 @@ public class MysqlJenaLibrary implements JenaLibrary{
             }
         };
         return model.listStatements(selector);
+    }
+
+    @Override
+    public void persist(List<Statement> statements, String modelName)
+    {
+        if(Configs.getConfigBoolean("jenaDropExistModel", false)) {
+            removeModel(modelName);
+        }
+        val writeLock = readWriteLock.writeLock();
+        try {
+            writeLock.lock();
+            Model model;
+            if (modelName == null) {
+                model = getDefaultModel();
+            } else {
+                model = getModel(modelName);
+            }
+            model.begin();
+            for(val statement: statements) {
+                model.add(statement);
+            }
+            model.commit();
+        } finally {
+            writeLock.unlock();
+        }
     }
 }
 
