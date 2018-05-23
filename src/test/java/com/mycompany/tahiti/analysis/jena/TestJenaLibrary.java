@@ -2,34 +2,39 @@ package com.mycompany.tahiti.analysis.jena;
 
 import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.utils.FileUtils;
-import com.mycompany.tahiti.analysis.utils.Utility;
+import lombok.val;
 import org.apache.jena.rdf.model.*;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TestJenaLibrary {
 
+    Model model;
 
-    @Test
-    public void JenaPersistence()
+    public TestJenaLibrary()
     {
         Configs.loadConfigFile("application.properties");
-        JenaLibrary jenaLibrary = new MysqlJenaLibrary(Configs.getConfig("jenaConfigFilePath"));;
-        String modelName = Configs.getConfig("jenaModelName");
+        MysqlJenaLibrary jenaLibrary = new MysqlJenaLibrary(Configs.getConfig("jenaConfigFilePath"));
+        jenaLibrary.store.getConnection().getTransactionHandler();
 
-        Model model;
+        String modelName = Configs.getConfig("jenaTestModelName");
+        jenaLibrary.removeModel(modelName);
+
         if (modelName == null) {
             model = jenaLibrary.getDefaultModel();
         } else {
             model = jenaLibrary.getModel(modelName);
         }
+    }
 
-        List<String> lines = FileUtils.getFileLines(Utility.getResourcePath("jena/StatementSample.txt"));
+    @Test
+    public void JenaPersistenceTest()
+    {
+        model.begin();
 
-        List<Statement> statements = new ArrayList<>();
+        List<String> lines = FileUtils.getFileLines("jena/StatementSample.txt");
+
         for(String line: lines) {
             String[] segments = line.split("    ");
 
@@ -53,6 +58,11 @@ public class TestJenaLibrary {
             }
         }
 
-        jenaLibrary.persist(statements, modelName);
+        model.commit();
+
+        val iter = model.listStatements();
+        while(iter.hasNext()) {
+            System.out.println(iter.next());
+        }
     }
 }
