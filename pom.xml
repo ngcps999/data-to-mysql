@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.mycompany.knowledge</groupId>
-    <artifactId>tahiti.analysis.service</artifactId>
+    <artifactId>tahiti-analysis-service</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -20,6 +20,26 @@
     </parent>
     
     <dependencies>
+        <!--添加swagger-->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>2.2.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>2.2.2</version>
+        </dependency>
+
+        <!-- Apache HttpClient -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.2</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.apache.jena/jena-core -->
         <dependency>
             <groupId>org.apache.jena</groupId>
@@ -84,6 +104,14 @@
             <artifactId>jena-tdb</artifactId>
             <version>3.5.0</version>
         </dependency>
+
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
 
     </dependencies>
     <build>

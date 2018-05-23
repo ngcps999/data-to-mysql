@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tahiti-analysis-server
+  labels:
+    app: tahiti-analysis-server
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: tahiti-analysis-server
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: tahiti-analysis-server
+  labels:
+    app: tahiti-analysis-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tahiti-analysis-server
+  template:
+    metadata:
+      labels:
+        app: tahiti-analysis-server
+    spec:
+      containers:
+      - name: tahiti-analysis-server
+        image: IMAGE_TAG_HERE
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: 100m
+            memory: 2Gi
+          limits:
+            cpu: 500m
+            memory: 2Gi
