@@ -67,10 +67,10 @@ public class CaseController {
                 val connectionIter = jenaLibrary.getStatementsBySP(model, biluStatement.getSubject(), "gongan:gongan.bilu.connection");
                 if (connectionIter.hasNext()) {
                     val connection = connectionIter.next();
-                    List<String> connectTypes = jenaLibrary.getStringValueBySP(model, connection.getSubject(), "common:common.connection.type");
+                    List<String> connectTypes = jenaLibrary.getStringValueBySP(model, connection.getResource(), "common:common.connection.type");
                     if(connectTypes.contains("common:common.connection.BiluEntityXianyiren"))
                     {
-                        val toStatementIter = jenaLibrary.getStatementsBySP(model, connection.getSubject(), "common:common.connection.to");
+                        val toStatementIter = jenaLibrary.getStatementsBySP(model, connection.getResource(), "common:common.connection.to");
 
                         // get the person name
                         while(toStatementIter.hasNext()) {
