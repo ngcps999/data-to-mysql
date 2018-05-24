@@ -9,7 +9,9 @@ public class TestReadMysqlJena {
     JenaLibrary jenaLibrary;
     public TestReadMysqlJena() {
         Configs.loadConfigFile("application.properties");
-        jenaLibrary = new MysqlJenaLibrary(Configs.getConfig("jenaConfigFilePath"));
+        //jenaLibrary = new MysqlJenaLibrary(Configs.getConfig("jenaConfigFilePath"));
+        jenaLibrary = new MysqlJenaLibrary(Configs.getConfig("jdbcUrl"), Configs.getConfig("mysqlUser"), Configs.getConfig("mysqlPassword"));
+
     }
     @Test
     public void readMysqlJenaTest() {
