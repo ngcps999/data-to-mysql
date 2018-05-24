@@ -21,6 +21,7 @@ public class CaseController {
         aCase.setCaseId("1111111122233");
         aCase.setCaseName("王大锤殴打别人案件");
         aCase.setBiluNumber(10);
+        aCase.setCaseType("殴打类");
         aCase.setSuspects(Arrays.asList(new String[]{"王大锤"}));
         list.add(aCase);
         return list;
@@ -34,6 +35,7 @@ public class CaseController {
         aCase.setCaseName("王大锤殴打别人案件");
         aCase.setBiluNumber(10);
         aCase.setSuspects(Arrays.asList(new String[]{"王大锤"}));
+        aCase.setCaseType("殴打类");
         Person person = new Person();
         person.setName("王大锤");
         person.setIdentity("32212324324235331X");

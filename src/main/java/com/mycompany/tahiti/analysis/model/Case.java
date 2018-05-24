@@ -9,6 +9,7 @@ import java.util.List;
 public class Case {
     private String caseId;
     private String caseName;
+    private String caseType;
     private List<String> suspects;
     private Integer biluNumber;
     private List<Person> detailedPersons = new ArrayList<>();
