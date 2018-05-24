@@ -134,7 +134,7 @@ public class MysqlJenaLibrary implements JenaLibrary{
 
     @Override
     public Iterator<Statement> getStatementsByEntityType(Model model, String type) {
-        Property property = model.getProperty("type.object.type");
+        Property property = model.getProperty("common:type.object.type");
         SimpleSelector simpleSelector = new SimpleSelector(null, property, type);
         return model.listStatements(simpleSelector);
     }
@@ -147,9 +147,25 @@ public class MysqlJenaLibrary implements JenaLibrary{
     }
 
     @Override
+    public List<String> getStringValueBySP(Model model, Resource resource, String property)
+    {
+        Property p = model.getProperty(property);
+        SimpleSelector simpleSelector = new SimpleSelector(resource, p, (RDFNode) null);
+        val iterator = model.listStatements(simpleSelector);
+
+        List<String> values = new LinkedList<>();
+        while(iterator.hasNext())
+        {
+            Statement statement = iterator.next();
+            values.add(statement.getString());
+        }
+        return values;
+    }
+
+    @Override
     public Iterator<Statement> getStatementsBySourceAndType(Model model, String source, String type) {
         SimpleSelector selector = new SimpleSelector(null, null, (RDFNode)null) {
-            Property property = model.getProperty("type.object.type");
+            Property property = model.getProperty("common:type.object.type");
             public boolean selects(Statement st) {
                 return st.getSubject().toString().startsWith(source) && Objects.equals(property, st.getPredicate()) && st.getObject().toString().equals(type);
             }
@@ -160,7 +176,7 @@ public class MysqlJenaLibrary implements JenaLibrary{
     @Override
     public Iterator<Statement> getStatementsBySubjectSubStr(Model model, String substr) {
         SimpleSelector selector = new SimpleSelector(null, null, (RDFNode)null) {
-            Property property = model.getProperty("type.object.type");
+            Property property = model.getProperty("common:type.object.type");
             public boolean selects(Statement st) {
                 return st.getSubject().toString().contains(substr);
             }
