@@ -8,7 +8,7 @@ spec:
   type: LoadBalancer
   ports:
   - port: 80
-    targetPort: 8080
+    targetPort: 9876
   selector:
     app: tahiti-analysis-server
 ---
@@ -32,7 +32,7 @@ spec:
       - name: tahiti-analysis-server
         image: IMAGE_TAG_HERE
         ports:
-        - containerPort: 8080
+        - containerPort: 9876
         resources:
           requests:
             cpu: 100m
