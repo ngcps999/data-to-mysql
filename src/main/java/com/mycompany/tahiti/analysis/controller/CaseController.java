@@ -55,12 +55,33 @@ public class CaseController {
                 aCase.setCaseType(String.join(",", types));
 
             // count of bilu
-            val biluIter = jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu");
-            if(biluIter.hasNext())
-                aCase.setBiluNumber(Iterators.size(biluIter));
+            val biluIter1 = jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu");
+            if(biluIter1.hasNext())
+                aCase.setBiluNumber(Iterators.size(biluIter1));
 
-            aCase.setSuspects(Arrays.asList(new String[]{}));
+            // set suspect
+            aCase.setSuspects(new LinkedList<>());
+            val biluIter2 = jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu");
+            while(biluIter2.hasNext()) {
+                Statement biluStatement = biluIter2.next();
+                val connectionIter = jenaLibrary.getStatementsBySP(model, biluStatement.getSubject(), "gongan:gongan.bilu.connection");
+                if (connectionIter.hasNext()) {
+                    val connection = connectionIter.next();
+                    List<String> connectTypes = jenaLibrary.getStringValueBySP(model, connection.getSubject(), "common:common.connection.type");
+                    if(connectTypes.contains("common:common.connection.BiluEntityXianyiren"))
+                    {
+                        val toStatementIter = jenaLibrary.getStatementsBySP(model, connection.getSubject(), "common:common.connection.to");
 
+                        // get the person name
+                        while(toStatementIter.hasNext()) {
+                            List<String> toPersonNames = jenaLibrary.getStringValueBySP(model, toStatementIter.next().getResource(), "common:type.object.name");
+
+                            if(toPersonNames.size() > 0)
+                                aCase.getSuspects().add(toPersonNames.get(0));
+                        }
+                    }
+                }
+            }
             list.add(aCase);
         }
 
