@@ -13,6 +13,7 @@ import org.apache.jena.rdf.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 @RestController
@@ -21,8 +22,12 @@ import java.util.*;
 public class CaseController {
     @Autowired
     JenaLibrary jenaLibrary;
+    Model model;
 
-    Model model = jenaLibrary.getModel(Configs.getConfig("jenaMappingModel"));
+    @PostConstruct
+    public void init() {
+         model = jenaLibrary.getModel(Configs.getConfig("jenaMappingModel"));
+    }
 
     @GetMapping
     public List<Case> getCases(){
@@ -33,7 +38,7 @@ public class CaseController {
         while(iterator.hasNext())
         {
             Statement statement = iterator.next();
-            Resource resource = statement.getResource();
+            Resource resource = statement.getSubject();
 
             Case aCase = new Case();
 
