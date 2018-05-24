@@ -97,6 +97,10 @@ public class CaseController {
         aCase.setBiluNumber(10);
         aCase.setSuspects(Arrays.asList(new String[]{"王大锤"}));
         aCase.setCaseType("殴打类");
+        aCase.setNames(Arrays.asList(new String[]{"gexin", "王大锤"}));
+        aCase.setPhones(Arrays.asList(new String[]{"我是电话号码", "13911xxxxxx"}));
+        aCase.setIdenties(Arrays.asList(new String[]{"我是身份证号", "340821000000000"}));
+
         Person person = new Person();
         person.setName("王大锤");
         person.setIdentity("32212324324235331X");
