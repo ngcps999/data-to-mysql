@@ -1,7 +1,7 @@
 package com.mycompany.tahiti.analysis.controller;
 
-import com.mycompany.tahiti.annalysis.model.Case;
-import com.mycompany.tahiti.annalysis.model.Person;
+import com.mycompany.tahiti.analysis.model.Case;
+import com.mycompany.tahiti.analysis.model.Person;
 import io.swagger.annotations.Api;
 import lombok.val;
 import org.springframework.web.bind.annotation.*;

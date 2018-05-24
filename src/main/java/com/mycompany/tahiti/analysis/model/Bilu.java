@@ -1,4 +1,4 @@
-package com.mycompany.tahiti.annalysis.model;
+package com.mycompany.tahiti.analysis.model;
 
 import lombok.Data;
 

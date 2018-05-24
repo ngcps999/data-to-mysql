@@ -1,6 +1,6 @@
 package com.mycompany.tahiti.analysis.controller;
 
-import com.mycompany.tahiti.annalysis.model.EntityType;
+import com.mycompany.tahiti.analysis.model.EntityType;
 import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.*;
 

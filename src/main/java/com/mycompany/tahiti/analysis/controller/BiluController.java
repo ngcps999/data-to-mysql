@@ -1,11 +1,10 @@
 package com.mycompany.tahiti.analysis.controller;
 
-import com.mycompany.tahiti.annalysis.model.Bilu;
-import com.mycompany.tahiti.annalysis.model.Person;
+import com.mycompany.tahiti.analysis.model.Bilu;
+import com.mycompany.tahiti.analysis.model.Person;
 import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
