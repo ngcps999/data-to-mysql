@@ -22,7 +22,6 @@ public class TahitiAnalysisServerApplication {
 
     @Bean
     public JenaLibrary createJenaLibrary() {
-        //return new MysqlJenaLibrary(Configs.getConfig("jenaConfigFilePath"));
         return new MysqlJenaLibrary(Configs.getConfig("jdbcUrl"), Configs.getConfig("mysqlUser"), Configs.getConfig("mysqlPassword"));
     }
 
