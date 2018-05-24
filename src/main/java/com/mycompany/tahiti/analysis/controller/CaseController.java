@@ -1,5 +1,6 @@
 package com.mycompany.tahiti.analysis.controller;
 
+import com.google.common.collect.Iterators;
 import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.jena.JenaLibrary;
 import com.mycompany.tahiti.analysis.model.Case;
@@ -35,20 +36,29 @@ public class CaseController {
             Resource resource = statement.getResource();
 
             Case aCase = new Case();
-            val nameIter = jenaLibrary.getStatementsBySP(model, resource, "common:type.object.name");
-            while(nameIter.hasNext())
-            {
 
-            }
+            List<String> ids = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.id");
+            if(ids.size() > 0)
+                aCase.setCaseId(ids.get(0));
+
+            List<String> names = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.name");
+            if(names.size() > 0)
+                aCase.setCaseName(names.get(0));
+
+            List<String> types = jenaLibrary.getStringValueBySP(model, resource, "gongan:gongan.case.category");
+            if(types.size() > 0)
+                aCase.setCaseType(String.join(",", types));
+
+            // count of bilu
+            val biluIter = jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu");
+            if(biluIter.hasNext())
+                aCase.setBiluNumber(Iterators.size(biluIter));
+
+            aCase.setSuspects(Arrays.asList(new String[]{}));
+
+            list.add(aCase);
         }
 
-//
-//        aCase.setCaseId("1111111122233");
-//        aCase.setCaseName("王大锤殴打别人案件");
-//        aCase.setBiluNumber(10);
-//        aCase.setCaseType("殴打类");
-//        aCase.setSuspects(Arrays.asList(new String[]{"王大锤"}));
-//        list.add(aCase);
         return list;
     }
 
