@@ -10,5 +10,9 @@ http://identification2    common:person.identification.type    ﻿IdentityCard
 http://identification2    common:person.identification.number    ﻿5678
 http://bilu1    common:type.object.type    gongan:gongan.bilu
 http://bilu1    common:type.object.name    bilu111
-http://bilu1    common:gongan:gongan.bilu.entity    http://person1
-http://bilu1    common:gongan:gongan.bilu.entity    http://person2
+http://bilu1    gongan:gongan.bilu.entity    http://person1
+http://bilu1    gongan:gongan.bilu.entity    http://person2
+http://bilu1    gongan:gongan.bilu.connection   http://connection1
+http://connection1  common:common.connection.from   http://bilu1
+http://connection1  common:common.connection.to   http://person1
+http://connection1  common:common.connection.type   common:common.connection.BiluEntityZhengren
