@@ -270,15 +270,10 @@ public class CaseController {
 
     @ResponseBody
     @GetMapping("/{caseId}/keyword/{keyword}")
-    public List<RelevantGraph> getRelevantBiluParagraphsByKeyword(@PathVariable("caseId") String caseId, @PathVariable("keyword") String keyword){
-        try{
-            jenaLibrary.openReadTransaction();
-            List<String> keywordList = new ArrayList();
-            keywordList.add(keyword);
-            return getRelevantBiluParagraphsByPersonId(caseId, keywordList);
-        }finally {
-            jenaLibrary.closeTransaction();
-        }
+    public List<RelevantGraph> getRelevantBiluParagraphsByKeyword(@PathVariable("caseId") String caseId, @PathVariable("keyword") String keyword) {
+        List<String> keywordList = new ArrayList();
+        keywordList.add(keyword);
+        return getRelevantBiluParagraphsByPersonId(caseId, keywordList);
     }
 
     public void getCaseBaseInfo(Model model, Resource resource, CaseBaseInfo caseBaseInfo)
