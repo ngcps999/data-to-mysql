@@ -13,7 +13,7 @@ public class TestReadMysqlJena {
         jenaLibrary = new MysqlJenaLibrary(Configs.getConfig("jdbcUrl"), Configs.getConfig("mysqlUser"), Configs.getConfig("mysqlPassword"));
 
     }
-    @Test
+    //@Test
     public void readMysqlJenaTest() {
         Model model = jenaLibrary.getModel(Configs.getConfig("jenaMappingModel"));
         val iter = model.listStatements();

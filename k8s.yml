@@ -40,3 +40,13 @@ spec:
           limits:
             cpu: 500m
             memory: 2Gi
+        volumeMounts:
+        - name: tahiti-tdb-data
+          mountPath: /app/tdb_folder
+        args:
+          - --tdbName=/app/tdb_folder
+          - --jenaModelName=biluV4
+      volumes:
+        - name: tahiti-tdb-data
+          persistentVolumeClaim:
+            claimName: tahiti-tdb-data

@@ -17,6 +17,10 @@ public class Configs {
     public static boolean loaded = false;
     private static final Logger logger = Logger.getLogger(Configs.class.getName());
 
+    public static void addConfig(String key, String value) {
+        configMap.put(key, value);
+    }
+
     /**
      * Get config value from loaded config file.
      * @param key	Config key
