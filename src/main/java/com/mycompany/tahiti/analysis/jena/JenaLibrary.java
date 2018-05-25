@@ -20,9 +20,11 @@ public interface JenaLibrary {
     Iterator<Statement> getStatementsById(Model model, String id);
     Iterator<Statement> getStatementsBySP(Model model, Resource resource, String property);
     Iterator<Statement> getStatementsByBatchSP(Model model, List<String> subjects, String property);
+    Iterator<Statement> getStatementsBySubjectInListAndProperty(Model model,List<String> subjects,String property_str);
     Iterator<Statement> getStatementsByPO(Model model, String property, String value);
 
     Iterator<Statement> getStatementsBySourceAndType(Model model, String source, String type);
+
     // deprecated
     Iterator<Statement> getStatementsBySubjectSubStr(Model model, String substr);
 
