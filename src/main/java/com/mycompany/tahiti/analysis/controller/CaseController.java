@@ -13,6 +13,7 @@ import org.apache.jena.rdf.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,28 +24,54 @@ public class CaseController {
     @Autowired
     TdbJenaLibrary jenaLibrary;
 
-    @GetMapping
-    public  List<CaseBaseInfo> getCases(){
-        try {
-            jenaLibrary.openReadTransaction();
-            Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
-            val list = new ArrayList<CaseBaseInfo>();
+    List<CaseBaseInfo> caseBaseInfos = new LinkedList<>();
 
-            val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
+    public List<CaseBaseInfo> getAllCaseBaseInfo()
+    {
+        LocalTime time = LocalTime.now();
+        if(caseBaseInfos.size() == 0 || time.getMinute() % 30 == 0) {
+            try {
+                jenaLibrary.openReadTransaction();
+                Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+                val list = new ArrayList<CaseBaseInfo>();
 
-            while (iterator.hasNext()) {
-                Statement statement = iterator.next();
-                Resource resource = statement.getSubject();
+                val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
 
-                CaseBaseInfo aCase = new CaseBaseInfo();
-                getCaseBaseInfo(model, resource, aCase);
-                list.add(aCase);
+                while (iterator.hasNext()) {
+                    Statement statement = iterator.next();
+                    Resource resource = statement.getSubject();
+
+                    CaseBaseInfo aCase = new CaseBaseInfo();
+                    getCaseBaseInfo(model, resource, aCase);
+                    list.add(aCase);
+                }
+                caseBaseInfos = list;
+                return list;
+            } finally {
+                jenaLibrary.closeTransaction();
             }
-            return list;
         }
-        finally {
-            jenaLibrary.closeTransaction();
+        else
+            return caseBaseInfos;
+    }
+
+    @GetMapping
+    public List<CaseBaseInfo> getCases(){
+        return getAllCaseBaseInfo();
+    }
+
+    @GetMapping("/keyword/{keyword}")
+    public List<CaseBaseInfo> searchCases(@PathVariable("keyword") String keyword){
+        List<CaseBaseInfo> allCases = getAllCaseBaseInfo();
+
+        List<CaseBaseInfo> cases = new LinkedList<>();
+        for(CaseBaseInfo cs : allCases)
+        {
+            if(cs.getCaseName().contains(keyword))
+                cases.add(cs);
         }
+
+        return cases;
     }
 
     @ResponseBody
