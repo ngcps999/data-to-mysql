@@ -6,10 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class Bilu {
-    private String id;
-    private String name;
+public class BiluRichInfo extends BiluBaseInfo {
     private String content;
     private List<String> tags = new ArrayList<>();
-    private List<Person> persons = new ArrayList<>();
+//    private List<Person> persons = new ArrayList<>();
 }

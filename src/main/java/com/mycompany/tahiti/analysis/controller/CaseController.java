@@ -1,9 +1,12 @@
 package com.mycompany.tahiti.analysis.controller;
 
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.jena.JenaLibrary;
-import com.mycompany.tahiti.analysis.model.Case;
+import com.mycompany.tahiti.analysis.model.BiluBaseInfo;
+import com.mycompany.tahiti.analysis.model.CaseBaseInfo;
+import com.mycompany.tahiti.analysis.model.CaseRichInfo;
 import com.mycompany.tahiti.analysis.model.Person;
 import io.swagger.annotations.Api;
 import lombok.val;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/cases")
@@ -30,8 +34,8 @@ public class CaseController {
     }
 
     @GetMapping
-    public List<Case> getCases(){
-        val list = new ArrayList<Case>();
+    public List<CaseBaseInfo> getCases(){
+        val list = new ArrayList<CaseBaseInfo>();
 
         val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
 
@@ -40,48 +44,8 @@ public class CaseController {
             Statement statement = iterator.next();
             Resource resource = statement.getSubject();
 
-            Case aCase = new Case();
-
-            List<String> ids = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.id");
-            if(ids.size() > 0)
-                aCase.setCaseId(ids.get(0));
-
-            List<String> names = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.name");
-            if(names.size() > 0)
-                aCase.setCaseName(names.get(0));
-
-            List<String> types = jenaLibrary.getStringValueBySP(model, resource, "gongan:gongan.case.category");
-            if(types.size() > 0)
-                aCase.setCaseType(String.join(",", types));
-
-            // count of bilu
-            val biluIter1 = jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu");
-            if(biluIter1.hasNext())
-                aCase.setBiluNumber(Iterators.size(biluIter1));
-
-            // set suspect
-            aCase.setSuspects(new LinkedList<>());
-            val biluIter2 = jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu");
-            while(biluIter2.hasNext()) {
-                Statement biluStatement = biluIter2.next();
-                val connectionIter = jenaLibrary.getStatementsBySP(model, biluStatement.getSubject(), "gongan:gongan.bilu.connection");
-                if (connectionIter.hasNext()) {
-                    val connection = connectionIter.next();
-                    List<String> connectTypes = jenaLibrary.getStringValueBySP(model, connection.getResource(), "common:common.connection.type");
-                    if(connectTypes.contains("common:common.connection.BiluEntityXianyiren"))
-                    {
-                        val toStatementIter = jenaLibrary.getStatementsBySP(model, connection.getResource(), "common:common.connection.to");
-
-                        // get the person name
-                        while(toStatementIter.hasNext()) {
-                            List<String> toPersonNames = jenaLibrary.getStringValueBySP(model, toStatementIter.next().getResource(), "common:type.object.name");
-
-                            if(toPersonNames.size() > 0)
-                                aCase.getSuspects().add(toPersonNames.get(0));
-                        }
-                    }
-                }
-            }
+            CaseBaseInfo aCase = new CaseBaseInfo();
+            getCaseBaseInfo(resource, aCase);
             list.add(aCase);
         }
 
@@ -90,26 +54,58 @@ public class CaseController {
 
     @ResponseBody
     @GetMapping("/{caseId}")
-    public Case getCaseById(@PathVariable("caseId") String caseId) {
-        Case aCase = new Case();
-        aCase.setCaseId("1111111122233");
-        aCase.setCaseName("王大锤殴打别人案件");
-        aCase.setBiluNumber(10);
-        aCase.setSuspects(Arrays.asList(new String[]{"王大锤"}));
-        aCase.setCaseType("殴打类");
-        aCase.setNames(Arrays.asList(new String[]{"gexin", "王大锤"}));
-        aCase.setPhones(Arrays.asList(new String[]{"我是电话号码", "13911xxxxxx"}));
-        aCase.setIdenties(Arrays.asList(new String[]{"我是身份证号", "340821000000000"}));
+    public CaseRichInfo getCaseById(@PathVariable("caseId") String caseId) {
+        CaseRichInfo aCase = new CaseRichInfo();
 
-        Person person = new Person();
-        person.setName("王大锤");
-        person.setIdentity("32212324324235331X");
-        person.setId("http://mycompany.ai.com/person/王大锤");
-        person.setBirthDay("1988年6月14日");
-        person.setGender("男");
-        person.setPhone("18888888881");
-        person.setRole("嫌疑人");
-        aCase.getDetailedPersons().add(person);
+        val iterator = jenaLibrary.getStatementsById(model, caseId);
+
+        while(iterator.hasNext()) {
+            Statement statement = iterator.next();
+            Resource resource = statement.getSubject();
+
+            getCaseBaseInfo(resource, aCase);
+
+            val entities = Lists.newArrayList(jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.bilu.entity"))
+                    .stream().map(s -> s.getResource().toString()).distinct();
+
+            val persons = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:type.object.type", "common:person.person"))
+                    .stream().map(s -> s.getSubject().toString()).collect(Collectors.toSet());
+
+            // join entities.o and person.s to get all persons
+            List<String> personInCase = entities.filter(e -> persons.contains(e)).collect(Collectors.toList());
+
+            // get names
+            aCase.setNames(jenaLibrary.getStringValuesByBatchSP(model, personInCase, "common:type.object.name"));
+
+
+            aCase.setIdentities(new LinkedList<>());
+            aCase.setPhones(new LinkedList<>());
+            aCase.setBankCards(new LinkedList<>());
+
+            BiluBaseInfo biluBaseInfo = new BiluBaseInfo();
+
+            aCase.getBilus().add(biluBaseInfo);
+
+            Person person = new Person();
+
+            aCase.getDetailedPersons().add(person);
+
+            break;
+        }
+//
+//        BiluBaseInfo bilu = new BiluBaseInfo();
+//        bilu.setName("我是笔录1");
+//        bilu.setId("我是笔录id1");
+//
+//        Person person = new Person();
+//        person.setName("王大锤");
+//        person.setIdentity("32212324324235331X");
+//        person.setId("http://mycompany.ai.com/person/王大锤");
+//        person.setBirthDay("1988年6月14日");
+//        person.setGender("男");
+//        person.setPhone("18888888881");
+//        person.setRole("嫌疑人");
+//        aCase.getDetailedPersons().add(person);
         return aCase;
     }
 
@@ -126,4 +122,49 @@ public class CaseController {
         person.setRole("嫌疑人");
         return person;
     }
+
+    public void getCaseBaseInfo(Resource resource, CaseBaseInfo caseBaseInfo)
+    {
+        List<String> ids = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.id");
+        if(ids.size() > 0)
+            caseBaseInfo.setCaseId(ids.get(0));
+
+        List<String> names = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.name");
+        if(names.size() > 0)
+            caseBaseInfo.setCaseName(names.get(0));
+
+        List<String> types = jenaLibrary.getStringValueBySP(model, resource, "gongan:gongan.case.category");
+        if(types.size() > 0)
+            caseBaseInfo.setCaseType(String.join(",", types));
+
+        // count of bilu
+        val biluIter1 = jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu");
+        if(biluIter1.hasNext())
+            caseBaseInfo.setBiluNumber(Iterators.size(biluIter1));
+
+        // set suspect
+        caseBaseInfo.setSuspects(new LinkedList<>());
+        val biluIter2 = jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu");
+        while(biluIter2.hasNext()) {
+            Statement biluStatement = biluIter2.next();
+            val connectionIter = jenaLibrary.getStatementsBySP(model, biluStatement.getSubject(), "gongan:gongan.bilu.connection");
+            if (connectionIter.hasNext()) {
+                val connection = connectionIter.next();
+                List<String> connectTypes = jenaLibrary.getStringValueBySP(model, connection.getResource(), "common:common.connection.type");
+                if(connectTypes.contains("common:common.connection.BiluEntityXianyiren"))
+                {
+                    val toStatementIter = jenaLibrary.getStatementsBySP(model, connection.getResource(), "common:common.connection.to");
+
+                    // get the person name
+                    while(toStatementIter.hasNext()) {
+                        List<String> toPersonNames = jenaLibrary.getStringValueBySP(model, toStatementIter.next().getResource(), "common:type.object.name");
+
+                        if(toPersonNames.size() > 0)
+                            caseBaseInfo.getSuspects().add(toPersonNames.get(0));
+                    }
+                }
+            }
+        }
+    }
+
 }

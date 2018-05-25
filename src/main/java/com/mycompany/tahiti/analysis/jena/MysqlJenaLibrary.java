@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 public class MysqlJenaLibrary implements JenaLibrary{
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
@@ -140,9 +141,23 @@ public class MysqlJenaLibrary implements JenaLibrary{
     }
 
     @Override
+    public Iterator<Statement> getStatementsById(Model model, String id) {
+        Property property = model.getProperty("common:type.object.id");
+        SimpleSelector simpleSelector = new SimpleSelector(null, property, id);
+        return model.listStatements(simpleSelector);
+    }
+
+    @Override
     public Iterator<Statement> getStatementsBySP(Model model, Resource resource, String property) {
         Property p = model.getProperty(property);
         SimpleSelector simpleSelector = new SimpleSelector(resource, p, (RDFNode) null);
+        return model.listStatements(simpleSelector);
+    }
+
+    @Override
+    public Iterator<Statement> getStatementsByPO(Model model, String property, String value)
+    {
+        SimpleSelector simpleSelector = new SimpleSelector(null, model.getProperty(property), value);
         return model.listStatements(simpleSelector);
     }
 
@@ -160,6 +175,87 @@ public class MysqlJenaLibrary implements JenaLibrary{
             values.add(statement.getString());
         }
         return values;
+    }
+
+    @Override
+    public List<String> getStringValuesByBatchSP(Model model, List<String> subjects, String property)
+    {
+        Property p = model.getProperty(property);
+        SimpleSelector simpleSelector = new SimpleSelector(null, p, (RDFNode) null) {
+            @Override
+            public boolean selects(Statement s) {
+                return subjects.contains(s.getSubject().toString());
+            }
+        };
+
+        val iterator = model.listStatements(simpleSelector);
+
+        List<String> values = new LinkedList<>();
+        while(iterator.hasNext())
+        {
+            Statement statement = iterator.next();
+            values.add(statement.getString());
+        }
+        return values;
+    }
+
+    @Override
+    public List<String> getObjectNamesBySP(Model model, Resource resource, String property)
+    {
+        Property p = model.getProperty(property);
+        SimpleSelector simpleSelector = new SimpleSelector(resource, p, (RDFNode) null);
+        val iterator = model.listStatements(simpleSelector);
+
+        val subjects = iterator.toList().stream().map(iter->iter.getResource().toString()).collect(Collectors.toList());
+
+        SimpleSelector selector = new SimpleSelector(null, model.getProperty("common:type.object.name"),(RDFNode) null) {
+            @Override
+            public boolean selects(Statement s) {
+                return subjects.contains(s.getSubject().toString());
+            }
+        };
+
+        val nameIters = model.listStatements(selector);
+
+        return nameIters.toList().stream().map(iter->iter.getString()).collect(Collectors.toList());
+    }
+
+    public List<String> getExpectedObjectNamesBySP(Model model, Resource resource, String property, String type)
+    {
+        Property p = model.getProperty(property);
+
+        // r1 = select O from full Where S = resource and P = property;
+        SimpleSelector firstSelector = new SimpleSelector(resource, p, (RDFNode) null);
+        val resourceProperty = model.listStatements(firstSelector);
+
+        // get candidates
+        val objects = resourceProperty.toList().stream().map(iter->iter.getResource().toString()).collect(Collectors.toList());
+
+        // filter candidates
+        // r2 = select S from full INNER JOIN r1 where full.S = r1.o and p == "common:type.object.type" and o == type;
+        SimpleSelector secondSelector = new SimpleSelector(null, model.getProperty("common:type.object.type"), type) {
+            @Override
+            public boolean selects(Statement s) {
+                return objects.contains(s.getSubject().toString());
+            }
+        };
+
+        val objectIterator = model.listStatements(secondSelector);
+
+        // get candidate
+        val subjects = objectIterator.toList().stream().map(iter->iter.getSubject().toString()).collect(Collectors.toList());
+
+        // get names
+        // r3 = select o from full inner join r2 where full.s == r2.s and p = "common:type.object.name";
+        SimpleSelector nameSelector = new SimpleSelector(null, model.getProperty("common:type.object.name"), (RDFNode) null) {
+            @Override
+            public boolean selects(Statement s) {
+                return subjects.contains(s.getSubject().toString());
+            }
+        };
+
+        val nameIters = model.listStatements(nameSelector);
+        return nameIters.toList().stream().map(iter->iter.getString()).collect(Collectors.toList());
     }
 
     @Override

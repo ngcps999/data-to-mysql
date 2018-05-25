@@ -16,7 +16,10 @@ public class TestReadMysqlJena {
     @Test
     public void readMysqlJenaTest() {
         Model model = jenaLibrary.getModel(Configs.getConfig("jenaMappingModel"));
-        val iter = model.listStatements();
+
+        val iter = jenaLibrary.getStatementsBySP(model, null, "common:type.object.name");
+
+//        val iter = model.listStatements();
         while(iter.hasNext()) {
             System.out.println(iter.next());
         }
