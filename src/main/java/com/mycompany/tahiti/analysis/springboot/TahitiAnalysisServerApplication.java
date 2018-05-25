@@ -3,6 +3,8 @@ package com.mycompany.tahiti.analysis.springboot;
 import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.jena.JenaLibrary;
 import com.mycompany.tahiti.analysis.jena.MysqlJenaLibrary;
+import com.mycompany.tahiti.analysis.jena.TdbJenaPersistence;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -22,11 +24,13 @@ public class TahitiAnalysisServerApplication {
 
     @Bean
     public JenaLibrary createJenaLibrary() {
-        return new MysqlJenaLibrary(Configs.getConfig("jdbcUrl"), Configs.getConfig("mysqlUser"), Configs.getConfig("mysqlPassword"));
+        //return new MysqlJenaLibrary(Configs.getConfig("jdbcUrl"), Configs.getConfig("mysqlUser"), Configs.getConfig("mysqlPassword"));
+        return new TdbJenaPersistence(Configs.getConfig("tdbName"));
     }
 
-    public TahitiAnalysisServerApplication(){
+    public TahitiAnalysisServerApplication(@Value("${tdbName}") String tdbName){
         Configs.loadConfigFile("application.properties");
+        Configs.addConfig("tdbName", tdbName);
     }
 
     @Bean

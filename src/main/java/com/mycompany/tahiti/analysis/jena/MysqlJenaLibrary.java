@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class MysqlJenaLibrary implements JenaLibrary{
+public class MysqlJenaLibrary extends BaseJenaLibrary{
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     private static final Logger logger = Logger.getLogger(MysqlJenaLibrary.class.getName());
     private static final String NS = "http://knowledge.richInfo.com/";
@@ -146,21 +146,21 @@ public class MysqlJenaLibrary implements JenaLibrary{
         return model.listStatements(simpleSelector);
     }
 
-    @Override
-    public List<String> getStringValueBySP(Model model, Resource resource, String property)
-    {
-        Property p = model.getProperty(property);
-        SimpleSelector simpleSelector = new SimpleSelector(resource, p, (RDFNode) null);
-        val iterator = model.listStatements(simpleSelector);
-
-        List<String> values = new LinkedList<>();
-        while(iterator.hasNext())
-        {
-            Statement statement = iterator.next();
-            values.add(statement.getString());
-        }
-        return values;
-    }
+//    @Override
+//    public List<String> getStringValueBySP(Model model, Resource resource, String property)
+//    {
+//        Property p = model.getProperty(property);
+//        SimpleSelector simpleSelector = new SimpleSelector(resource, p, (RDFNode) null);
+//        val iterator = model.listStatements(simpleSelector);
+//
+//        List<String> values = new LinkedList<>();
+//        while(iterator.hasNext())
+//        {
+//            Statement statement = iterator.next();
+//            values.add(statement.getString());
+//        }
+//        return values;
+//    }
 
     @Override
     public Iterator<Statement> getStatementsBySourceAndType(Model model, String source, String type) {
