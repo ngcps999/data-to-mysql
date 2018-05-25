@@ -7,6 +7,7 @@ import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import com.mycompany.tahiti.analysis.model.*;
 import io.swagger.annotations.Api;
 import lombok.val;
+import org.apache.jena.base.Sys;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -213,29 +214,70 @@ public class CaseController {
     }
 
 
+    @ResponseBody
     @GetMapping("/{caseId}/person")
-    public List<RelevantGraph> getRelevantBiluParagraphsByPersonId(@PathVariable("caseId") String caseId, @RequestParam("personId") String personId){
-        val res = new ArrayList<RelevantGraph>();
-        val p1 = new RelevantGraph();
-        p1.setBiluId("123");
-        p1.setBiluName("王大锤笔录");
-        p1.setKeyword("王大锤");
-        p1.setParagraph("我叫王大锤，我一开始只想着不用多久 我就会升职加薪");
-        res.add(p1);
-        return res;
+    public List<RelevantGraph> getRelevantBiluParagraphsByPersonId(@PathVariable("caseId") String caseId, @RequestParam("keywordList") List<String> keywordList){
+        try{
+            jenaLibrary.openReadTransaction();
+            Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+
+            List<String> bilus_list = new ArrayList<>();
+            val iterator = jenaLibrary.getStatementsById(model, caseId);
+            while(iterator.hasNext()){
+                Statement statement = iterator.next();
+                Resource resource = statement.getSubject();
+                List<String> bilus;
+                bilus = Lists.newArrayList(jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu")).stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
+                bilus_list.addAll(bilus);
+            }
+
+            int half_paragraph_length = 20;
+            val result = new ArrayList<RelevantGraph>();
+            Iterator<Statement> stIter = jenaLibrary.getStatementsByBatchSP(model, bilus_list, "common:common.document.contentStream");
+            while (stIter.hasNext()) {
+                Statement statement = stIter.next();
+                String content = statement.getString();
+                for(String keyword:keywordList){
+                    if(content!=null&&content.contains(keyword)){
+                        String BiluId = "";
+                        val ids = jenaLibrary.getStringValueBySP(model, statement.getSubject(), "common:type.object.id");
+                        if(ids.size() > 0) BiluId = ids.get(0);
+
+                        String BiluName = "";
+                        val names = jenaLibrary.getStringValueBySP(model, statement.getSubject(),"common:type.object.name");
+                        if(names.size() > 0) BiluName = names.get(0);
+
+                        for (int i = -1; (i = content.indexOf(keyword, i + 1)) != -1; i++) {
+                            int start_index = i-half_paragraph_length>0?i-half_paragraph_length:0;
+                            int end_index = start_index+2*half_paragraph_length+keyword.length()<content.length()?start_index+2*half_paragraph_length+keyword.length():content.length()-1;
+                            String paragraph = content.substring(start_index,end_index);
+                            val p1 = new RelevantGraph();
+                            p1.setBiluName(BiluName);
+                            p1.setBiluId(BiluId);
+                            p1.setKeyword(keyword);
+                            p1.setParagraph(paragraph);
+                            result.add(p1);
+                        }
+                    }
+                }
+            }
+            return result;
+        }finally {
+            jenaLibrary.closeTransaction();
+        }
     }
 
     @ResponseBody
     @GetMapping("/{caseId}/keyword/{keyword}")
     public List<RelevantGraph> getRelevantBiluParagraphsByKeyword(@PathVariable("caseId") String caseId, @PathVariable("keyword") String keyword){
-        val res = new ArrayList<RelevantGraph>();
-        val p1 = new RelevantGraph();
-        p1.setBiluId("456");
-        p1.setBiluName("孔连顺笔录");
-        p1.setKeyword(keyword);
-        p1.setParagraph("我叫" + keyword  +"，我一开始只想着不用多久 我就会升职加薪");
-        res.add(p1);
-        return res;
+        try{
+            jenaLibrary.openReadTransaction();
+            List<String> keywordList = new ArrayList();
+            keywordList.add(keyword);
+            return getRelevantBiluParagraphsByPersonId(caseId, keywordList);
+        }finally {
+            jenaLibrary.closeTransaction();
+        }
     }
 
     public void getCaseBaseInfo(Model model, Resource resource, CaseBaseInfo caseBaseInfo)
