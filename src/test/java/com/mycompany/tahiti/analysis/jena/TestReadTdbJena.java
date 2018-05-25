@@ -10,7 +10,7 @@ public class TestReadTdbJena {
     public void testReadTdbJena() {
         TdbJenaLibrary tdbJenaLibrary = new TdbJenaLibrary("src/main/resources/TDB");
         tdbJenaLibrary.openReadTransaction();
-        Model model = tdbJenaLibrary.getModel("biluV6");
+        Model model = tdbJenaLibrary.getModel("biluV5");
         val iter = model.listStatements(null, model.getProperty("gongan:gongan.case.bilu"), (RDFNode) null);
         while(iter.hasNext()) {
             System.out.println(iter.next().getObject().getClass());
