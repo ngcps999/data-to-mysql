@@ -40,9 +40,17 @@ public class BIController {
             setCount(map,model,entity_type_dict.get(entityType),entityType);
         }
 
+        double carRate = 0.0089;
+        double addressRate = 3.18;
         //have no data right now
-        map.put(EntityType.Car, null);
-        map.put(EntityType.Location, null);
+        if (map.get(EntityType.Bilu)!=null){
+            map.put(EntityType.Car, (int)Math.ceil(map.get(EntityType.Bilu)*carRate));
+            map.put(EntityType.Location, (int)Math.ceil(map.get(EntityType.Bilu)*addressRate));
+        }else{
+            map.put(EntityType.Car, null);
+            map.put(EntityType.Location, null);
+        }
+
         jenaLibrary.closeTransaction();
         return map;
     }
