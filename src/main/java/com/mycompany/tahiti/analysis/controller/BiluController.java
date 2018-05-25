@@ -42,7 +42,7 @@ public class BiluController {
             List<String> bilu_name_list = tdbJenaLibrary.getStringValueBySP(model,bilu_subject,"common:type.object.name");
             String bilu_name = bilu_name_list.size()>0?bilu_name_list.get(0):"";
             //bilu content
-            List<String> bilu_content_list = tdbJenaLibrary.getStringValueBySP(model,bilu_subject,"common:common.document.contentStreame");
+            List<String> bilu_content_list = tdbJenaLibrary.getStringValueBySP(model,bilu_subject,"common:common.document.contentStream");
             String bilu_content = bilu_content_list.size()>0?bilu_content_list.get(0):"";
             //bilu tags
             List<String> tags = tdbJenaLibrary.getStringValueBySP(model,bilu_subject,"common:type.object.tag");
