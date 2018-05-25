@@ -17,12 +17,13 @@ public class TestJenaLibrary {
     {
         Configs.loadConfigFile("application.properties");
         jenaLibrary = new MysqlJenaLibrary(Configs.getConfig("jenaConfigFilePath"));
-        jenaLibrary.store.getConnection().getTransactionHandler();
+        //jenaLibrary.store.getConnection().getTransactionHandler();
     }
 
-    @Test
+    //@Test
     public void JenaPersistenceTest()
     {
+
         String modelName = Configs.getConfig("jenaTestModelName");
         jenaLibrary.removeModel(modelName);
 

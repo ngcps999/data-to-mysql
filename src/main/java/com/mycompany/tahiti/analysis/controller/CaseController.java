@@ -21,17 +21,11 @@ import java.util.*;
 public class CaseController {
     @Autowired
     TdbJenaLibrary jenaLibrary;
-    //Model model;
-
-//    @PostConstruct
-//    public void init() {
-//         model = jenaLibrary.getModel(Configs.getConfig("jenaMappingModel"));
-//    }
 
     @GetMapping
     public List<Case> getCases(){
         jenaLibrary.openReadTransaction();
-        Model model = jenaLibrary.getModel(Configs.getConfig("jenaMappingModel"));
+        Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
         val list = new ArrayList<Case>();
 
         val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");

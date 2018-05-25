@@ -44,9 +44,9 @@ spec:
         - name: tahiti-tdb-data
           mountPath: /app/tdb_folder
         args:
-          - --tdbName=src/main/resources/TDB
+          - --tdbName=/app/tdb_folder
           - --jenaModelName=biluV4
-        volumes:
-          - name: tahiti-tdb-data
-            persistentVolumeClaim:
-              claimName: tahiti-tdb-data
+      volumes:
+        - name: tahiti-tdb-data
+          persistentVolumeClaim:
+            claimName: tahiti-tdb-data

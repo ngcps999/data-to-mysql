@@ -29,12 +29,13 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
 
     @Override
     public void clearDB() {
+        dataset.begin(ReadWrite.WRITE);
         for(val modelName: listModels()) {
-            dataset.begin(ReadWrite.WRITE);
             dataset.removeNamedModel(modelName);
             dataset.commit();
-            dataset.end();
         }
+        dataset.end();
+
     }
 
     public void openReadTransaction(){
@@ -100,7 +101,6 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
      * 列出Dataset中所有model；
      */
     public List<String> listModels() {
-        dataset.begin(ReadWrite.READ);
         //val writeLock = readWriteLock.writeLock();
         List<String> uriList = new ArrayList<>();
         try {
@@ -112,7 +112,6 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
                 uriList.add(name);
             }
         } finally {
-            dataset.end();
             //writeLock.unlock();
         }
         return uriList;
