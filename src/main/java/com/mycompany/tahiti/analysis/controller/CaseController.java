@@ -108,21 +108,13 @@ public class CaseController {
                 for(String person : persons)
                 {
                     Person personModel = new Person();
-                    val ids = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:type.object.id");
-                    if(ids.size() > 0)
-                        personModel.setId(ids.get(0));
 
                     val names = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:type.object.name");
                     if(names.size() > 0)
                         personModel.setName(names.get(0));
 
-                    val birthdays = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:person.person.birthDate");
-                    if(birthdays.size() > 0)
-                        personModel.setBirthDay(birthdays.get(0));
-
-                    val genders = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:person.person.gender");
-                    if(genders.size() > 0)
-                        personModel.setGender(genders.get(0));
+                    if(personModel.getName() == null || personModel.getName().isEmpty())
+                        continue;
 
                     val personIdentities = jenaLibrary.getStatementsBySP(model, model.getResource(person), "common:person.person.identification");
                     if(personIdentities.hasNext()) {
@@ -137,6 +129,22 @@ public class CaseController {
                         if(contacts.size() > 0)
                             personModel.setPhone(contacts.get(0));
                     }
+
+                    if((personModel.getIdentity() == null || personModel.getIdentity().isEmpty()) && (personModel.getPhone() == null || personModel.getPhone().isEmpty()))
+                        continue;
+
+                    val ids = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:type.object.id");
+                    if(ids.size() > 0)
+                        personModel.setId(ids.get(0));
+
+                    val birthdays = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:person.person.birthDate");
+                    if(birthdays.size() > 0)
+                        personModel.setBirthDay(birthdays.get(0));
+
+                    val genders = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:person.person.gender");
+                    if(genders.size() > 0)
+                        personModel.setGender(genders.get(0));
+
                     //        person.setRole("嫌疑人");
                     aCase.getDetailedPersons().add(personModel);
                 }
