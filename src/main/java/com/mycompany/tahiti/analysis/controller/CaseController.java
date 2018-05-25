@@ -7,7 +7,6 @@ import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import com.mycompany.tahiti.analysis.model.*;
 import io.swagger.annotations.Api;
 import lombok.val;
-import org.apache.jena.base.Sys;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
