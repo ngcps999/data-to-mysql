@@ -4,10 +4,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
-import com.mycompany.tahiti.analysis.model.BiluBaseInfo;
-import com.mycompany.tahiti.analysis.model.CaseBaseInfo;
-import com.mycompany.tahiti.analysis.model.CaseRichInfo;
-import com.mycompany.tahiti.analysis.model.Person;
+import com.mycompany.tahiti.analysis.model.*;
 import io.swagger.annotations.Api;
 import lombok.val;
 import org.apache.jena.rdf.model.Model;
@@ -124,18 +121,32 @@ public class CaseController {
         }
     }
 
+
     @ResponseBody
-    @GetMapping("/{caseId}/persons/{personId}")
-    public Person getPersonById(@PathVariable("caseId") String caseId, @PathVariable("personId") String personId) {
-        Person person = new Person();
-        person.setName("王大锤");
-        person.setIdentity("32212324324235331X");
-        person.setId("http://mycompany.ai.com/person/王大锤");
-        person.setBirthDay("1988年6月14日");
-        person.setGender("男");
-        person.setPhone("18888888881");
-        person.setRole("嫌疑人");
-        return person;
+    @GetMapping("/{caseId}/person/{personId}")
+    public List<RelevantGraph> getRelevantBiluParagraphsByPersonId(@PathVariable("caseId") String caseId, @PathVariable("personId") String personId){
+
+        val res = new ArrayList<RelevantGraph>();
+        val p1 = new RelevantGraph();
+        p1.setBiluId("123");
+        p1.setBiluName("王大锤笔录");
+        p1.setKeyword("王大锤");
+        p1.setParagraph("我叫王大锤，我一开始只想着不用多久 我就会升职加薪");
+        res.add(p1);
+        return res;
+    }
+
+    @ResponseBody
+    @GetMapping("/{caseId}/keyword/{keyword}")
+    public List<RelevantGraph> getRelevantBiluParagraphsByKeyword(@PathVariable("caseId") String caseId, @PathVariable("keyword") String keyword){
+        val res = new ArrayList<RelevantGraph>();
+        val p1 = new RelevantGraph();
+        p1.setBiluId("456");
+        p1.setBiluName("孔连顺笔录");
+        p1.setKeyword(keyword);
+        p1.setParagraph("我叫" + keyword  +"，我一开始只想着不用多久 我就会升职加薪");
+        res.add(p1);
+        return res;
     }
 
     public void getCaseBaseInfo(Model model, Resource resource, CaseBaseInfo caseBaseInfo)

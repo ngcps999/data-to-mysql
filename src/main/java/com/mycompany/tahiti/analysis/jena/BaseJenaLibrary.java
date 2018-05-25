@@ -79,19 +79,7 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
-    public Iterator<Statement> getStatementsByBatchSP(Model model, List<String> subjects, String property) {
-        Property p = model.getProperty(property);
-        SimpleSelector simpleSelector = new SimpleSelector(null, p, (RDFNode) null){
-            @Override
-            public boolean selects(Statement s) {
-                return subjects.contains(s.getSubject().toString());
-            }
-        };
-        return model.listStatements(simpleSelector);
-    }
-
-    @Override
-    public Iterator<Statement> getStatementsBySubjectInListAndProperty(Model model,List<String> subjects,String property_str){
+    public Iterator<Statement> getStatementsByBatchSP(Model model,List<String> subjects,String property_str){
         SimpleSelector selector = new SimpleSelector(null,null,(RDFNode) null){
             Property property = model.getProperty(property_str);
             @Override
@@ -189,45 +177,6 @@ public class BaseJenaLibrary implements JenaLibrary{
 
         return nameIters.toList().stream().map(iter->iter.getString()).collect(Collectors.toList());
     }
-
-    public List<String> getExpectedObjectNamesBySP(Model model, Resource resource, String property, String type)
-    {
-        Property p = model.getProperty(property);
-
-        // r1 = select O from full Where S = resource and P = property;
-        SimpleSelector firstSelector = new SimpleSelector(resource, p, (RDFNode) null);
-        val resourceProperty = model.listStatements(firstSelector);
-
-        // get candidates
-        val objects = resourceProperty.toList().stream().map(iter->iter.getResource().toString()).collect(Collectors.toList());
-
-        // filter candidates
-        // r2 = select S from full INNER JOIN r1 where full.S = r1.o and p == "common:type.object.type" and o == type;
-        SimpleSelector secondSelector = new SimpleSelector(null, model.getProperty("common:type.object.type"), type) {
-            @Override
-            public boolean selects(Statement s) {
-                return objects.contains(s.getSubject().toString());
-            }
-        };
-
-        val objectIterator = model.listStatements(secondSelector);
-
-        // get candidate
-        val subjects = objectIterator.toList().stream().map(iter->iter.getSubject().toString()).collect(Collectors.toList());
-
-        // get names
-        // r3 = select o from full inner join r2 where full.s == r2.s and p = "common:type.object.name";
-        SimpleSelector nameSelector = new SimpleSelector(null, model.getProperty("common:type.object.name"), (RDFNode) null) {
-            @Override
-            public boolean selects(Statement s) {
-                return subjects.contains(s.getSubject().toString());
-            }
-        };
-
-        val nameIters = model.listStatements(nameSelector);
-        return nameIters.toList().stream().map(iter->iter.getString()).collect(Collectors.toList());
-    }
-
 
     @Override
     public void persist(List<Statement> statements, String modelName)
