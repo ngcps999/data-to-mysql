@@ -93,7 +93,27 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
-    public void persist(List<Statement> statement, String modelName) {
-
+    public void persist(List<Statement> statements, String modelName)
+    {
+        if(Configs.getConfigBoolean("jenaDropExistModel", false)) {
+            removeModel(modelName);
+        }
+        //val writeLock = readWriteLock.writeLock();
+        try {
+            //writeLock.lock();
+            Model model;
+            if (modelName == null) {
+                model = getDefaultModel();
+            } else {
+                model = getModel(modelName);
+            }
+            model.begin();
+            for(val statement: statements) {
+                model.add(statement);
+            }
+            model.commit();
+        } finally {
+            //writeLock.unlock();
+        }
     }
 }

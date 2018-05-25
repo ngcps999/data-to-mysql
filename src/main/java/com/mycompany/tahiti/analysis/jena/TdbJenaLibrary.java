@@ -11,11 +11,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class TdbJenaLibrary extends BaseJenaLibrary {
 
-   // private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-    //Lock writeLock = readWriteLock.writeLock();
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    Lock writeLock = readWriteLock.writeLock();
 
     private static final Logger LOG = Logger.getLogger(TdbJenaLibrary.class);
     public Dataset dataset = null;
@@ -29,24 +32,25 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
 
     @Override
     public void clearDB() {
-        //dataset.begin(ReadWrite.WRITE);
         for(val modelName: listModels()) {
             dataset.removeNamedModel(modelName);
             dataset.commit();
         }
-        //dataset.end();
     }
 
     public void openReadTransaction(){
+        writeLock.lock();
         dataset.begin(ReadWrite.READ);
     }
 
     public void opneWriteTransaction() {
+        writeLock.lock();
         dataset.begin(ReadWrite.WRITE);
     }
 
     public void closeTransaction(){
         dataset.end();
+        writeLock.unlock();
     }
 
 
@@ -55,16 +59,11 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
      */
     @Override
     public void removeModel(String modelName) {
-//        if (!dataset.isInTransaction())
-//            dataset.begin(ReadWrite.WRITE);
         try {
-            //writeLock.lock();
             dataset.removeNamedModel(modelName);
             dataset.commit();
             LOG.info(modelName + "：已被移除!");
         } finally {
-            //dataset.end();
-            //writeLock.unlock();
         }
     }
 
@@ -81,17 +80,12 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
      */
     public boolean findModel(String modelName) {
         boolean result;
-        //val writeLock = readWriteLock.writeLock();
-        //dataset.begin(ReadWrite.READ);
         try {
-            //writeLock.lock();
             if (dataset.containsNamedModel(modelName))
                 result = true;
             else
                 result = false;
         } finally {
-            //dataset.end();
-            //writeLock.unlock();
         }
         return result;
     }
@@ -100,10 +94,8 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
      * 列出Dataset中所有model；
      */
     public List<String> listModels() {
-        //val writeLock = readWriteLock.writeLock();
         List<String> uriList = new ArrayList<>();
         try {
-            //writeLock.lock();
             Iterator<String> names = dataset.listNames();
             String name;
             while (names.hasNext()) {
@@ -111,7 +103,6 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
                 uriList.add(name);
             }
         } finally {
-            //writeLock.unlock();
         }
         return uriList;
     }
@@ -122,14 +113,9 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
     @Override
     public Model getModel(String modelName) {
         Model model;
-        //val writeLock = readWriteLock.writeLock();
-        //dataset.begin(ReadWrite.READ);
         try {
-            //writeLock.lock();
             model = dataset.getNamedModel(modelName);
         } finally {
-            //dataset.end();
-            //writeLock.unlock();
         }
         return model;
     }
@@ -139,15 +125,10 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
      */
     @Override
     public Model getDefaultModel() {
-        //val writeLock = readWriteLock.writeLock();
-        //dataset.begin(ReadWrite.READ);
         Model model;
         try {
-            //writeLock.lock();
             model = dataset.getDefaultModel();
         } finally {
-            //dataset.end();
-            //writeLock.unlock();
         }
         return model;
     }
@@ -159,10 +140,8 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
      */
     @Override
     public List<Statement> getStatements(Model model) {
-        //val writeLock = readWriteLock.writeLock();
         List<Statement> stmts;
         try {
-            //writeLock.lock();
             StmtIterator sIter = model.listStatements() ;
             stmts = new LinkedList<>();
             for ( ; sIter.hasNext() ; )
@@ -171,13 +150,7 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
             }
             sIter.close();
         } finally {
-            //writeLock.lock();
         }
         return stmts;
-    }
-
-    @Override
-    public void persist(List<Statement> statement, String modelName) {
-
     }
 }
