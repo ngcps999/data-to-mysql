@@ -220,6 +220,8 @@ public class CaseController {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
 
+            keywordList.remove("");
+
             List<String> bilus_list = new ArrayList<>();
             val iterator = jenaLibrary.getStatementsById(model, caseId);
             while(iterator.hasNext()){
