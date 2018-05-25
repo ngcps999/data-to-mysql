@@ -25,29 +25,32 @@ public class CaseController {
 
     @GetMapping
     public  List<CaseBaseInfo> getCases(){
-        jenaLibrary.openReadTransaction();
-        Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
-        val list = new ArrayList<CaseBaseInfo>();
+        try {
+            jenaLibrary.openReadTransaction();
+            Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+            val list = new ArrayList<CaseBaseInfo>();
 
-        val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
+            val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
 
-        while(iterator.hasNext())
-        {
-            Statement statement = iterator.next();
-            Resource resource = statement.getSubject();
+            while (iterator.hasNext()) {
+                Statement statement = iterator.next();
+                Resource resource = statement.getSubject();
 
-            CaseBaseInfo aCase = new CaseBaseInfo();
-            getCaseBaseInfo(model, resource, aCase);
-            list.add(aCase);
+                CaseBaseInfo aCase = new CaseBaseInfo();
+                getCaseBaseInfo(model, resource, aCase);
+                list.add(aCase);
+            }
+            return list;
         }
-        jenaLibrary.closeTransaction();
-        return list;
+        finally {
+            jenaLibrary.closeTransaction();
+        }
     }
 
     @ResponseBody
     @GetMapping("/{caseId}")
     public CaseRichInfo getCaseById(@PathVariable("caseId") String caseId) {
-        try{
+        try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
 
@@ -63,69 +66,93 @@ public class CaseController {
 
                 val bilus = Lists.newArrayList(jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu")).stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
 
-                val entities = Lists.newArrayList(jenaLibrary.getStatementsByBatchSP(model, bilus, "gongan:gongan.bilu.entity")).stream().map(s -> s.getResource().toString()).distinct();
-                val persons = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:type.object.type", "common:person.person")).stream().map(s -> s.getSubject().toString()).collect(Collectors.toSet());
+                val entities = Lists.newArrayList(jenaLibrary.getStatementsByBatchSP(model, bilus, "gongan:gongan.bilu.entity")).stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
+                val persons = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:type.object.type", "common:person.person")).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
                 // join entities.o and person.s to get all persons
-                List<String> personInCase = entities.filter(e -> persons.contains(e)).collect(Collectors.toList());
+                persons.retainAll(entities);
 
                 // get names
-                aCase.setNames(jenaLibrary.getStringValuesByBatchSP(model, personInCase, "common:type.object.name"));
+                aCase.setNames(jenaLibrary.getStringValuesByBatchSP(model, persons, "common:type.object.name").stream().distinct().collect(Collectors.toList()));
                 // get 身份证号
-                val identities = Lists.newArrayList(jenaLibrary.getStatementsByBatchSP(model, personInCase, "common:person.person.identification")).stream().map(s -> s.getResource().toString()).collect(Collectors.toList());
+                val identities = Lists.newArrayList(jenaLibrary.getStatementsByBatchSP(model, persons, "common:person.person.identification")).stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
                 aCase.setIdentities(jenaLibrary.getStringValuesByBatchSP(model, identities, "common:person.identification.number"));
 
                 // get all things
-                val things = Lists.newArrayList(jenaLibrary.getStatementsByBatchSP(model, bilus, "gongan:gongan.bilu.thing")).stream().map(s -> s.getResource().toString()).distinct();
+                val things = Lists.newArrayList(jenaLibrary.getStatementsByBatchSP(model, bilus, "gongan:gongan.bilu.thing")).stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
 
                 // get phone
-                val phones = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:type.object.type", "common:thing.phone")).stream().map(s -> s.getSubject().toString()).collect(Collectors.toList());
-                List<String> phoneInCase = things.filter(e -> phones.contains(e)).collect(Collectors.toList());
-                aCase.setPhones(jenaLibrary.getStringValuesByBatchSP(model, phoneInCase, "common:thing.phone.phoneNumber"));
+                val phones = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:type.object.type", "common:thing.phone")).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+                phones.retainAll(things);
+                aCase.setPhones(jenaLibrary.getStringValuesByBatchSP(model, phones, "common:thing.phone.phoneNumber"));
 
                 // get bank cards
-                val bankCards = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:type.object.type", "common:thing.bankcard")).stream().map(s -> s.getSubject().toString()).collect(Collectors.toList());
-                List<String> bankCardsInCase = things.filter(e -> bankCards.contains(e)).collect(Collectors.toList());
-                aCase.setBankCards(jenaLibrary.getStringValuesByBatchSP(model, bankCardsInCase, "common:thing.bankcard.bankCardId"));
+                val bankCards = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:type.object.type", "common:thing.bankcard")).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+                bankCards.retainAll(things);
+                aCase.setBankCards(jenaLibrary.getStringValuesByBatchSP(model, bankCards, "common:thing.bankcard.bankCardId"));
 
-                BiluBaseInfo biluBaseInfo = new BiluBaseInfo();
+                // get bilu
+                for (String bilu : bilus) {
+                    BiluBaseInfo biluBaseInfo = new BiluBaseInfo();
+                    val ids = jenaLibrary.getStringValueBySP(model, model.getResource(bilu), "common:type.object.id");
+                    if(ids.size() > 0)
+                        biluBaseInfo.setId(ids.get(0));
 
-                aCase.getBilus().add(biluBaseInfo);
+                    val names = jenaLibrary.getStringValueBySP(model, model.getResource(bilu), "common:type.object.name");
+                    if(names.size() > 0)
+                        biluBaseInfo.setName(names.get(0));
 
-                Person person = new Person();
+                    aCase.getBilus().add(biluBaseInfo);
+                }
 
-                aCase.getDetailedPersons().add(person);
+                // get
+                for(String person : persons)
+                {
+                    Person personModel = new Person();
+                    val ids = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:type.object.id");
+                    if(ids.size() > 0)
+                        personModel.setId(ids.get(0));
 
+                    val names = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:type.object.name");
+                    if(names.size() > 0)
+                        personModel.setName(names.get(0));
+
+                    val birthdays = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:person.person.birthDate");
+                    if(birthdays.size() > 0)
+                        personModel.setBirthDay(birthdays.get(0));
+
+                    val genders = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:person.person.gender");
+                    if(genders.size() > 0)
+                        personModel.setGender(genders.get(0));
+
+                    val personIdentities = jenaLibrary.getStatementsBySP(model, model.getResource(person), "common:person.person.identification");
+                    if(personIdentities.hasNext()) {
+                        val personIds = jenaLibrary.getStringValueBySP(model, personIdentities.next().getResource(), "common:person.identification.number");
+                        if(personIds.size() > 0)
+                            personModel.setIdentity(personIds.get(0));
+                    }
+
+                    val contactIters = jenaLibrary.getStatementsBySP(model, model.getResource(person), "common:person.person.contact");
+                    if(contactIters.hasNext()) {
+                        val contacts = jenaLibrary.getStringValueBySP(model, contactIters.next().getResource(), "common:person.contact.number");
+                        if(contacts.size() > 0)
+                            personModel.setPhone(contacts.get(0));
+                    }
+                    //        person.setRole("嫌疑人");
+                    aCase.getDetailedPersons().add(personModel);
+                }
                 break;
             }
 
             return aCase;
-//
-//        BiluBaseInfo bilu = new BiluBaseInfo();
-//        bilu.setName("我是笔录1");
-//        bilu.setId("我是笔录id1");
-//
-//        Person person = new Person();
-//        person.setName("王大锤");
-//        person.setIdentity("32212324324235331X");
-//        person.setId("http://mycompany.ai.com/person/王大锤");
-//        person.setBirthDay("1988年6月14日");
-//        person.setGender("男");
-//        person.setPhone("18888888881");
-//        person.setRole("嫌疑人");
-//        aCase.getDetailedPersons().add(person);
 
-        }
-        finally
-        {
+        } finally {
             jenaLibrary.closeTransaction();
         }
     }
 
 
-    @ResponseBody
-    @GetMapping("/{caseId}/person/{personId}")
-    public List<RelevantGraph> getRelevantBiluParagraphsByPersonId(@PathVariable("caseId") String caseId, @PathVariable("personId") String personId){
-
+    @GetMapping("/{caseId}/person")
+    public List<RelevantGraph> getRelevantBiluParagraphsByPersonId(@PathVariable("caseId") String caseId, @RequestParam("personId") String personId){
         val res = new ArrayList<RelevantGraph>();
         val p1 = new RelevantGraph();
         p1.setBiluId("123");
