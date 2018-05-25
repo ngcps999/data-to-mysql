@@ -36,11 +36,6 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
-    public List<Statement> getStatements(Model model) {
-        return null;
-    }
-
-    @Override
     public Iterator<Statement> getStatementsByEntityType(Model model, String type) {
         Property property = model.getProperty("common:type.object.type");
         SimpleSelector simpleSelector = new SimpleSelector(null, property, type);
@@ -115,5 +110,26 @@ public class BaseJenaLibrary implements JenaLibrary{
         } finally {
             //writeLock.unlock();
         }
+    }
+
+    /**
+     * 获取模型中所有Statement
+     * @param model
+     * @return
+     */
+    @Override
+    public List<Statement> getStatements(Model model) {
+        List<Statement> stmts;
+        try {
+            StmtIterator sIter = model.listStatements() ;
+            stmts = new LinkedList<>();
+            for ( ; sIter.hasNext() ; )
+            {
+                stmts.add(sIter.nextStatement());
+            }
+            sIter.close();
+        } finally {
+        }
+        return stmts;
     }
 }

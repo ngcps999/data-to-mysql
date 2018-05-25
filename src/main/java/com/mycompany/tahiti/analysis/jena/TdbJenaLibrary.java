@@ -132,25 +132,4 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
         }
         return model;
     }
-
-    /**
-     * 获取模型中所有Statement
-     * @param model
-     * @return
-     */
-    @Override
-    public List<Statement> getStatements(Model model) {
-        List<Statement> stmts;
-        try {
-            StmtIterator sIter = model.listStatements() ;
-            stmts = new LinkedList<>();
-            for ( ; sIter.hasNext() ; )
-            {
-                stmts.add(sIter.nextStatement());
-            }
-            sIter.close();
-        } finally {
-        }
-        return stmts;
-    }
 }
