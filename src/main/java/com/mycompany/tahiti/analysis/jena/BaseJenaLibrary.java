@@ -88,6 +88,18 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
+    public Iterator<Statement> getStatementsBySubjectInListAndProperty(Model model,List<String> subjects,String property_str){
+        SimpleSelector selector = new SimpleSelector(null,null,(RDFNode) null){
+            Property property = model.getProperty(property_str);
+            @Override
+            public boolean selects(Statement s) {
+                return subjects.contains(s.getSubject().toString()) && s.getPredicate().equals(property);
+            }
+        };
+        return model.listStatements(selector);
+    }
+
+    @Override
     public void persist(List<Statement> statements, String modelName)
     {
         if(Configs.getConfigBoolean("jenaDropExistModel", false)) {
