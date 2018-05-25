@@ -142,8 +142,12 @@ public class CaseController {
                         personModel.setBirthDay(birthdays.get(0));
 
                     val genders = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:person.person.gender");
-                    if(genders.size() > 0)
-                        personModel.setGender(genders.get(0));
+                    if(genders.size() > 0) {
+                        if(genders.get(0).toLowerCase().equals("female"))
+                            personModel.setGender("女");
+                        else if(genders.get(0).toLowerCase().equals("male"))
+                            personModel.setGender("男");
+                    }
 
                     //        person.setRole("嫌疑人");
                     aCase.getDetailedPersons().add(personModel);
