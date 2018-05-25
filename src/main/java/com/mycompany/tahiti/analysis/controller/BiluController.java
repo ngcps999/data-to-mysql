@@ -1,11 +1,13 @@
 package com.mycompany.tahiti.analysis.controller;
 
+import com.google.common.collect.Lists;
 import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import com.mycompany.tahiti.analysis.model.BiluBaseInfo;
 import com.mycompany.tahiti.analysis.model.BiluRichInfo;
 import com.mycompany.tahiti.analysis.model.Person;
 import io.swagger.annotations.Api;
+import lombok.val;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/bilus")
@@ -44,8 +47,14 @@ public class BiluController {
             //bilu content
             List<String> bilu_content_list = tdbJenaLibrary.getStringValueBySP(model,bilu_subject,"common:common.document.contentStream");
             String bilu_content = bilu_content_list.size()>0?bilu_content_list.get(0):"";
+
             //bilu tags
-            List<String> tags = tdbJenaLibrary.getStringValueBySP(model,bilu_subject,"common:type.object.tag");
+            val entities = Lists.newArrayList(tdbJenaLibrary.getStatementsBySP(model, bilu_subject, "gongan:gongan.bilu.entity")).stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
+            val persons = Lists.newArrayList(tdbJenaLibrary.getStatementsByPO(model, "common:type.object.type", "common:person.person")).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+            // join entities.o and person.s to get all persons
+            persons.retainAll(entities);
+
+            List<String> tags = tdbJenaLibrary.getStringValuesByBatchSP(model, persons, "common:type.object.name").stream().distinct().collect(Collectors.toList());
 
             BiluRichInfo bilu = new BiluRichInfo();
             bilu.setId(biluId);

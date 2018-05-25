@@ -99,6 +99,24 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
+    public Iterator<Statement> getStatementsByPO(Model model, String property, Resource object)
+    {
+        SimpleSelector simpleSelector = new SimpleSelector(null, model.getProperty(property), object);
+        return model.listStatements(simpleSelector);
+    }
+
+    @Override
+    public Iterator<Statement> getStatementsByBatchPO(Model model, String property, List<String> objects)
+    {
+        SimpleSelector simpleSelector = new SimpleSelector(null, model.getProperty(property), (RDFNode)null){
+            public boolean selects(Statement st) {
+                return objects.contains(st.getObject().toString());
+            }
+        };
+        return model.listStatements(simpleSelector);
+    }
+
+    @Override
     public Iterator<Statement> getStatementsBySourceAndType(Model model, String source, String type) {
         SimpleSelector selector = new SimpleSelector(null, null, (RDFNode)null) {
             Property property = model.getProperty("common:type.object.type");
