@@ -66,9 +66,7 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
 
     public void closeTransaction(){
         try {
-            if(dataset.isInTransaction()) {
-                dataset.end();
-            }
+            dataset.end();
             writeLock.unlock();
         } catch (Exception e) {
             LOG.error(e.getMessage());
