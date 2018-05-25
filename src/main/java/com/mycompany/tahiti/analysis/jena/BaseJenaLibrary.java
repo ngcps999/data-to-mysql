@@ -79,9 +79,10 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
-    public Iterator<Statement> getStatementsByBatchSP(Model model,List<String> subjects,String property_str){
-        SimpleSelector selector = new SimpleSelector(null,null,(RDFNode) null){
+    public Iterator<Statement> getStatementsByBatchSP(Model model, List<String> subjects, String property_str) {
+        SimpleSelector selector = new SimpleSelector(null, null, (RDFNode) null) {
             Property property = model.getProperty(property_str);
+
             @Override
             public boolean selects(Statement s) {
                 return subjects.contains(s.getSubject().toString()) && s.getPredicate().equals(property);
