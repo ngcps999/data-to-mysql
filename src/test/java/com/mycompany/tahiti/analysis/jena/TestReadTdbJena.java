@@ -2,6 +2,7 @@ package com.mycompany.tahiti.analysis.jena;
 
 import lombok.val;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFNode;
 import org.junit.Test;
 
 public class TestReadTdbJena {
@@ -9,10 +10,11 @@ public class TestReadTdbJena {
     public void testReadTdbJena() {
         TdbJenaLibrary tdbJenaLibrary = new TdbJenaLibrary("src/main/resources/TDB");
         tdbJenaLibrary.openReadTransaction();
-        Model model = tdbJenaLibrary.getModel("biluV4");
-        val iter = model.listStatements();
+        Model model = tdbJenaLibrary.getModel("biluV6");
+        val iter = model.listStatements(null, model.getProperty("gongan:gongan.case.bilu"), (RDFNode) null);
         while(iter.hasNext()) {
-            System.out.println(iter.next());
+            System.out.println(iter.next().getObject().getClass());
         }
+        tdbJenaLibrary.closeTransaction();
     }
 }
