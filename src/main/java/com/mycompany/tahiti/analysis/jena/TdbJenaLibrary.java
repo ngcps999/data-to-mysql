@@ -12,18 +12,18 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class TdbJenaPersistence extends BaseJenaLibrary {
+public class TdbJenaLibrary extends BaseJenaLibrary {
 
    // private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     //Lock writeLock = readWriteLock.writeLock();
 
-    private static final Logger LOG = Logger.getLogger(TdbJenaPersistence.class);
+    private static final Logger LOG = Logger.getLogger(TdbJenaLibrary.class);
     public Dataset dataset = null;
 
     /**
      * 建立TDB数据文件夹；
      */
-    public TdbJenaPersistence(String tdbName) {
+    public TdbJenaLibrary(String tdbName) {
         dataset = TDBFactory.createDataset(tdbName);
     }
 

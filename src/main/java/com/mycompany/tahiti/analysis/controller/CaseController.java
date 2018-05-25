@@ -2,7 +2,7 @@ package com.mycompany.tahiti.analysis.controller;
 
 import com.google.common.collect.Iterators;
 import com.mycompany.tahiti.analysis.configuration.Configs;
-import com.mycompany.tahiti.analysis.jena.JenaLibrary;
+import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import com.mycompany.tahiti.analysis.model.Case;
 import com.mycompany.tahiti.analysis.model.Person;
 import io.swagger.annotations.Api;
@@ -13,7 +13,6 @@ import org.apache.jena.rdf.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 
 @RestController
@@ -21,16 +20,18 @@ import java.util.*;
 @Api(description = "case controller")
 public class CaseController {
     @Autowired
-    JenaLibrary jenaLibrary;
-    Model model;
+    TdbJenaLibrary jenaLibrary;
+    //Model model;
 
-    @PostConstruct
-    public void init() {
-         model = jenaLibrary.getModel(Configs.getConfig("jenaMappingModel"));
-    }
+//    @PostConstruct
+//    public void init() {
+//         model = jenaLibrary.getModel(Configs.getConfig("jenaMappingModel"));
+//    }
 
     @GetMapping
     public List<Case> getCases(){
+        jenaLibrary.openReadTransaction();
+        Model model = jenaLibrary.getModel(Configs.getConfig("jenaMappingModel"));
         val list = new ArrayList<Case>();
 
         val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
@@ -84,7 +85,7 @@ public class CaseController {
             }
             list.add(aCase);
         }
-
+        jenaLibrary.closeTransaction();
         return list;
     }
 
