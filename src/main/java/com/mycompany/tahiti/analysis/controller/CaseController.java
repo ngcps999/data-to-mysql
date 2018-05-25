@@ -131,6 +131,8 @@ public class CaseController {
                     aCase.getBilus().add(biluBaseInfo);
                 }
 
+                List<String> biluConnections = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "common:common.connection.from", bilus)).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+
                 // get
                 for(String person : persons)
                 {
@@ -176,7 +178,28 @@ public class CaseController {
                             personModel.setGender("男");
                     }
 
-                    //        person.setRole("嫌疑人");
+                    val connectionVal = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:common.connection.to", model.getResource(person))).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+                    connectionVal.retainAll(biluConnections);
+                    for(String connection : connectionVal)
+                    {
+                        val connectionType = jenaLibrary.getStringValueBySP(model, model.getResource(connection), "common:common.connection.type");
+
+                        if(connectionType.contains("common:common.connection.BiluEntityXianyiren"))
+                            personModel.setRole(new StringBuilder().append(personModel.getRole()).append("嫌疑人；").toString());
+                        if(connectionType.contains("common:common.connection.BiluEntityZhengren"))
+                            personModel.setRole(new StringBuilder().append(personModel.getRole()).append("证人；").toString());
+                        if(connectionType.contains("common:common.connection.BiluEntityBaoanren"))
+                            personModel.setRole(new StringBuilder().append(personModel.getRole()).append("报案人；").toString());
+                        if(connectionType.contains("common:common.connection.BiluEntityDangshiren"))
+                            personModel.setRole(new StringBuilder().append(personModel.getRole()).append("当事人；").toString());
+                        if(connectionType.contains("common:common.connection.BiluEntityShouhairen"))
+                            personModel.setRole(new StringBuilder().append(personModel.getRole()).append("受害人；").toString());
+
+                        int roleLength = personModel.getRole().length();
+                        if(roleLength > 0)
+                            personModel.setRole(personModel.getRole().substring(0, roleLength - 1));
+                    }
+
                     aCase.getDetailedPersons().add(personModel);
                 }
                 break;
