@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 public class ConfigurationController {
 
     @GetMapping("/updateJenaModelName/{jenaModelName}")
-    public void getCaseById(@PathVariable("jenaModelName") String jenaModelName) {
+    public void updateJenaModelName(@PathVariable("jenaModelName") String jenaModelName) {
         Configs.addConfig("jenaModelName", jenaModelName);
     }
 }
