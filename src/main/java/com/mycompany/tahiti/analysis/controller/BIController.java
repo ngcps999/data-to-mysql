@@ -59,7 +59,7 @@ public class BIController {
         }
 
         Map<String,Integer> map = new HashMap();
-        Iterator<Statement> iterator_names = jenaLibrary.getStatementsBySubjectInListAndProperty(model,resourceList,"common:type.object.name");
+        Iterator<Statement> iterator_names = jenaLibrary.getStatementsByBatchSP(model,resourceList,"common:type.object.name");
         iteratorObjectToMap(iterator_names,map);
 
         //排序
