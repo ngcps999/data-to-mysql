@@ -39,18 +39,41 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
     }
 
     public void openReadTransaction(){
-        writeLock.lock();
-        dataset.begin(ReadWrite.READ);
+        try {
+            writeLock.lock();
+            if(dataset.isInTransaction()) {
+                dataset.end();
+            }
+            dataset.begin(ReadWrite.READ);
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+        }
+
     }
 
-    public void opneWriteTransaction() {
-        writeLock.lock();
-        dataset.begin(ReadWrite.WRITE);
+    public void openWriteTransaction() {
+        try {
+            writeLock.lock();
+            if(dataset.isInTransaction()) {
+                dataset.end();
+            }
+            dataset.begin(ReadWrite.WRITE);
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+        }
+
     }
 
     public void closeTransaction(){
-        dataset.end();
-        writeLock.unlock();
+        try {
+            if(dataset.isInTransaction()) {
+                dataset.end();
+            }
+            writeLock.unlock();
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+        }
+
     }
 
 
