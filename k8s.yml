@@ -46,7 +46,7 @@ spec:
           subPath: development-env
         args:
           - --tdbName=/app/tdb_folder
-          - --jenaModelName=biluProdJiaXiu
+          - --jenaModelName=biluProd
       volumes:
         - name: tahiti-tdb-data
           persistentVolumeClaim:
