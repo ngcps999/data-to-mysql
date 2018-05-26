@@ -234,7 +234,8 @@ public class CaseController {
                 bilus_list.addAll(bilus);
             }
 
-            int half_paragraph_length = 20;
+            int before_paragraph_length = 30;
+            int after_paragraph_length = 40;
             val result = new ArrayList<RelevantGraph>();
             Iterator<Statement> stIter = jenaLibrary.getStatementsByBatchSP(model, bilus_list, "common:common.document.contentStream");
             while (stIter.hasNext()) {
@@ -251,8 +252,8 @@ public class CaseController {
                         if (names.size() > 0) BiluName = names.get(0);
 
                         for (int i = -1; (i = content.indexOf(keyword, i + 1)) != -1; i++) {
-                            int start_index = i - half_paragraph_length > 0 ? i - half_paragraph_length : 0;
-                            int end_index = start_index + 2 * half_paragraph_length + keyword.length() < content.length() ? start_index + 2 * half_paragraph_length + keyword.length() : content.length() - 1;
+                            int start_index = i-before_paragraph_length>0?i-before_paragraph_length:0;
+                            int end_index = start_index+before_paragraph_length+after_paragraph_length+keyword.length()<content.length()?start_index+before_paragraph_length+after_paragraph_length+keyword.length():content.length()-1;
                             String paragraph = content.substring(start_index, end_index);
                             val p1 = new RelevantGraph();
                             p1.setBiluName(BiluName);
