@@ -227,3 +227,5 @@ allNames.txt
 
 # Avoid ignoing the needed 3rd party jars.
 !idmapper-1.0.jar
+
+src/main/resources/TDB/
