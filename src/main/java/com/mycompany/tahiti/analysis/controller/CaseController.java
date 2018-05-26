@@ -64,6 +64,11 @@ public class CaseController {
     public List<CaseBaseInfo> searchCases(@PathVariable("keyword") String keyword){
         List<CaseBaseInfo> allCases = getAllCaseBaseInfo();
 
+        keyword = keyword.replaceAll(" ", "");
+
+        if(keyword.isEmpty())
+            return allCases;
+
         List<CaseBaseInfo> cases = new LinkedList<>();
         for(CaseBaseInfo cs : allCases)
         {
