@@ -16,6 +16,7 @@ public class ConfigurationController {
     @GetMapping("/updateJenaModelName/{jenaModelName}")
     public void updateJenaModelName(@PathVariable("jenaModelName") String jenaModelName) {
         Configs.addConfig("jenaModelName", jenaModelName);
-        tdbJenaLibrary = new TdbJenaLibrary(Configs.getConfig("tdbName"));
+        tdbJenaLibrary.closeDB();
+        tdbJenaLibrary.dataset = tdbJenaLibrary.createDataset(Configs.getConfig("tdbName"));
     }
 }

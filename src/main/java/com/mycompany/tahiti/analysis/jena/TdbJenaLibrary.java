@@ -27,7 +27,11 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
      * 建立TDB数据文件夹；
      */
     public TdbJenaLibrary(String tdbName) {
-        dataset = TDBFactory.createDataset(tdbName);
+        dataset = createDataset(tdbName);
+    }
+
+    public Dataset createDataset(String tdbName) {
+        return TDBFactory.createDataset(tdbName);
     }
 
     @Override
