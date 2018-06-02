@@ -163,12 +163,44 @@ public class CaseController {
                     Node pNode = new Node(person);
                     Map<String, Object> props = new HashMap<>();
                     if(personModel.getName() != null && !personModel.getName().isEmpty())
-                    props.put("name", personModel.getName());
+                        props.put("name", personModel.getName());
+                    else
+                        props.put("name", personModel.getIdentity());
                     props.put("type", "人");
+                    pNode.setProperties(props);
                     graph.getEntities().add(pNode);
 
                     Edge edge = new Edge(new Random().nextInt(), resource.toString(), person);
+                    edge.setChiType("关联人");
 
+                    graph.getRelationships().add(edge);
+
+                    if(personModel.getPhone() != null && !personModel.getPhone().isEmpty())
+                        processedContact.add(personModel.getPhone());
+
+                    // find other cased related to this person
+                    val otherBilus = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "gongan:gongan.bilu.entity", model.getResource(person))).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+                    otherBilus.removeAll(bilus);
+
+                    if(otherBilus.size()> 0)
+                    {
+                        val otherCases = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", otherBilus)).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+                        for(String otherCase : otherCases)
+                        {
+                            List<String> caseNames = jenaLibrary.getStringValueBySP(model, model.getResource(otherCase), "common:type.object.name").stream().distinct().collect(Collectors.toList());
+
+                            Node caseNode = new Node(otherCase);
+                            caseNode.setProperties(new HashMap<>());
+                            if(caseNames.size()>0)
+                                caseNode.getProperties().put("name", caseNames.get(0));
+                            caseNode.getProperties().put("type", "案件");
+                            graph.getEntities().add(caseNode);
+
+                            Edge csEdge = new Edge(new Random().nextInt(), person, otherCase);
+                            csEdge.setChiType("关联案件");
+                            graph.getRelationships().add(csEdge);
+                        }
+                    }
 
                     if (personModel.getName() == null || personModel.getName().isEmpty())
                         continue;
@@ -224,6 +256,8 @@ public class CaseController {
                 properties.put("name", aCase.getCaseName());
                 properties.put("type", "案件");
                 node.setProperties(properties);
+
+                graph.getEntities().add(node);
 
                 aCase.setGraph(graph);
                 break;
