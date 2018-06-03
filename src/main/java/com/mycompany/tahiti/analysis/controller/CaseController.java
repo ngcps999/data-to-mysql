@@ -162,11 +162,23 @@ public class CaseController {
 
                     Node pNode = new Node(person);
                     Map<String, Object> props = new HashMap<>();
-                    if(personModel.getName() != null && !personModel.getName().isEmpty())
+                    if(personModel.getName() != null && !personModel.getName().isEmpty()) {
                         props.put("name", personModel.getName());
-                    else
-                        props.put("name", personModel.getIdentity());
-                    props.put("type", "人");
+                        props.put("type", NodeType.Person.toString());
+                        if(personModel.getIdentity() != null && !personModel.getIdentity().isEmpty()) {
+                        props.put("identity", personModel.getIdentity());
+                        }
+                    }
+                    else {
+                        props.put("identity", personModel.getIdentity());
+                        props.put("type", NodeType.Identity.toString());
+                    }
+
+                    if(personModel.getPhone() != null && !personModel.getPhone().isEmpty()) {
+                        props.put("phone", personModel.getPhone());
+                        processedContact.add(personModel.getPhone());
+                    }
+
                     pNode.setProperties(props);
                     graph.getEntities().add(pNode);
 
@@ -174,9 +186,6 @@ public class CaseController {
                     edge.setChiType("关联人");
 
                     graph.getRelationships().add(edge);
-
-                    if(personModel.getPhone() != null && !personModel.getPhone().isEmpty())
-                        processedContact.add(personModel.getPhone());
 
                     // find other cased related to this person
                     val otherBilus = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "gongan:gongan.bilu.entity", model.getResource(person))).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
@@ -193,7 +202,7 @@ public class CaseController {
                             caseNode.setProperties(new HashMap<>());
                             if(caseNames.size()>0)
                                 caseNode.getProperties().put("name", caseNames.get(0));
-                            caseNode.getProperties().put("type", "案件");
+                            caseNode.getProperties().put("type", NodeType.Case.toString());
                             graph.getEntities().add(caseNode);
 
                             Edge csEdge = new Edge(new Random().nextInt(), person, otherCase);
@@ -254,7 +263,7 @@ public class CaseController {
                 Node node = new Node(resource.toString());
                 Map<String, Object> properties = new HashMap<>();
                 properties.put("name", aCase.getCaseName());
-                properties.put("type", "案件");
+                properties.put("type", NodeType.Case.toString());
                 node.setProperties(properties);
 
                 graph.getEntities().add(node);
