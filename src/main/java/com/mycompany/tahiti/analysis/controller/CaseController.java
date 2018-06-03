@@ -28,7 +28,7 @@ public class CaseController {
 
     public List<CaseBaseInfo> getAllCaseBaseInfo() {
         LocalTime time = LocalTime.now();
-        if (caseBaseInfos.size() == 0 || time.getMinute() % 30 == 0) {
+        if (caseBaseInfos.size() == 0 || time.getMinute() % 5 == 0) {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
@@ -83,11 +83,11 @@ public class CaseController {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
 
-            CaseRichInfo aCase = new CaseRichInfo();
-
             val iterator = jenaLibrary.getStatementsById(model, caseId);
 
+            CaseRichInfo aCase = new CaseRichInfo();
             while (iterator.hasNext()) {
+
                 Statement statement = iterator.next();
                 Resource resource = statement.getSubject();
 
@@ -133,18 +133,18 @@ public class CaseController {
                     aCase.getBilus().add(biluBaseInfo);
                 }
 
+                // set graph
+                Graph graph = new Graph();
+                List<String> processedContact = new ArrayList<>();
+
                 List<String> biluConnections = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "common:common.connection.from", bilus)).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
 
-                // get
                 for (String person : persons) {
                     Person personModel = new Person();
 
                     val names = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:type.object.name");
                     if (names.size() > 0)
                         personModel.setName(names.get(0));
-
-                    if (personModel.getName() == null || personModel.getName().isEmpty())
-                        continue;
 
                     val personIdentities = jenaLibrary.getStatementsBySP(model, model.getResource(person), "common:person.person.identification");
                     if (personIdentities.hasNext()) {
@@ -159,6 +159,60 @@ public class CaseController {
                         if (contacts.size() > 0)
                             personModel.setPhone(contacts.get(0));
                     }
+
+                    Node pNode = new Node(person);
+                    Map<String, Object> props = new HashMap<>();
+                    if(personModel.getName() != null && !personModel.getName().isEmpty()) {
+                        props.put("name", personModel.getName());
+                        props.put("type", NodeType.Person.toString());
+                        if(personModel.getIdentity() != null && !personModel.getIdentity().isEmpty()) {
+                        props.put("identity", personModel.getIdentity());
+                        }
+                    }
+                    else {
+                        props.put("identity", personModel.getIdentity());
+                        props.put("type", NodeType.Identity.toString());
+                    }
+
+                    if(personModel.getPhone() != null && !personModel.getPhone().isEmpty()) {
+                        props.put("phone", personModel.getPhone());
+                        processedContact.add(personModel.getPhone());
+                    }
+
+                    pNode.setProperties(props);
+                    graph.getEntities().add(pNode);
+
+                    Edge edge = new Edge(new Random().nextInt(), resource.toString(), person);
+                    edge.setChiType("关联人");
+
+                    graph.getRelationships().add(edge);
+
+                    // find other cased related to this person
+                    val otherBilus = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "gongan:gongan.bilu.entity", model.getResource(person))).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+                    otherBilus.removeAll(bilus);
+
+                    if(otherBilus.size()> 0)
+                    {
+                        val otherCases = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", otherBilus)).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+                        for(String otherCase : otherCases)
+                        {
+                            List<String> caseNames = jenaLibrary.getStringValueBySP(model, model.getResource(otherCase), "common:type.object.name").stream().distinct().collect(Collectors.toList());
+
+                            Node caseNode = new Node(otherCase);
+                            caseNode.setProperties(new HashMap<>());
+                            if(caseNames.size()>0)
+                                caseNode.getProperties().put("name", caseNames.get(0));
+                            caseNode.getProperties().put("type", NodeType.Case.toString());
+                            graph.getEntities().add(caseNode);
+
+                            Edge csEdge = new Edge(new Random().nextInt(), person, otherCase);
+                            csEdge.setChiType("关联案件");
+                            graph.getRelationships().add(csEdge);
+                        }
+                    }
+
+                    if (personModel.getName() == null || personModel.getName().isEmpty())
+                        continue;
 
                     if ((personModel.getIdentity() == null || personModel.getIdentity().isEmpty()) && (personModel.getPhone() == null || personModel.getPhone().isEmpty()))
                         continue;
@@ -204,16 +258,25 @@ public class CaseController {
 
                     aCase.getDetailedPersons().add(personModel);
                 }
+
+                // node - current case
+                Node node = new Node(resource.toString());
+                Map<String, Object> properties = new HashMap<>();
+                properties.put("name", aCase.getCaseName());
+                properties.put("type", NodeType.Case.toString());
+                node.setProperties(properties);
+
+                graph.getEntities().add(node);
+
+                aCase.setGraph(graph);
                 break;
             }
 
             return aCase;
-
         } finally {
             jenaLibrary.closeTransaction();
         }
     }
-
 
     @ResponseBody
     @GetMapping("/{caseId}/person")

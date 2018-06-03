@@ -14,4 +14,6 @@ public class CaseRichInfo extends CaseBaseInfo {
 
     private List<Person> detailedPersons = new ArrayList<>();
     private List<BiluBaseInfo> bilus = new ArrayList<>();
+
+    private Graph graph;
 }
