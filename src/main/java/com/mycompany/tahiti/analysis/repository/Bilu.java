@@ -15,8 +15,8 @@ public class Bilu {
     private String content;
 
     private List<Person> persons = new ArrayList<>();
-    private List<String> phones = new ArrayList<>();
-    private List<String> bankCards = new ArrayList<>();
+    private Map<String, String> phones = new HashMap<>();
+    private Map<String, String> bankCards = new HashMap<>();
 
     //key is subjectid, value is connection type;
     private Map<String, String> connections = new HashMap<>();

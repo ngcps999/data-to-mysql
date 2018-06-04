@@ -170,13 +170,19 @@ public class DataFactory {
             // set phone
             val phones = Lists.newArrayList(jenaLibrary.getStatementsByPOValue(model, "common:type.object.type", "common:thing.phone")).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
             phones.retainAll(things);
-            bilu.setPhones(jenaLibrary.getStringValuesByBatchSP(model, phones, "common:thing.phone.phoneNumber"));
-
+            for(String phone : phones) {
+                List<String> phoneNums = jenaLibrary.getStringValueBySP(model, model.getResource(phone), "common:thing.phone.phoneNumber");
+                if(phoneNums.size() > 0)
+                    bilu.getPhones().put(phone, phoneNums.get(0));
+            }
             // set bank cards
             val bankCards = Lists.newArrayList(jenaLibrary.getStatementsByPOValue(model, "common:type.object.type", "common:thing.bankcard")).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
             bankCards.retainAll(things);
-            bilu.setBankCards(jenaLibrary.getStringValuesByBatchSP(model, bankCards, "common:thing.bankcard.bankCardId"));
-
+            for(String bankCard : bankCards) {
+                List<String> bankCardNums = jenaLibrary.getStringValueBySP(model, model.getResource(bankCard), "common:thing.bankcard.bankCardId");
+                if(bankCardNums.size() > 0)
+                    bilu.getBankCards().put(bankCard, bankCardNums.get(0));
+            }
             aCase.getBilus().add(bilu);
         }
     }
