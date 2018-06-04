@@ -1,6 +1,5 @@
 package com.mycompany.tahiti.analysis.controller;
 
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.mycompany.tahiti.analysis.repository.Bilu;
 import com.mycompany.tahiti.analysis.repository.Case;
