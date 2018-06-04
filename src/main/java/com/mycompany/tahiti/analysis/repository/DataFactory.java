@@ -10,7 +10,6 @@ import org.apache.jena.rdf.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
 
