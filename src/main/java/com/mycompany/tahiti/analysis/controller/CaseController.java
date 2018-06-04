@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.mycompany.tahiti.analysis.Repository.Bilu;
 import com.mycompany.tahiti.analysis.Repository.Case;
 import com.mycompany.tahiti.analysis.Repository.DataFactory;
+import com.mycompany.tahiti.analysis.Repository.Person;
 import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import com.mycompany.tahiti.analysis.model.*;
@@ -59,11 +60,17 @@ public class CaseController {
             return caseBaseInfos;
     }
 
+    @GetMapping("/reset")
+    public boolean reset()
+    {
+        dataFactory.updateCases();
+        return true;
+    }
+
     @GetMapping
     public List<CaseBaseInfo> getCases() {
         List<CaseBaseInfo> baseInfos = new ArrayList<>();
-        for(String caseId : dataFactory.getCases().keySet())
-        {
+        for (String caseId : dataFactory.getCases().keySet()) {
             Case aCase = dataFactory.getCases().get(caseId);
             CaseBaseInfo baseInfoCase = new CaseBaseInfo();
             baseInfoCase.setCaseId(aCase.getCaseId());
@@ -71,17 +78,18 @@ public class CaseController {
             baseInfoCase.setCaseType(aCase.getCaseType());
             baseInfoCase.setBiluNumber(aCase.getBilus().size());
 
-            for(Bilu bilu : aCase.getBilus())
-            {
-                for(val connection : bilu.getConnections().keySet())
-                {
-                    if(bilu.getConnections().get(connection).contains("嫌疑人")) {
-                        if(dataFactory.getPersons().containsKey(connection)) {
-                            baseInfoCase.getSuspects().add(dataFactory.getPersons().get(connection).getName());
+            for (Bilu bilu : aCase.getBilus()) {
+                for (val connection : bilu.getConnections().keySet()) {
+                    if (bilu.getConnections().get(connection).contains("嫌疑人")) {
+                        if (dataFactory.getPersons().containsKey(connection)) {
+                            Person person = dataFactory.getPersons().get(connection);
+                            if (person.getName() != null && !person.getName().isEmpty())
+                                baseInfoCase.getSuspects().add(dataFactory.getPersons().get(connection).getName());
                         }
                     }
                 }
             }
+            baseInfos.add(baseInfoCase);
         }
         return baseInfos;
     }
@@ -124,7 +132,7 @@ public class CaseController {
                 val bilus = Lists.newArrayList(jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu")).stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
 
                 val entities = Lists.newArrayList(jenaLibrary.getStatementsByBatchSP(model, bilus, "gongan:gongan.bilu.entity")).stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
-                val persons = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:type.object.type", "common:person.person")).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+                val persons = Lists.newArrayList(jenaLibrary.getStatementsByPOValue(model, "common:type.object.type", "common:person.person")).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
                 // join entities.o and person.s to get all persons
                 persons.retainAll(entities);
 
@@ -138,12 +146,12 @@ public class CaseController {
                 val things = Lists.newArrayList(jenaLibrary.getStatementsByBatchSP(model, bilus, "gongan:gongan.bilu.thing")).stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
 
                 // get phone
-                val phones = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:type.object.type", "common:thing.phone")).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+                val phones = Lists.newArrayList(jenaLibrary.getStatementsByPOValue(model, "common:type.object.type", "common:thing.phone")).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
                 phones.retainAll(things);
                 aCase.setPhones(jenaLibrary.getStringValuesByBatchSP(model, phones, "common:thing.phone.phoneNumber"));
 
                 // get bank cards
-                val bankCards = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:type.object.type", "common:thing.bankcard")).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+                val bankCards = Lists.newArrayList(jenaLibrary.getStatementsByPOValue(model, "common:type.object.type", "common:thing.bankcard")).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
                 bankCards.retainAll(things);
                 aCase.setBankCards(jenaLibrary.getStringValuesByBatchSP(model, bankCards, "common:thing.bankcard.bankCardId"));
 

@@ -46,7 +46,7 @@ public class BiluController {
 
             //bilu tags
             val entities = Lists.newArrayList(tdbJenaLibrary.getStatementsBySP(model, bilu_subject, "gongan:gongan.bilu.entity")).stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
-            val persons = Lists.newArrayList(tdbJenaLibrary.getStatementsByPO(model, "common:type.object.type", "common:person.person")).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+            val persons = Lists.newArrayList(tdbJenaLibrary.getStatementsByPOValue(model, "common:type.object.type", "common:person.person")).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
             // join entities.o and person.s to get all persons
             persons.retainAll(entities);
 

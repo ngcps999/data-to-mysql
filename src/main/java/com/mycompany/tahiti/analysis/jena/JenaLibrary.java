@@ -20,7 +20,7 @@ public interface JenaLibrary {
     Iterator<Statement> getStatementsById(Model model, String id);
     Iterator<Statement> getStatementsBySP(Model model, Resource resource, String property);
     Iterator<Statement> getStatementsByBatchSP(Model model, List<String> subjects, String property_str);
-    Iterator<Statement> getStatementsByPO(Model model, String property, String value);
+    Iterator<Statement> getStatementsByPOValue(Model model, String property, String value);
     Iterator<Statement> getStatementsByPO(Model model, String property, Resource object);
     Iterator<Statement> getStatementsByBatchPO(Model model, String property, List<String> objects);
 
