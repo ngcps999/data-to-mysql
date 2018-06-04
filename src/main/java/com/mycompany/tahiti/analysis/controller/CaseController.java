@@ -2,10 +2,10 @@ package com.mycompany.tahiti.analysis.controller;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.mycompany.tahiti.analysis.Repository.Bilu;
-import com.mycompany.tahiti.analysis.Repository.Case;
-import com.mycompany.tahiti.analysis.Repository.DataFactory;
-import com.mycompany.tahiti.analysis.Repository.Person;
+import com.mycompany.tahiti.analysis.repository.Bilu;
+import com.mycompany.tahiti.analysis.repository.Case;
+import com.mycompany.tahiti.analysis.repository.DataFactory;
+import com.mycompany.tahiti.analysis.repository.Person;
 import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import com.mycompany.tahiti.analysis.model.*;

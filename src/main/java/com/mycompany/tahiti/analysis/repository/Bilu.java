@@ -1,4 +1,4 @@
-package com.mycompany.tahiti.analysis.Repository;
+package com.mycompany.tahiti.analysis.repository;
 
 import lombok.Data;
 

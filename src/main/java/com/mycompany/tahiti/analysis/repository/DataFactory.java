@@ -1,4 +1,4 @@
-package com.mycompany.tahiti.analysis.Repository;
+package com.mycompany.tahiti.analysis.repository;
 
 import com.google.common.collect.Lists;
 import com.mycompany.tahiti.analysis.configuration.Configs;
