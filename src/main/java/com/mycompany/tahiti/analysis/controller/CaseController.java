@@ -101,6 +101,12 @@ public class CaseController {
             richInfo.setCaseType(aCase.getCaseType());
             richInfo.setBiluNumber(aCase.getBilus().size());
 
+            List<String> processedPerson = new ArrayList<>();
+
+            // caused by no-conflation
+            List<String> names = new ArrayList<>();
+            List<String> identities = new ArrayList<>();
+
             for (Bilu bilu : aCase.getBilus()) {
                 // set phones
                 for(String sId : bilu.getPhones().keySet()) {
@@ -120,16 +126,27 @@ public class CaseController {
 
                 // set names, identities, detailedPersons, graph;
                 for (Person personData : bilu.getPersons()) {
+                    if(processedPerson.contains(personData.getSubjectId()))
+                        continue;
+
+                    processedPerson.add(personData.getSubjectId());
+
                     String name = "";
                     if (personData.getName() != null && !personData.getName().isEmpty()) {
                         name = personData.getName();
-                        richInfo.getNames().put(personData.getSubjectId(), new ValueObject(name));
+                        if(!names.contains(name)) {
+                            richInfo.getNames().put(personData.getSubjectId(), new ValueObject(name));
+                            names.add(name);
+                        }
                     }
 
                     String identity = "";
                     if (personData.getIdentity() != null && !personData.getIdentity().isEmpty()) {
                         identity = personData.getIdentity();
-                        richInfo.getIdentities().put(personData.getSubjectId(), new ValueObject(identity));
+                        if(!identities.contains(identity)) {
+                            richInfo.getIdentities().put(personData.getSubjectId(), new ValueObject(identity));
+                            identities.add(identity);
+                        }
                     }
 
                     String contact = "";
@@ -178,9 +195,11 @@ public class CaseController {
                     richInfo.getGraph().getRelationships().add(edge);
 
                     // find other cased related to this person
-                    for(Case otherCase : personData.getCaseList()) {
-                        if (otherCase.getSubjectId().equals(aCase.getSubjectId()))
+                    for(String otherCaseId : personData.getCaseList()) {
+                        if (otherCaseId.equals(aCase.getCaseId()))
                             continue;
+
+                        Case otherCase = dataFactory.getCases().get(otherCaseId);
 
                         Node caseNode = new Node(otherCase.getSubjectId());
                         caseNode.setProperties(new HashMap<>());

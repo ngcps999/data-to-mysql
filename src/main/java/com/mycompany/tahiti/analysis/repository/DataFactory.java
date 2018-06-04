@@ -18,20 +18,27 @@ public class DataFactory {
     @Autowired
     TdbJenaLibrary jenaLibrary;
 
-    private Map<String, Case> cases = new HashMap<>();
-    private Map<String, Bilu> bilus = new HashMap<>();
-    private Map<String, Person> persons = new HashMap<>();
+    private Map<String, Case> allCases = new HashMap<>();
+    private Map<String, Bilu> allBilus = new HashMap<>();
+    private Map<String, Person> allPersons = new HashMap<>();
 
+    // caseId, Case
     public Map<String, Case> getCases() {
-        return cases;
+        return allCases;
     }
 
-    public Map<String, Bilu> getBilus() { return bilus; }
+    // biluId, Bilu
+    public Map<String, Bilu> getBilus() { return allBilus; }
 
-    public Map<String, Person> getPersons() { return persons;}
+    // subjectId, Person
+    public Map<String, Person> getPersons() { return allPersons;}
 
     public boolean updateCases() {
         try {
+            allCases.clear();
+            allBilus.clear();
+            allPersons.clear();
+
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
             val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
@@ -39,20 +46,7 @@ public class DataFactory {
             while (iterator.hasNext()) {
                 Statement statement = iterator.next();
                 Resource resource = statement.getSubject();
-
-                Case aCase = new Case();
-                getCaseInfo(model, resource, aCase);
-                cases.put(aCase.getCaseId(), aCase);
-                for(Bilu bilu : aCase.getBilus())
-                {
-                    bilus.put(bilu.getBiluId(), bilu);
-                    for(Person person : bilu.getPersons())
-                    {
-                        person.getBiluList().add(bilu);
-                        person.getCaseList().add(aCase);
-                        persons.put(person.getSubjectId(), person);
-                    }
-                }
+                getCaseInfo(model, resource);
             }
         } finally {
             jenaLibrary.closeTransaction();
@@ -61,8 +55,9 @@ public class DataFactory {
         return true;
     }
 
-    public void getCaseInfo(Model model, Resource resource, Case aCase) {
-        aCase.setCaseId(resource.toString());
+    public void getCaseInfo(Model model, Resource resource) {
+        Case aCase = new Case();
+        aCase.setSubjectId(resource.toString());
 
         List<String> csIds = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.id");
         if (csIds.size() > 0)
@@ -104,64 +99,79 @@ public class DataFactory {
 
             List<String> biluConnections = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:common.connection.from", biluResource)).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
             for (String personSubject : persons) {
-                Person person = new Person();
+                if(allPersons.containsKey(personSubject)) {
 
-                person.setSubjectId(personSubject);
-                val pNames = jenaLibrary.getStringValueBySP(model, model.getResource(personSubject), "common:type.object.name");
-                if (pNames.size() > 0)
-                    person.setName(pNames.get(0));
+                    Person person = allPersons.get(personSubject);
+                    person.getCaseList().add(aCase.getCaseId());
+                    person.getBiluList().add(bilu.getBiluId());
 
-                val personIdentities = jenaLibrary.getStatementsBySP(model, model.getResource(personSubject), "common:person.person.identification");
-                if (personIdentities.hasNext()) {
-                    val personIds = jenaLibrary.getStringValueBySP(model, personIdentities.next().getResource(), "common:person.identification.number");
-                    if (personIds.size() > 0)
-                        person.setIdentity(personIds.get(0));
+                    bilu.getPersons().add(person);
                 }
+                else {
+                    Person person = new Person();
 
-                val contactIters = jenaLibrary.getStatementsBySP(model, model.getResource(personSubject), "common:person.person.contact");
-                if (contactIters.hasNext()) {
-                    val contacts = jenaLibrary.getStringValueBySP(model, contactIters.next().getResource(), "common:person.contact.number");
-                    if (contacts.size() > 0)
-                        person.setPhone(contacts.get(0));
+                    person.setSubjectId(personSubject);
+                    val pNames = jenaLibrary.getStringValueBySP(model, model.getResource(personSubject), "common:type.object.name");
+                    if (pNames.size() > 0)
+                        person.setName(pNames.get(0));
+
+                    val personIdentities = jenaLibrary.getStatementsBySP(model, model.getResource(personSubject), "common:person.person.identification");
+                    if (personIdentities.hasNext()) {
+                        val personIds = jenaLibrary.getStringValueBySP(model, personIdentities.next().getResource(), "common:person.identification.number");
+                        if (personIds.size() > 0)
+                            person.setIdentity(personIds.get(0));
+                    }
+
+                    val contactIters = jenaLibrary.getStatementsBySP(model, model.getResource(personSubject), "common:person.person.contact");
+                    if (contactIters.hasNext()) {
+                        val contacts = jenaLibrary.getStringValueBySP(model, contactIters.next().getResource(), "common:person.contact.number");
+                        if (contacts.size() > 0)
+                            person.setPhone(contacts.get(0));
+                    }
+
+                    val birthdays = jenaLibrary.getStringValueBySP(model, model.getResource(personSubject), "common:person.person.birthDate");
+                    if (birthdays.size() > 0)
+                        person.setBirthDay(birthdays.get(0));
+
+                    val genders = jenaLibrary.getStringValueBySP(model, model.getResource(personSubject), "common:person.person.gender");
+                    if (genders.size() > 0) {
+                        if (genders.get(0).toLowerCase().equals("female"))
+                            person.setGender("女");
+                        else if (genders.get(0).toLowerCase().equals("male"))
+                            person.setGender("男");
+                    }
+
+                    // set connection
+                    List<String> connectionVal = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:common.connection.to", model.getResource(personSubject))).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+                    connectionVal.retainAll(biluConnections);
+
+                    String role = "";
+                    for (String connection : connectionVal) {
+                        val connectionType = jenaLibrary.getStringValueBySP(model, model.getResource(connection), "common:common.connection.type");
+
+                        if (connectionType.contains("common:common.connection.BiluEntityXianyiren"))
+                            role += "嫌疑人；";
+                        if (connectionType.contains("common:common.connection.BiluEntityZhengren"))
+                            role += "证人；";
+                        if (connectionType.contains("common:common.connection.BiluEntityBaoanren"))
+                            role += "报案人；";
+                        if (connectionType.contains("common:common.connection.BiluEntityDangshiren"))
+                            role += "当事人；";
+                        if (connectionType.contains("common:common.connection.BiluEntityShouhairen"))
+                            role += "受害人；";
+                    }
+
+                    int roleLength = role.length();
+                    if (roleLength > 0)
+                        bilu.getConnections().put(personSubject, role.substring(0, roleLength - 1));
+
+                    person.getCaseList().add(aCase.getCaseId());
+                    person.getBiluList().add(bilu.getBiluId());
+
+                    allPersons.put(personSubject, person);
+
+                    bilu.getPersons().add(person);
                 }
-
-                val birthdays = jenaLibrary.getStringValueBySP(model, model.getResource(personSubject), "common:person.person.birthDate");
-                if (birthdays.size() > 0)
-                    person.setBirthDay(birthdays.get(0));
-
-                val genders = jenaLibrary.getStringValueBySP(model, model.getResource(personSubject), "common:person.person.gender");
-                if (genders.size() > 0) {
-                    if (genders.get(0).toLowerCase().equals("female"))
-                        person.setGender("女");
-                    else if (genders.get(0).toLowerCase().equals("male"))
-                        person.setGender("男");
-                }
-
-                // set connection
-                List<String> connectionVal = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:common.connection.to", model.getResource(personSubject))).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
-                connectionVal.retainAll(biluConnections);
-
-                String role = "";
-                for (String connection : connectionVal) {
-                    val connectionType = jenaLibrary.getStringValueBySP(model, model.getResource(connection), "common:common.connection.type");
-
-                    if (connectionType.contains("common:common.connection.BiluEntityXianyiren"))
-                        role += "嫌疑人；";
-                    if (connectionType.contains("common:common.connection.BiluEntityZhengren"))
-                        role += "证人；";
-                    if (connectionType.contains("common:common.connection.BiluEntityBaoanren"))
-                        role += "报案人；";
-                    if (connectionType.contains("common:common.connection.BiluEntityDangshiren"))
-                        role += "当事人；";
-                    if (connectionType.contains("common:common.connection.BiluEntityShouhairen"))
-                        role += "受害人；";
-                }
-
-                int roleLength = role.length();
-                if (roleLength > 0)
-                    bilu.getConnections().put(personSubject, role.substring(0, roleLength - 1));
-
-                bilu.getPersons().add(person);
             }
 
             // get all things
@@ -183,7 +193,11 @@ public class DataFactory {
                 if(bankCardNums.size() > 0)
                     bilu.getBankCards().put(bankCard, bankCardNums.get(0));
             }
+
+            allBilus.put(bilu.getBiluId(), bilu);
             aCase.getBilus().add(bilu);
         }
+
+        allCases.put(aCase.getCaseId(), aCase);
     }
 }
