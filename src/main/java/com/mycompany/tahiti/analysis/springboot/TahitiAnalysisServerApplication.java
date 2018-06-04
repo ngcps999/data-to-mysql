@@ -1,5 +1,6 @@
 package com.mycompany.tahiti.analysis.springboot;
 
+import com.mycompany.tahiti.analysis.Repository.DataFactory;
 import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +41,11 @@ public class TahitiAnalysisServerApplication {
                 registry.addMapping("/api/**").allowedOrigins("*").allowedMethods("*");
             }
         };
+    }
+
+    @Bean
+    public DataFactory createDataFactory() {
+        return new DataFactory();
     }
 
     public static void main(String[] args){

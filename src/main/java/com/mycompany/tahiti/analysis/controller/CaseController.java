@@ -2,6 +2,9 @@ package com.mycompany.tahiti.analysis.controller;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.mycompany.tahiti.analysis.Repository.Bilu;
+import com.mycompany.tahiti.analysis.Repository.Case;
+import com.mycompany.tahiti.analysis.Repository.DataFactory;
 import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import com.mycompany.tahiti.analysis.model.*;
@@ -23,6 +26,9 @@ import java.util.stream.Collectors;
 public class CaseController {
     @Autowired
     TdbJenaLibrary jenaLibrary;
+
+    @Autowired
+    DataFactory dataFactory;
 
     List<CaseBaseInfo> caseBaseInfos = new LinkedList<>();
 
@@ -55,7 +61,29 @@ public class CaseController {
 
     @GetMapping
     public List<CaseBaseInfo> getCases() {
-        return getAllCaseBaseInfo();
+        List<CaseBaseInfo> baseInfos = new ArrayList<>();
+        for(String caseId : dataFactory.getCases().keySet())
+        {
+            Case aCase = dataFactory.getCases().get(caseId);
+            CaseBaseInfo baseInfoCase = new CaseBaseInfo();
+            baseInfoCase.setCaseId(aCase.getCaseId());
+            baseInfoCase.setCaseName(aCase.getCaseName());
+            baseInfoCase.setCaseType(aCase.getCaseType());
+            baseInfoCase.setBiluNumber(aCase.getBilus().size());
+
+            for(Bilu bilu : aCase.getBilus())
+            {
+                for(val connection : bilu.getConnections().keySet())
+                {
+                    if(bilu.getConnections().get(connection).contains("嫌疑人")) {
+                        if(dataFactory.getPersons().containsKey(connection)) {
+                            baseInfoCase.getSuspects().add(dataFactory.getPersons().get(connection).getName());
+                        }
+                    }
+                }
+            }
+        }
+        return baseInfos;
     }
 
     @GetMapping("/keyword/{keyword}")
@@ -140,7 +168,7 @@ public class CaseController {
                 List<String> biluConnections = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "common:common.connection.from", bilus)).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
 
                 for (String person : persons) {
-                    Person personModel = new Person();
+                    PersonModel personModel = new PersonModel();
 
                     val names = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:type.object.name");
                     if (names.size() > 0)
@@ -216,10 +244,6 @@ public class CaseController {
 
                     if ((personModel.getIdentity() == null || personModel.getIdentity().isEmpty()) && (personModel.getPhone() == null || personModel.getPhone().isEmpty()))
                         continue;
-
-                    val ids = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:type.object.id");
-                    if (ids.size() > 0)
-                        personModel.setId(ids.get(0));
 
                     val birthdays = jenaLibrary.getStringValueBySP(model, model.getResource(person), "common:person.person.birthDate");
                     if (birthdays.size() > 0)

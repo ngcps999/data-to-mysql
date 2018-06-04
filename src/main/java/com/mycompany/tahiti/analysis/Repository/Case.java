@@ -1,4 +1,4 @@
-package com.mycompany.tahiti.analysis.model;
+package com.mycompany.tahiti.analysis.Repository;
 
 import lombok.Data;
 
@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class CaseBaseInfo {
+public class Case {
+    private String subjectId;
     private String caseId;
     private String caseName;
     private String caseType;
-    private List<String> suspects = new ArrayList<>();
-    private Integer biluNumber;
+    private List<Bilu> bilus = new ArrayList<>();
 }
