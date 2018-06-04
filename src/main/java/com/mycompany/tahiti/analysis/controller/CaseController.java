@@ -162,8 +162,11 @@ public class CaseController {
                         personModel.setBirthDay(personData.getBirthDay());
                         personModel.setIdentity(personData.getIdentity());
                         personModel.setPhone(personData.getPhone());
+
                         if(bilu.getConnections().containsKey(personData.getSubjectId()))
                             personModel.setRole(bilu.getConnections().get(personData.getSubjectId()));
+                        else
+                            personModel.setRole("");
 
                         richInfo.getDetailedPersons().add(personModel);
                     }

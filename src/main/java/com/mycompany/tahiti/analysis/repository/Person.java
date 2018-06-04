@@ -2,8 +2,8 @@ package com.mycompany.tahiti.analysis.repository;
 
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class Person {
@@ -15,8 +15,8 @@ public class Person {
     private String identity;
 
     // caseId
-    private List<String> caseList = new ArrayList<>();
+    private Set<String> caseList = new HashSet<>();
 
     // biluId
-    private List<String> biluList = new ArrayList<>();
+    private Set<String> biluList = new HashSet<>();
 }

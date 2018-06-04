@@ -99,16 +99,13 @@ public class DataFactory {
 
             List<String> biluConnections = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:common.connection.from", biluResource)).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
             for (String personSubject : persons) {
-                if(allPersons.containsKey(personSubject)) {
+                Person person;
 
-                    Person person = allPersons.get(personSubject);
-                    person.getCaseList().add(aCase.getCaseId());
-                    person.getBiluList().add(bilu.getBiluId());
+                if (allPersons.containsKey(personSubject)) {
+                    person = allPersons.get(personSubject);
 
-                    bilu.getPersons().add(person);
-                }
-                else {
-                    Person person = new Person();
+                } else {
+                    person = new Person();
 
                     person.setSubjectId(personSubject);
                     val pNames = jenaLibrary.getStringValueBySP(model, model.getResource(personSubject), "common:type.object.name");
@@ -140,38 +137,39 @@ public class DataFactory {
                         else if (genders.get(0).toLowerCase().equals("male"))
                             person.setGender("男");
                     }
-
-                    // set connection
-                    List<String> connectionVal = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:common.connection.to", model.getResource(personSubject))).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
-                    connectionVal.retainAll(biluConnections);
-
-                    String role = "";
-                    for (String connection : connectionVal) {
-                        val connectionType = jenaLibrary.getStringValueBySP(model, model.getResource(connection), "common:common.connection.type");
-
-                        if (connectionType.contains("common:common.connection.BiluEntityXianyiren"))
-                            role += "嫌疑人；";
-                        if (connectionType.contains("common:common.connection.BiluEntityZhengren"))
-                            role += "证人；";
-                        if (connectionType.contains("common:common.connection.BiluEntityBaoanren"))
-                            role += "报案人；";
-                        if (connectionType.contains("common:common.connection.BiluEntityDangshiren"))
-                            role += "当事人；";
-                        if (connectionType.contains("common:common.connection.BiluEntityShouhairen"))
-                            role += "受害人；";
-                    }
-
-                    int roleLength = role.length();
-                    if (roleLength > 0)
-                        bilu.getConnections().put(personSubject, role.substring(0, roleLength - 1));
-
-                    person.getCaseList().add(aCase.getCaseId());
-                    person.getBiluList().add(bilu.getBiluId());
-
-                    allPersons.put(personSubject, person);
-
-                    bilu.getPersons().add(person);
                 }
+
+                // set connection
+                List<String> connectionVal = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:common.connection.to", model.getResource(personSubject))).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+                connectionVal.retainAll(biluConnections);
+
+                String role = bilu.getConnections().containsKey(personSubject) ? bilu.getConnections().get(personSubject) + "；" : "";
+                for (String connection : connectionVal) {
+                    val connectionType = jenaLibrary.getStringValueBySP(model, model.getResource(connection), "common:common.connection.type");
+
+                    if (connectionType.contains("common:common.connection.BiluEntityXianyiren"))
+                        role += "嫌疑人；";
+                    if (connectionType.contains("common:common.connection.BiluEntityZhengren"))
+                        role += "证人；";
+                    if (connectionType.contains("common:common.connection.BiluEntityBaoanren"))
+                        role += "报案人；";
+                    if (connectionType.contains("common:common.connection.BiluEntityDangshiren"))
+                        role += "当事人；";
+                    if (connectionType.contains("common:common.connection.BiluEntityShouhairen"))
+                        role += "受害人；";
+                }
+
+                int roleLength = role.length();
+                if (roleLength > 0)
+                    bilu.getConnections().put(personSubject, role.substring(0, roleLength - 1));
+
+                person.getCaseList().add(aCase.getCaseId());
+                person.getBiluList().add(bilu.getBiluId());
+
+                allPersons.put(personSubject, person);
+
+                bilu.getPersons().add(person);
+
             }
 
             // get all things
