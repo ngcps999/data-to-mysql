@@ -12,7 +12,7 @@ public class CaseRichInfo extends CaseBaseInfo {
     private List<String> identities;
     private List<String> bankCards;
 
-    private List<Person> detailedPersons = new ArrayList<>();
+    private List<PersonModel> detailedPersons = new ArrayList<>();
     private List<BiluBaseInfo> bilus = new ArrayList<>();
 
     private Graph graph;

@@ -3,8 +3,7 @@ package com.mycompany.tahiti.analysis.model;
 import lombok.Data;
 
 @Data
-public class Person {
-    private String id;
+public class PersonModel {
     private String name;
     private String gender;
     private String phone;

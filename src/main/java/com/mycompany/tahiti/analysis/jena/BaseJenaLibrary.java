@@ -92,7 +92,7 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
-    public Iterator<Statement> getStatementsByPO(Model model, String property, String value)
+    public Iterator<Statement> getStatementsByPOValue(Model model, String property, String value)
     {
         SimpleSelector simpleSelector = new SimpleSelector(null, model.getProperty(property), value);
         return model.listStatements(simpleSelector);
