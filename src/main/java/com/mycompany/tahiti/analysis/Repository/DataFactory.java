@@ -49,6 +49,8 @@ public class DataFactory {
                     bilus.put(bilu.getBiluId(), bilu);
                     for(Person person : bilu.getPersons())
                     {
+                        person.getBiluList().add(bilu);
+                        person.getCaseList().add(aCase);
                         persons.put(person.getSubjectId(), person);
                     }
                 }
