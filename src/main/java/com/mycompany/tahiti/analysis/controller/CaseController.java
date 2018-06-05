@@ -1,5 +1,6 @@
 package com.mycompany.tahiti.analysis.controller;
 
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.mycompany.tahiti.analysis.repository.Bilu;
 import com.mycompany.tahiti.analysis.repository.Case;
@@ -16,6 +17,7 @@ import org.apache.jena.rdf.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,37 +34,69 @@ public class CaseController {
     List<CaseBaseInfo> caseBaseInfos = new LinkedList<>();
 
     public List<CaseBaseInfo> getAllCaseBaseInfo() {
-        if(caseBaseInfos.size() == 0) {
-            for (String caseId : dataFactory.getCases().keySet()) {
-                Case aCase = dataFactory.getCases().get(caseId);
-                CaseBaseInfo baseInfoCase = new CaseBaseInfo();
-                baseInfoCase.setCaseId(aCase.getCaseId());
-                baseInfoCase.setCaseName(aCase.getCaseName());
-                baseInfoCase.setCaseType(aCase.getCaseType());
-                baseInfoCase.setBiluNumber(aCase.getBilus().size());
+        LocalTime time = LocalTime.now();
+        if (caseBaseInfos.size() == 0 || time.getMinute() % 5 == 0) {
+            try {
+                jenaLibrary.openReadTransaction();
+                Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+                val list = new ArrayList<CaseBaseInfo>();
 
-                for (Bilu bilu : aCase.getBilus()) {
-                    for (val connection : bilu.getConnections().keySet()) {
-                        if (bilu.getConnections().get(connection).contains("嫌疑人")) {
-                            if (dataFactory.getPersons().containsKey(connection)) {
-                                Person person = dataFactory.getPersons().get(connection);
-                                if (person.getName() != null && !person.getName().isEmpty())
-                                    baseInfoCase.getSuspects().add(dataFactory.getPersons().get(connection).getName());
-                            }
-                        }
-                    }
+                val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
+
+                while (iterator.hasNext()) {
+                    Statement statement = iterator.next();
+                    Resource resource = statement.getSubject();
+
+                    CaseBaseInfo aCase = new CaseBaseInfo();
+                    getCaseBaseInfo(model, resource, aCase);
+                    list.add(aCase);
                 }
-                caseBaseInfos.add(baseInfoCase);
+                caseBaseInfos = list;
+                return list;
+            } finally {
+                jenaLibrary.closeTransaction();
+            }
+        } else
+            return caseBaseInfos;
+    }
+
+    private void getCaseBaseInfo(Model model, Resource resource, CaseBaseInfo caseBaseInfo) {
+        List<String> ids = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.id");
+        if (ids.size() > 0)
+            caseBaseInfo.setCaseId(ids.get(0));
+
+        List<String> names = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.name");
+        if (names.size() > 0)
+            caseBaseInfo.setCaseName(names.get(0));
+
+        List<String> types = jenaLibrary.getStringValueBySP(model, resource, "gongan:gongan.case.category");
+        if (types.size() > 0)
+            caseBaseInfo.setCaseType(String.join(",", types));
+
+        // count of bilu
+        val biluIter1 = jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu");
+        if (biluIter1.hasNext())
+            caseBaseInfo.setBiluNumber(Iterators.size(biluIter1));
+
+        // set suspect
+        caseBaseInfo.setSuspects(new LinkedList<>());
+
+        val bilus = Lists.newArrayList(jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu")).stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
+        List<String> biluConnections = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "common:common.connection.from", bilus)).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+
+        for (String connection : biluConnections) {
+            List<String> connectTypes = jenaLibrary.getStringValueBySP(model, model.getResource(connection), "common:common.connection.type");
+            if (connectTypes.contains("common:common.connection.BiluEntityXianyiren")) {
+                val toStatements = Lists.newArrayList(jenaLibrary.getStatementsBySP(model, model.getResource(connection), "common:common.connection.to"))
+                        .stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
+                caseBaseInfo.getSuspects().addAll(jenaLibrary.getStringValuesByBatchSP(model, toStatements,"common:type.object.name"));
             }
         }
-        return caseBaseInfos;
     }
 
     @GetMapping("/reset")
-    public boolean reset()
-    {
-        dataFactory.updateCases();
-        return true;
+    public boolean reset() {
+        return dataFactory.clear();
     }
 
     @GetMapping
@@ -91,7 +125,7 @@ public class CaseController {
     @ResponseBody
     @GetMapping("/{caseId}")
     public CaseRichInfo getCaseById(@PathVariable("caseId") String caseId) {
-        Case aCase = dataFactory.getCases().get(caseId);
+        Case aCase = dataFactory.getCaseById(caseId);
 
         CaseRichInfo richInfo = new CaseRichInfo();
 
@@ -193,7 +227,7 @@ public class CaseController {
                     richInfo.getGraph().getEntities().add(pNode);
 
                     Edge edge = new Edge(new Random().nextInt(), aCase.getSubjectId(), personData.getSubjectId());
-                    edge.setChiType("关联人");
+                    edge.setChiType(EdgeType.GuanlianRen.toString());
 
                     richInfo.getGraph().getRelationships().add(edge);
 
@@ -202,7 +236,7 @@ public class CaseController {
                         if (otherCaseId.equals(aCase.getCaseId()))
                             continue;
 
-                        Case otherCase = dataFactory.getCases().get(otherCaseId);
+                        Case otherCase = dataFactory.getCaseById(otherCaseId);
 
                         Node caseNode = new Node(otherCase.getSubjectId());
                         caseNode.setProperties(new HashMap<>());
@@ -212,7 +246,7 @@ public class CaseController {
                         richInfo.getGraph().getEntities().add(caseNode);
 
                         Edge csEdge = new Edge(new Random().nextInt(), personData.getSubjectId(), otherCase.getSubjectId());
-                        csEdge.setChiType("关联案件");
+                        csEdge.setChiType(EdgeType.GuanlianAnjian.toString());
                         richInfo.getGraph().getRelationships().add(csEdge);
                     }
                 }

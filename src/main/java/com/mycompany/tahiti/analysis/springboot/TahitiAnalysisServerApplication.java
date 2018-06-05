@@ -3,7 +3,6 @@ package com.mycompany.tahiti.analysis.springboot;
 import com.mycompany.tahiti.analysis.repository.DataFactory;
 import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -21,9 +20,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @ComponentScan("com.mycompany.tahiti")
 @EnableSwagger2
 public class TahitiAnalysisServerApplication {
-    @Autowired
-    DataFactory dataFactory;
-
     @Bean
     public TdbJenaLibrary createTdbJenaLibrary() {
         //return new MysqlJenaLibrary(Configs.getConfig("jdbcUrl"), Configs.getConfig("mysqlUser"), Configs.getConfig("mysqlPassword"));
@@ -48,8 +44,7 @@ public class TahitiAnalysisServerApplication {
 
     @Bean
     public DataFactory createDataFactory() {
-        dataFactory.updateCases();
-        return dataFactory;
+        return new DataFactory();
     }
 
     public static void main(String[] args){
