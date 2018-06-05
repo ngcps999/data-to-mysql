@@ -163,8 +163,8 @@ public class CaseController {
                         personModel.setIdentity(personData.getIdentity());
                         personModel.setPhone(personData.getPhone());
 
-                        if(bilu.getConnections().containsKey(personData.getSubjectId()))
-                            personModel.setRole(bilu.getConnections().get(personData.getSubjectId()));
+                        if(aCase.getConnections().containsKey(personData.getSubjectId()))
+                            personModel.setRole(aCase.getConnections().get(personData.getSubjectId()));
                         else
                             personModel.setRole("");
 

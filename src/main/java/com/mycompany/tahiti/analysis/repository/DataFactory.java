@@ -138,12 +138,17 @@ public class DataFactory {
                             person.setGender("男");
                     }
                 }
+                person.getCaseList().add(aCase.getCaseId());
+                person.getBiluList().add(bilu.getBiluId());
+
+                allPersons.put(personSubject, person);
+                bilu.getPersons().add(person);
 
                 // set connection
                 List<String> connectionVal = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "common:common.connection.to", model.getResource(personSubject))).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
                 connectionVal.retainAll(biluConnections);
 
-                String role = bilu.getConnections().containsKey(personSubject) ? bilu.getConnections().get(personSubject) + "；" : "";
+                String role = "";
                 for (String connection : connectionVal) {
                     val connectionType = jenaLibrary.getStringValueBySP(model, model.getResource(connection), "common:common.connection.type");
 
@@ -160,16 +165,15 @@ public class DataFactory {
                 }
 
                 int roleLength = role.length();
-                if (roleLength > 0)
+                if (roleLength > 0) {
                     bilu.getConnections().put(personSubject, role.substring(0, roleLength - 1));
 
-                person.getCaseList().add(aCase.getCaseId());
-                person.getBiluList().add(bilu.getBiluId());
-
-                allPersons.put(personSubject, person);
-
-                bilu.getPersons().add(person);
-
+                    if (!aCase.getConnections().containsKey(personSubject)) {
+                        aCase.getConnections().put(personSubject, role.substring(0, roleLength - 1));
+                    } else {
+                        aCase.getConnections().put(personSubject, role + aCase.getConnections().get(personSubject));
+                    }
+                }
             }
 
             // get all things
