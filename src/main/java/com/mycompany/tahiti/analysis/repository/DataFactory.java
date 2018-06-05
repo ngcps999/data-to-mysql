@@ -20,6 +20,17 @@ public class DataFactory {
     TdbJenaLibrary jenaLibrary;
 
     // This is only for cache, not full data
+    //For BI overall
+    private Integer personCountCache = null;
+    private Integer biluCountCache = null;
+    private Integer caseCountCache = null;
+
+    //subjectId, personBiluCount
+    private Map<String,Integer> personBiluCount = null;
+
+    //tag, tagBiluCount
+    private Map<String,Integer> tagBiluCount = null;
+
     // caseId, Case
     private Map<String, Case> caseCache = new HashMap<>();
 
@@ -41,6 +52,100 @@ public class DataFactory {
         getAllCaseBaseInfo();
         return true;
     }
+
+    public Integer getPersonCount(){
+        if(personCountCache != null) return personCountCache;
+        try{
+            jenaLibrary.openReadTransaction();
+            Integer personCount;
+            Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+            Iterator<Statement> iter = jenaLibrary.getStatementsByEntityType(model,"common:person.person");
+            int count = org.apache.jena.ext.com.google.common.collect.Iterators.size(iter);
+            personCount = new Integer(count);
+            return personCount;
+        } finally {
+            jenaLibrary.closeTransaction();
+        }
+    }
+
+    public Integer getBiluCount(){
+        if(biluCountCache != null) return biluCountCache;
+        try{
+            jenaLibrary.openReadTransaction();
+            Integer biluCount;
+            Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+            Iterator<Statement> iter = jenaLibrary.getStatementsByEntityType(model,"gongan:gongan.bilu");
+            int count = org.apache.jena.ext.com.google.common.collect.Iterators.size(iter);
+            biluCount = new Integer(count);
+            return biluCount;
+        } finally {
+            jenaLibrary.closeTransaction();
+        }
+    }
+
+    public Integer getCaseCount(){
+        if(caseCountCache != null) return caseCountCache;
+        try{
+            jenaLibrary.openReadTransaction();
+            Integer caseCount;
+            Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+            Iterator<Statement> iter = jenaLibrary.getStatementsByEntityType(model,"gongan:gongan.case");
+            int count = org.apache.jena.ext.com.google.common.collect.Iterators.size(iter);
+            caseCount = new Integer(count);
+            return caseCount;
+        } finally {
+            jenaLibrary.closeTransaction();
+        }
+    }
+
+    public Map<String,Integer> getTagBiluCount(){
+        if(tagBiluCount!=null)return tagBiluCount;
+        try{
+            jenaLibrary.openReadTransaction();
+            Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+            Iterator<Statement> iterator_tag = jenaLibrary.getStatementsBySP(model,null,"common:type.object.tag");
+            Map<String,Integer> map = new HashMap();
+            iteratorObjectToMap(iterator_tag,map);
+            return map;
+        }finally {
+            jenaLibrary.closeTransaction();
+        }
+    }
+
+    public Map<String,Integer> getPersonBiluCount(){
+        if(personBiluCount!=null)return personBiluCount;
+        try{
+            jenaLibrary.openReadTransaction();
+            Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+            Iterator<Statement> iterator = jenaLibrary.getStatementsByEntityType(model,"common:person.person");
+            List<String> resourceList = new ArrayList<>();
+            while (iterator.hasNext()){
+                resourceList.add(iterator.next().getSubject().toString());
+            }
+
+            Map<String,Integer> map = new HashMap();
+            Iterator<Statement> iterator_names = jenaLibrary.getStatementsByBatchSP(model,resourceList,"common:type.object.name");
+            iteratorObjectToMap(iterator_names,map);
+            return map;
+        }finally {
+            jenaLibrary.closeTransaction();
+        }
+    }
+
+    public void iteratorObjectToMap(Iterator<Statement> iterator, Map<String,Integer> map){
+        while (iterator.hasNext()){
+            Statement statement = iterator.next();
+            String object = statement.getObject().toString();
+            if(map.keySet().contains(object)){
+                map.put(object,map.get(object)+1);
+            }else{
+                map.put(object,1);
+            }
+        }
+    }
+
+
+
 
     public Case getCaseById(String caseId) {
         if (caseCache.containsKey(caseId))
