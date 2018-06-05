@@ -1,11 +1,7 @@
 package com.mycompany.tahiti.analysis.controller;
 
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.mycompany.tahiti.analysis.repository.Bilu;
-import com.mycompany.tahiti.analysis.repository.Case;
-import com.mycompany.tahiti.analysis.repository.DataFactory;
-import com.mycompany.tahiti.analysis.repository.Person;
+import com.mycompany.tahiti.analysis.repository.*;
 import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import com.mycompany.tahiti.analysis.model.*;
@@ -17,7 +13,6 @@ import org.apache.jena.rdf.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,69 +26,6 @@ public class CaseController {
     @Autowired
     DataFactory dataFactory;
 
-    List<CaseBaseInfo> caseBaseInfos = new LinkedList<>();
-
-    public List<CaseBaseInfo> getAllCaseBaseInfo() {
-        LocalTime time = LocalTime.now();
-        if (caseBaseInfos.size() == 0 || time.getMinute() % 5 == 0) {
-            try {
-                jenaLibrary.openReadTransaction();
-                Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
-                val list = new ArrayList<CaseBaseInfo>();
-
-                val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
-
-                while (iterator.hasNext()) {
-                    Statement statement = iterator.next();
-                    Resource resource = statement.getSubject();
-
-                    CaseBaseInfo aCase = new CaseBaseInfo();
-                    getCaseBaseInfo(model, resource, aCase);
-                    list.add(aCase);
-                }
-                caseBaseInfos = list;
-                return list;
-            } finally {
-                jenaLibrary.closeTransaction();
-            }
-        } else
-            return caseBaseInfos;
-    }
-
-    private void getCaseBaseInfo(Model model, Resource resource, CaseBaseInfo caseBaseInfo) {
-        List<String> ids = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.id");
-        if (ids.size() > 0)
-            caseBaseInfo.setCaseId(ids.get(0));
-
-        List<String> names = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.name");
-        if (names.size() > 0)
-            caseBaseInfo.setCaseName(names.get(0));
-
-        List<String> types = jenaLibrary.getStringValueBySP(model, resource, "gongan:gongan.case.category");
-        if (types.size() > 0)
-            caseBaseInfo.setCaseType(String.join(",", types));
-
-        // count of bilu
-        val biluIter1 = jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu");
-        if (biluIter1.hasNext())
-            caseBaseInfo.setBiluNumber(Iterators.size(biluIter1));
-
-        // set suspect
-        caseBaseInfo.setSuspects(new LinkedList<>());
-
-        val bilus = Lists.newArrayList(jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu")).stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
-        List<String> biluConnections = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "common:common.connection.from", bilus)).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
-
-        for (String connection : biluConnections) {
-            List<String> connectTypes = jenaLibrary.getStringValueBySP(model, model.getResource(connection), "common:common.connection.type");
-            if (connectTypes.contains("common:common.connection.BiluEntityXianyiren")) {
-                val toStatements = Lists.newArrayList(jenaLibrary.getStatementsBySP(model, model.getResource(connection), "common:common.connection.to"))
-                        .stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
-                caseBaseInfo.getSuspects().addAll(jenaLibrary.getStringValuesByBatchSP(model, toStatements,"common:type.object.name"));
-            }
-        }
-    }
-
     @GetMapping("/reset")
     public boolean reset() {
         return dataFactory.clear();
@@ -101,12 +33,12 @@ public class CaseController {
 
     @GetMapping
     public List<CaseBaseInfo> getCases() {
-        return getAllCaseBaseInfo();
+        return dataFactory.getAllCaseBaseInfo();
     }
 
     @GetMapping("/keyword/{keyword}")
     public List<CaseBaseInfo> searchCases(@PathVariable("keyword") String keyword) {
-        List<CaseBaseInfo> allCases = getAllCaseBaseInfo();
+        List<CaseBaseInfo> allCases = dataFactory.getAllCaseBaseInfo();
 
         keyword = keyword.trim();
 

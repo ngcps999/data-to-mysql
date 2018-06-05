@@ -1,5 +1,6 @@
 package com.mycompany.tahiti.analysis.model;
 
+import com.mycompany.tahiti.analysis.repository.CaseBaseInfo;
 import lombok.Data;
 
 import java.util.ArrayList;
