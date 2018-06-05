@@ -1,32 +1,18 @@
 package com.mycompany.tahiti.analysis.controller;
 
-import com.google.common.collect.Lists;
-import com.mycompany.tahiti.analysis.configuration.Configs;
-import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
-import com.mycompany.tahiti.analysis.model.CaseBaseInfo;
-import com.mycompany.tahiti.analysis.model.Graph;
 import com.mycompany.tahiti.analysis.model.PersonRichInfo;
-import com.mycompany.tahiti.analysis.repository.Bilu;
-import com.mycompany.tahiti.analysis.repository.Case;
-import com.mycompany.tahiti.analysis.repository.DataFactory;
-import com.mycompany.tahiti.analysis.repository.Person;
+import com.mycompany.tahiti.analysis.repository.*;
 import io.swagger.annotations.Api;
-import lombok.val;
-import org.apache.jena.rdf.model.Model;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/person")
 @Api(description = "Person controller")
 public class PersonController {
-    @Autowired
-    TdbJenaLibrary jenaLibrary;
-
     @Autowired
     DataFactory dataFactory;
 
@@ -34,7 +20,7 @@ public class PersonController {
     @GetMapping("/{subjectId}")
     public PersonRichInfo getPersonDetail(@RequestParam("subjectId") String subjectId,@RequestParam("minSameCaseNum") Integer minSameCaseNum) {
         PersonRichInfo personRichInfo = new PersonRichInfo();
-        Person person = dataFactory.getPersons().get(subjectId);
+        Person person = dataFactory.getPersonById(subjectId);
         personRichInfo.setSubjectId(subjectId);
         personRichInfo.setName(person.getName());
         personRichInfo.setBirthDay(person.getBirthDay());
@@ -47,9 +33,8 @@ public class PersonController {
         personRichInfo.setInvolvedCases(involvedCases);
         personRichInfo.setSameCasePersonList(sameCasePersonListFinal);
 
-        //person.getCasesList rewrite
         for(String caseId:person.getCaseList()){
-            Case aCase = dataFactory.getCases().get(caseId);
+            Case aCase = dataFactory.getCaseById(caseId);
             PersonRichInfo.InvolvedCaseWithRole involvedCaseWithRole = personRichInfo.new InvolvedCaseWithRole();
             involvedCaseWithRole.setCaseId(aCase.getCaseId());
             involvedCaseWithRole.setCaseName(aCase.getCaseName());
@@ -98,30 +83,5 @@ public class PersonController {
             if(sameCasePerson.getSameCases().size()>=minSameCaseNum)sameCasePersonListFinal.add(sameCasePerson);
         }
         return personRichInfo;
-    }
-
-    @ResponseBody
-    @GetMapping("/peoplesConnections")
-    public Graph getDangerousPeoplesConnections(@RequestParam("minPeopleNum") Integer minSameCaseNum) {
-        Graph graph = new Graph();
-        //Get all basic preson info and case count
-
-        //Select top Node
-        //Calculate Edge
-        return graph;
-    }
-
-    public List<Person> getPersons(){
-        try {
-            jenaLibrary.openReadTransaction();
-            Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
-
-            List<Person> personList = new ArrayList<>();
-            val persons = Lists.newArrayList(jenaLibrary.getStatementsByPOValue(model, "common:type.object.type", "common:person.person")).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
-
-            return personList;
-        }finally {
-            jenaLibrary.closeTransaction();
-        }
     }
 }

@@ -1,5 +1,6 @@
 package com.mycompany.tahiti.analysis.model;
 
+import com.mycompany.tahiti.analysis.repository.CaseBaseInfo;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ public class PersonRichInfo extends PersonModel{
     List<SameCasePerson> sameCasePersonList = new ArrayList<>();
 
     @Data
-    public class InvolvedCaseWithRole extends CaseBaseInfo{
+    public class InvolvedCaseWithRole extends CaseBaseInfo {
         String role;
     }
 
