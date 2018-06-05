@@ -2,7 +2,6 @@ package com.mycompany.tahiti.analysis.model;
 
 public enum NodeType {
 
-    //drugs
     Case("案件"),
     Person("人"),
     Identity("身份证");

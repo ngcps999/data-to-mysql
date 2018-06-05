@@ -48,7 +48,7 @@ public class TahitiAnalysisServerApplication {
 
     @Bean
     public DataFactory createDataFactory() {
-        dataFactory.updateCases();
+        dataFactory.getAllCaseBaseInfo();
         return dataFactory;
     }
 

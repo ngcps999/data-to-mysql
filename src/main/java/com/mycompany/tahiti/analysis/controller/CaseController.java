@@ -1,10 +1,7 @@
 package com.mycompany.tahiti.analysis.controller;
 
 import com.google.common.collect.Lists;
-import com.mycompany.tahiti.analysis.repository.Bilu;
-import com.mycompany.tahiti.analysis.repository.Case;
-import com.mycompany.tahiti.analysis.repository.DataFactory;
-import com.mycompany.tahiti.analysis.repository.Person;
+import com.mycompany.tahiti.analysis.repository.*;
 import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import com.mycompany.tahiti.analysis.model.*;
@@ -29,50 +26,19 @@ public class CaseController {
     @Autowired
     DataFactory dataFactory;
 
-    List<CaseBaseInfo> caseBaseInfos = new LinkedList<>();
-
-    public List<CaseBaseInfo> getAllCaseBaseInfo() {
-        if(caseBaseInfos.size() == 0) {
-            for (String caseId : dataFactory.getCases().keySet()) {
-                Case aCase = dataFactory.getCases().get(caseId);
-                CaseBaseInfo baseInfoCase = new CaseBaseInfo();
-                baseInfoCase.setCaseId(aCase.getCaseId());
-                baseInfoCase.setCaseName(aCase.getCaseName());
-                baseInfoCase.setCaseType(aCase.getCaseType());
-                baseInfoCase.setBiluNumber(aCase.getBilus().size());
-
-                for (Bilu bilu : aCase.getBilus()) {
-                    for (val connection : bilu.getConnections().keySet()) {
-                        if (bilu.getConnections().get(connection).contains("嫌疑人")) {
-                            if (dataFactory.getPersons().containsKey(connection)) {
-                                Person person = dataFactory.getPersons().get(connection);
-                                if (person.getName() != null && !person.getName().isEmpty())
-                                    baseInfoCase.getSuspects().add(dataFactory.getPersons().get(connection).getName());
-                            }
-                        }
-                    }
-                }
-                caseBaseInfos.add(baseInfoCase);
-            }
-        }
-        return caseBaseInfos;
-    }
-
     @GetMapping("/reset")
-    public boolean reset()
-    {
-        dataFactory.updateCases();
-        return true;
+    public boolean reset() {
+        return dataFactory.clear();
     }
 
     @GetMapping
     public List<CaseBaseInfo> getCases() {
-        return getAllCaseBaseInfo();
+        return dataFactory.getAllCaseBaseInfo();
     }
 
     @GetMapping("/keyword/{keyword}")
     public List<CaseBaseInfo> searchCases(@PathVariable("keyword") String keyword) {
-        List<CaseBaseInfo> allCases = getAllCaseBaseInfo();
+        List<CaseBaseInfo> allCases = dataFactory.getAllCaseBaseInfo();
 
         keyword = keyword.trim();
 
@@ -91,7 +57,7 @@ public class CaseController {
     @ResponseBody
     @GetMapping("/{caseId}")
     public CaseRichInfo getCaseById(@PathVariable("caseId") String caseId) {
-        Case aCase = dataFactory.getCases().get(caseId);
+        Case aCase = dataFactory.getCaseById(caseId);
 
         CaseRichInfo richInfo = new CaseRichInfo();
 
@@ -193,7 +159,7 @@ public class CaseController {
                     richInfo.getGraph().getEntities().add(pNode);
 
                     Edge edge = new Edge(new Random().nextInt(), aCase.getSubjectId(), personData.getSubjectId());
-                    edge.setChiType("关联人");
+                    edge.setChiType(EdgeType.GuanlianRen.toString());
 
                     richInfo.getGraph().getRelationships().add(edge);
 
@@ -202,7 +168,7 @@ public class CaseController {
                         if (otherCaseId.equals(aCase.getCaseId()))
                             continue;
 
-                        Case otherCase = dataFactory.getCases().get(otherCaseId);
+                        Case otherCase = dataFactory.getCaseById(otherCaseId);
 
                         Node caseNode = new Node(otherCase.getSubjectId());
                         caseNode.setProperties(new HashMap<>());
@@ -212,7 +178,7 @@ public class CaseController {
                         richInfo.getGraph().getEntities().add(caseNode);
 
                         Edge csEdge = new Edge(new Random().nextInt(), personData.getSubjectId(), otherCase.getSubjectId());
-                        csEdge.setChiType("关联案件");
+                        csEdge.setChiType(EdgeType.GuanlianAnjian.toString());
                         richInfo.getGraph().getRelationships().add(csEdge);
                     }
                 }

@@ -9,6 +9,15 @@ import java.util.Map;
 
 @Data
 public class Case {
+
+    public void SetBy(CaseBaseInfo simpleCase)
+    {
+        setSubjectId(simpleCase.getSubjectId());
+        setCaseId(simpleCase.getCaseId());
+        setCaseName(simpleCase.getCaseName());
+        setCaseType(simpleCase.getCaseType());
+    }
+
     private String subjectId;
     private String caseId;
     private String caseName;
