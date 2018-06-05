@@ -17,11 +17,10 @@ public class PersonRichInfo extends PersonModel{
 
     @Data
     public class SameCasePerson extends PersonModel{
-        int sameCasesCount;
         List<CaseBaseInfo> sameCases;
 
         public boolean equals(Object obj){
-            if(this.getIdentity().equals(((SameCasePerson)obj).getIdentity())||this.getName().equals(((SameCasePerson)obj).getName())){
+            if(this.getIdentity()!=null&&((SameCasePerson)obj).getIdentity()!=null&&this.getIdentity().equals(((SameCasePerson)obj).getIdentity())||this.getName()!=null&&((SameCasePerson)obj).getName()!=null&&this.getName().equals(((SameCasePerson)obj).getName())){
                 return true;
             }
             return false;
