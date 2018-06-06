@@ -45,8 +45,7 @@ spec:
           mountPath: /app/tdb_folder
           subPath: development-env
         args:
-          - --tdbName=/app/tdb_folder
-          - --jenaModelName=biluProd
+          - --spring.profiles.active=fusekiProd
       volumes:
         - name: tahiti-tdb-data
           persistentVolumeClaim:

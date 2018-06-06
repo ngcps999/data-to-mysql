@@ -1,7 +1,7 @@
 package com.mycompany.tahiti.analysis.controller;
 
-import com.mycompany.tahiti.analysis.configuration.Configs;
-import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
+import com.mycompany.tahiti.analysis.jena.BaseJenaLibrary;
+import com.mycompany.tahiti.analysis.jena.JenaLibrary;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.*;
 public class ConfigurationController {
 
     @Autowired
-    TdbJenaLibrary tdbJenaLibrary;
+    JenaLibrary jenaLibrary;
     @GetMapping("/updateJenaModelName/{jenaModelName}")
     public void updateJenaModelName(@PathVariable("jenaModelName") String jenaModelName) {
-        Configs.addConfig("jenaModelName", jenaModelName);
-        tdbJenaLibrary.closeDB();
-        tdbJenaLibrary.dataset = tdbJenaLibrary.createDataset(Configs.getConfig("tdbName"));
+        if(jenaLibrary instanceof BaseJenaLibrary) {
+            ((BaseJenaLibrary) jenaLibrary).setModelName(jenaModelName);
+        }
     }
 }

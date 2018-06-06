@@ -26,7 +26,8 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
     /**
      * 建立TDB数据文件夹；
      */
-    public TdbJenaLibrary(String tdbName) {
+    public TdbJenaLibrary(String tdbName, boolean jenaDropExistModel, String modelName) {
+        super(jenaDropExistModel, modelName);
         dataset = createDataset(tdbName);
     }
 
@@ -35,13 +36,6 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
     }
 
     @Override
-    public void clearDB() {
-        for(val modelName: listModels()) {
-            dataset.removeNamedModel(modelName);
-            dataset.commit();
-        }
-    }
-
     public void openReadTransaction(){
         try {
             writeLock.lock();
@@ -68,6 +62,7 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
 
     }
 
+    @Override
     public void closeTransaction(){
         try {
             dataset.end();
@@ -101,38 +96,6 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
     }
 
     /**
-     * 判断Dataset中是否存在model；
-     */
-    public boolean findModel(String modelName) {
-        boolean result;
-        try {
-            if (dataset.containsNamedModel(modelName))
-                result = true;
-            else
-                result = false;
-        } finally {
-        }
-        return result;
-    }
-
-    /**
-     * 列出Dataset中所有model；
-     */
-    public List<String> listModels() {
-        List<String> uriList = new ArrayList<>();
-        try {
-            Iterator<String> names = dataset.listNames();
-            String name;
-            while (names.hasNext()) {
-                name = names.next();
-                uriList.add(name);
-            }
-        } finally {
-        }
-        return uriList;
-    }
-
-    /**
      * 获得Dataset中某个model；
      */
     @Override
@@ -156,5 +119,30 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
         } finally {
         }
         return model;
+    }
+
+    @Override
+    public void persist(List<Statement> statements, String modelName)
+    {
+        if(jenaDropExistModel) {
+            removeModel(modelName);
+        }
+        //val writeLock = readWriteLock.writeLock();
+        try {
+            //writeLock.lock();
+            Model model;
+            if (modelName == null) {
+                model = getDefaultModel();
+            } else {
+                model = getModel(modelName);
+            }
+            model.begin();
+            for(val statement: statements) {
+                model.add(statement);
+            }
+            model.commit();
+        } finally {
+            //writeLock.unlock();
+        }
     }
 }
