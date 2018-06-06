@@ -9,9 +9,9 @@ import java.util.List;
 
 public interface JenaLibrary {
     Model getModel(String modelName);
+    Model getRuntimeModel();
     Model getDefaultModel();
     void removeModel(String modelName);
-    void clearDB();
     void closeDB();
 
     // read
@@ -35,4 +35,6 @@ public interface JenaLibrary {
 
     // write
     void persist(List<Statement> statement, String modelName);
+    void openReadTransaction();
+    void closeTransaction();
 }

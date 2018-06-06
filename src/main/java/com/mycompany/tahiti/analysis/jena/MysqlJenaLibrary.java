@@ -1,6 +1,5 @@
 package com.mycompany.tahiti.analysis.jena;
 
-import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.utils.Utility;
 import lombok.val;
 import org.apache.jena.rdf.model.*;
@@ -15,10 +14,6 @@ import org.apache.jena.sdb.util.StoreUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -31,7 +26,8 @@ public class MysqlJenaLibrary extends BaseJenaLibrary{
     /**
      * 以数据库连接初始化Store
      */
-    public MysqlJenaLibrary(String jdbcUrl, String user, String pw) {
+    public MysqlJenaLibrary(String jdbcUrl, String user, String pw, boolean jenaDropExistModel, String modelName) {
+        super(jenaDropExistModel, modelName);
         StoreDesc desc = new StoreDesc(LayoutType.LayoutTripleNodesHash, DatabaseType.MySQL);
         // 加载mysql驱动
         JDBC.loadDriverMySQL();
@@ -44,7 +40,8 @@ public class MysqlJenaLibrary extends BaseJenaLibrary{
     /**
      * 以配置文件初始化Store
      */
-    public MysqlJenaLibrary(String configFilePath) {
+    public MysqlJenaLibrary(String configFilePath, boolean jenaDropExistModel, String modelName) {
+        super(jenaDropExistModel, modelName);
         this.store = SDBFactory.connectStore(Utility.getResourcePath(configFilePath));
         initDB();
         logger.info("initialize store using config file from " + configFilePath);

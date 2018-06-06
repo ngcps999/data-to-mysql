@@ -8,7 +8,7 @@ import org.junit.Test;
 public class TestReadTdbJena {
     @Test
     public void testReadTdbJena() {
-        TdbJenaLibrary tdbJenaLibrary = new TdbJenaLibrary("src/main/resources/TDB");
+        TdbJenaLibrary tdbJenaLibrary = new TdbJenaLibrary("src/main/resources/TDB", false, "biluDev");
         tdbJenaLibrary.openReadTransaction();
         Model model = tdbJenaLibrary.getModel("biluProd");
         val iter = model.listStatements(null, model.getProperty("gongan:gongan.case.bilu"), (RDFNode) null);

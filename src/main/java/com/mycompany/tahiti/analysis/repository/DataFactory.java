@@ -2,8 +2,7 @@ package com.mycompany.tahiti.analysis.repository;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.mycompany.tahiti.analysis.configuration.Configs;
-import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
+import com.mycompany.tahiti.analysis.jena.JenaLibrary;
 import lombok.val;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -17,7 +16,7 @@ import java.util.stream.Collectors;
 @Repository
 public class DataFactory {
     @Autowired
-    TdbJenaLibrary jenaLibrary;
+    JenaLibrary jenaLibrary;
 
     // This is only for cache, not full data
     //For BI overall
@@ -58,7 +57,7 @@ public class DataFactory {
         try{
             jenaLibrary.openReadTransaction();
             Integer personCount;
-            Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+            Model model = jenaLibrary.getRuntimeModel();
             Iterator<Statement> iter = jenaLibrary.getStatementsByEntityType(model,"common:person.person");
             int count = org.apache.jena.ext.com.google.common.collect.Iterators.size(iter);
             personCount = new Integer(count);
@@ -88,7 +87,7 @@ public class DataFactory {
         if(tagBiluCount!=null)return tagBiluCount;
         try{
             jenaLibrary.openReadTransaction();
-            Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+            Model model = jenaLibrary.getRuntimeModel();
             Iterator<Statement> iterator_tag = jenaLibrary.getStatementsBySP(model,null,"common:type.object.tag");
             Map<String,Integer> map = new HashMap();
             iteratorObjectToMap(iterator_tag,map);
@@ -103,7 +102,7 @@ public class DataFactory {
         if(personBiluCount!=null)return personBiluCount;
         try{
             jenaLibrary.openReadTransaction();
-            Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+            Model model = jenaLibrary.getRuntimeModel();
             Iterator<Statement> iterator = jenaLibrary.getStatementsByEntityType(model,"common:person.person");
             List<String> resourceList = new ArrayList<>();
             while (iterator.hasNext()){
@@ -141,7 +140,7 @@ public class DataFactory {
         else {
             try {
                 jenaLibrary.openReadTransaction();
-                Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+                Model model = jenaLibrary.getRuntimeModel();
                 val iterator = jenaLibrary.getStatementsById(model, caseId);
 
                 if (iterator.hasNext()) {
@@ -165,7 +164,7 @@ public class DataFactory {
         else {
             try {
                 jenaLibrary.openReadTransaction();
-                Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+                Model model = jenaLibrary.getRuntimeModel();
                 val iterator = jenaLibrary.getStatementsById(model, biluId);
 
                 if (iterator.hasNext()) {
@@ -189,7 +188,7 @@ public class DataFactory {
         else {
             try {
                 jenaLibrary.openReadTransaction();
-                Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+                Model model = jenaLibrary.getRuntimeModel();
 
                 Person person = getPersonInfo(model, model.getResource(pSubjectId));
                 personCache.put(pSubjectId, person);
@@ -381,7 +380,7 @@ public class DataFactory {
         else {
             try {
                 jenaLibrary.openReadTransaction();
-                Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+                Model model = jenaLibrary.getRuntimeModel();
 
                 val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
 
