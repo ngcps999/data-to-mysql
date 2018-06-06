@@ -1,7 +1,10 @@
 package com.mycompany.tahiti.analysis.springboot;
 
+import com.mycompany.tahiti.analysis.fusion.FusionEngine;
+import com.mycompany.tahiti.analysis.jena.JenaLibrary;
 import com.mycompany.tahiti.analysis.repository.DataFactory;
-import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
+import lombok.val;
+import org.apache.jena.rdf.model.Model;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -23,9 +26,11 @@ public class TahitiAnalysisServerApplication {
     @Autowired
     DataFactory dataFactory;
 
-    public TahitiAnalysisServerApplication(@Value("${jenaModelName}") String jenaModelName){
-        //Configs.addConfig("jenaModelName", jenaModelName);
-    }
+    @Autowired
+    JenaLibrary jenaLibrary;
+
+    @Value("${engine.enable-fusion}") String enableFusion;
+    @Value("${engine.modelName}") String newModelName;
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
@@ -44,6 +49,14 @@ public class TahitiAnalysisServerApplication {
     }
 
     public static void main(String[] args){
-        SpringApplication.run(TahitiAnalysisServerApplication.class,args);
+        val context = SpringApplication.run(TahitiAnalysisServerApplication.class,args);
+        val app = context.getBean(TahitiAnalysisServerApplication.class);
+        if(app.enableFusion.trim().toLowerCase().equals("true")){
+            FusionEngine fusionEngine = new FusionEngine();
+            Model model = fusionEngine.GenerateFusionModel(app.newModelName);
+
+            app.jenaLibrary.saveModel(model, app.newModelName);
+            app.jenaLibrary.updateRuntimeModelName(app.newModelName);
+        }
     }
 }

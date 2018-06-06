@@ -2,6 +2,8 @@ package com.mycompany.tahiti.analysis.jena;
 
 import lombok.Data;
 import lombok.val;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.*;
 
 import java.util.Iterator;
@@ -38,6 +40,15 @@ public class BaseJenaLibrary implements JenaLibrary{
 
     }
 
+    @Override
+    public void saveModel(Model newModel, String newModelName) {
+        newModel.commit(); // ????
+    }
+
+    @Override
+    public void updateRuntimeModelName(String newModelName){
+        modelName = newModelName;
+    }
 
     @Override
     public void closeDB() {

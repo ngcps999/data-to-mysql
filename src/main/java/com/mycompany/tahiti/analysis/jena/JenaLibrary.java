@@ -37,4 +37,8 @@ public interface JenaLibrary {
     void persist(List<Statement> statement, String modelName);
     void openReadTransaction();
     void closeTransaction();
+
+    void saveModel(Model newModel, String newModelName);
+    void updateRuntimeModelName(String newModelName);
+
 }

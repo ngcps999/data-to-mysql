@@ -2,3 +2,7 @@ server:
   port: 9876
   servlet:
     context-path: /api
+
+engine:
+  enable-fusion: true
+  modelName: biluFusion
