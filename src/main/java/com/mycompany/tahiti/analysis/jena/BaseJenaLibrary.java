@@ -1,6 +1,6 @@
 package com.mycompany.tahiti.analysis.jena;
 
-import com.mycompany.tahiti.analysis.configuration.Configs;
+import lombok.Data;
 import lombok.val;
 import org.apache.jena.rdf.model.*;
 
@@ -10,10 +10,27 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@Data
 public class BaseJenaLibrary implements JenaLibrary{
+    protected boolean jenaDropExistModel = false;
+    protected String modelName;
+    public BaseJenaLibrary(boolean jenaDropExistModel, String modelName) {
+        this.jenaDropExistModel = jenaDropExistModel;
+        this.modelName = modelName;
+    }
     @Override
     public Model getModel(String modelName) {
         return null;
+    }
+
+    @Override
+    public Model getRuntimeModel() {
+        return getModel(modelName);
+    }
+
+    @Override
+    public Model getLatestModel() {
+        return getModel(modelName);
     }
 
     @Override
@@ -26,10 +43,6 @@ public class BaseJenaLibrary implements JenaLibrary{
 
     }
 
-    @Override
-    public void clearDB() {
-
-    }
 
     @Override
     public void closeDB() {
@@ -198,27 +211,17 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
-    public void persist(List<Statement> statements, String modelName)
-    {
-        if(Configs.getConfigBoolean("jenaDropExistModel", false)) {
-            removeModel(modelName);
-        }
-        //val writeLock = readWriteLock.writeLock();
-        try {
-            //writeLock.lock();
-            Model model;
-            if (modelName == null) {
-                model = getDefaultModel();
-            } else {
-                model = getModel(modelName);
-            }
-            model.begin();
-            for(val statement: statements) {
-                model.add(statement);
-            }
-            model.commit();
-        } finally {
-            //writeLock.unlock();
-        }
+    public void persist(List<Statement> statement, String modelName) {
+
+    }
+
+    @Override
+    public void openReadTransaction() {
+
+    }
+
+    @Override
+    public void closeTransaction() {
+
     }
 }

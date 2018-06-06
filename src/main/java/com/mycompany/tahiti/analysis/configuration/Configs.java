@@ -18,6 +18,7 @@ public class Configs {
     private static final Logger logger = Logger.getLogger(Configs.class.getName());
 
     public static void addConfig(String key, String value) {
+        loaded = true;
         configMap.put(key, value);
     }
 

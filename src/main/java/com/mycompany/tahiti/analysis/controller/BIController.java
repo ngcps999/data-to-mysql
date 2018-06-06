@@ -1,6 +1,5 @@
 package com.mycompany.tahiti.analysis.controller;
 
-import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.jena.JenaLibrary;
 import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import com.mycompany.tahiti.analysis.model.EntityType;
@@ -15,12 +14,12 @@ import javax.annotation.PostConstruct;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/bi")
+@RequestMapping("/bi")
 @Api(description = "Bi controller")
 public class BIController {
     int Bandan_lenght = 10;
     @Autowired
-    TdbJenaLibrary jenaLibrary;
+    JenaLibrary jenaLibrary;
     Map<EntityType,String> entity_type_dict = new HashMap<>();
 
     @PostConstruct
@@ -34,7 +33,7 @@ public class BIController {
     @ResponseBody
     public Map<EntityType, Integer> analysis(){
         jenaLibrary.openReadTransaction();
-        Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+        Model model = jenaLibrary.getRuntimeModel();
         Map<EntityType, Integer> map = new HashMap<>();
         for( EntityType entityType:entity_type_dict.keySet()){
             setCount(map,model,entity_type_dict.get(entityType),entityType);
@@ -59,7 +58,7 @@ public class BIController {
     @ResponseBody
     public Map<String,Integer> personCount(){
         jenaLibrary.openReadTransaction();
-        Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+        Model model = jenaLibrary.getRuntimeModel();
         Iterator<Statement> iterator = jenaLibrary.getStatementsByEntityType(model,"common:person.person");
         List<String> resourceList = new ArrayList<>();
         while (iterator.hasNext()){
@@ -81,7 +80,7 @@ public class BIController {
     @ResponseBody
     public Map<String,Integer> tagCount(){
         jenaLibrary.openReadTransaction();
-        Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+        Model model = jenaLibrary.getRuntimeModel();
         Iterator<Statement> iterator_tag = jenaLibrary.getStatementsBySP(model,null,"common:type.object.tag");
         Map<String,Integer> map = new HashMap();
         iteratorObjectToMap(iterator_tag,map);
@@ -97,7 +96,7 @@ public class BIController {
     @ResponseBody
     public Map<String,Integer> caseCategory(){
         jenaLibrary.openReadTransaction();
-        Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+        Model model = jenaLibrary.getRuntimeModel();
         Iterator<Statement> iterator = jenaLibrary.getStatementsBySP(model,null,"gongan:gongan.case.category");
         Map<String,Integer> map = new HashMap();
         iteratorObjectToMap(iterator,map);

@@ -1,8 +1,6 @@
 package com.mycompany.tahiti.analysis.springboot;
 
 import com.mycompany.tahiti.analysis.repository.DataFactory;
-import com.mycompany.tahiti.analysis.configuration.Configs;
-import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -24,16 +22,8 @@ public class TahitiAnalysisServerApplication {
     @Autowired
     DataFactory dataFactory;
 
-    @Bean
-    public TdbJenaLibrary createTdbJenaLibrary() {
-        //return new MysqlJenaLibrary(Configs.getConfig("jdbcUrl"), Configs.getConfig("mysqlUser"), Configs.getConfig("mysqlPassword"));
-        return new TdbJenaLibrary(Configs.getConfig("tdbName"));
-    }
-
-    public TahitiAnalysisServerApplication(@Value("${tdbName}") String tdbName, @Value("${jenaModelName}") String jenaModelName){
-        Configs.loadConfigFile("application.properties");
-        Configs.addConfig("tdbName", tdbName);
-        Configs.addConfig("jenaModelName", jenaModelName);
+    public TahitiAnalysisServerApplication(@Value("${jenaModelName}") String jenaModelName){
+        //Configs.addConfig("jenaModelName", jenaModelName);
     }
 
     @Bean
@@ -41,7 +31,7 @@ public class TahitiAnalysisServerApplication {
         return new WebMvcConfigurerAdapter() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/api/**").allowedOrigins("*").allowedMethods("*");
+                registry.addMapping("/**").allowedOrigins("*").allowedMethods("*").allowCredentials(true);
             }
         };
     }

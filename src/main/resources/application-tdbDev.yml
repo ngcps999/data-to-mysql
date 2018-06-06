@@ -1,0 +1,5 @@
+jena:
+  tdbName: src/main/resources/bilu
+  type: tdb
+  dropExistModel: false
+  modelName: biluDev

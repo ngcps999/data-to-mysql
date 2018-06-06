@@ -2,4 +2,4 @@
 This service is for online analysis.
 
 #Intellij program arguments
-`--tdbName=src/main/resources/bilu --jenaModelName=biluProd`
+`--spring.profiles.active=tdbDev`

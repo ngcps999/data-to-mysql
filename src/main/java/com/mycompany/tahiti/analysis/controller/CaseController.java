@@ -1,8 +1,8 @@
 package com.mycompany.tahiti.analysis.controller;
 
 import com.google.common.collect.Lists;
+import com.mycompany.tahiti.analysis.jena.JenaLibrary;
 import com.mycompany.tahiti.analysis.repository.*;
-import com.mycompany.tahiti.analysis.configuration.Configs;
 import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import com.mycompany.tahiti.analysis.model.*;
 import io.swagger.annotations.Api;
@@ -17,11 +17,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/cases")
+@RequestMapping("/cases")
 @Api(description = "case controller")
 public class CaseController {
     @Autowired
-    TdbJenaLibrary jenaLibrary;
+    JenaLibrary jenaLibrary;
 
     @Autowired
     DataFactory dataFactory;
@@ -201,7 +201,7 @@ public class CaseController {
     public List<RelevantGraph> getRelevantBiluParagraphsByPersonId(@PathVariable("caseId") String caseId, @RequestParam("keywordList") List<String> keywordList) {
         try {
             jenaLibrary.openReadTransaction();
-            Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+            Model model = jenaLibrary.getRuntimeModel();
 
             keywordList.remove("");
 
