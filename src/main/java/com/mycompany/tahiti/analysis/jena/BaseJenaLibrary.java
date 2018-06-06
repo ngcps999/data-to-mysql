@@ -29,6 +29,11 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
+    public Model getLatestModel() {
+        return getModel(modelName);
+    }
+
+    @Override
     public Model getDefaultModel() {
         return null;
     }
