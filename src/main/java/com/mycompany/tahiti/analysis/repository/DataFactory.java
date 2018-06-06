@@ -2,8 +2,7 @@ package com.mycompany.tahiti.analysis.repository;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.mycompany.tahiti.analysis.configuration.Configs;
-import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
+import com.mycompany.tahiti.analysis.jena.JenaLibrary;
 import lombok.val;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -17,7 +16,7 @@ import java.util.stream.Collectors;
 @Repository
 public class DataFactory {
     @Autowired
-    TdbJenaLibrary jenaLibrary;
+    JenaLibrary jenaLibrary;
 
     // This is only for cache, not full data
     // caseId, Case
@@ -48,7 +47,7 @@ public class DataFactory {
         else {
             try {
                 jenaLibrary.openReadTransaction();
-                Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+                Model model = jenaLibrary.getRuntimeModel();
                 val iterator = jenaLibrary.getStatementsById(model, caseId);
 
                 if (iterator.hasNext()) {
@@ -72,7 +71,7 @@ public class DataFactory {
         else {
             try {
                 jenaLibrary.openReadTransaction();
-                Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+                Model model = jenaLibrary.getRuntimeModel();
                 val iterator = jenaLibrary.getStatementsById(model, biluId);
 
                 if (iterator.hasNext()) {
@@ -96,7 +95,7 @@ public class DataFactory {
         else {
             try {
                 jenaLibrary.openReadTransaction();
-                Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+                Model model = jenaLibrary.getRuntimeModel();
 
                 Person person = getPersonInfo(model, model.getResource(pSubjectId));
                 personCache.put(pSubjectId, person);
@@ -288,7 +287,7 @@ public class DataFactory {
         else {
             try {
                 jenaLibrary.openReadTransaction();
-                Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
+                Model model = jenaLibrary.getRuntimeModel();
 
                 val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
 

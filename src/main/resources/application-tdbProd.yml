@@ -1,0 +1,5 @@
+jena:
+  tdbName: /app/tdb_folder
+  type: tdb
+  dropExistModel: false
+  modelName: biluProd

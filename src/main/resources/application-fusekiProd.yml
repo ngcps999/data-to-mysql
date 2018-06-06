@@ -1,0 +1,5 @@
+jena:
+  type: fuseki
+  dropExistModel: false
+  modelName: biluProd
+  fusekiURI: http://47.95.96.227:8861/eureka/
