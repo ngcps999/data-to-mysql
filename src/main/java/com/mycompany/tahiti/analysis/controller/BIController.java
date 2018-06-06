@@ -4,7 +4,6 @@ import com.mycompany.tahiti.analysis.model.EntityType;
 import com.mycompany.tahiti.analysis.repository.CaseBaseInfo;
 import com.mycompany.tahiti.analysis.repository.DataFactory;
 import io.swagger.annotations.Api;
-import org.apache.jena.base.Sys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
@@ -36,22 +35,6 @@ public class BIController {
             map.put(EntityType.Location, null);
         }
         return map;
-    }
-
-    @GetMapping("/personCountTest")
-    @ResponseBody
-    public Map<String,Integer> personCountTest(){
-        Map<String,Integer> map = dataFactory.getPersonBiluCount();
-        Map<String, Integer> result = new IdentityHashMap<>();
-        int i=0;
-        List<Map.Entry<String,Integer>> entries = entriesSortedByValues(map);
-        for(Map.Entry item:entries){
-            if(i>=Bandan_lenght)break;
-            String key = item.getKey().toString();
-            result.put(new String(key),Integer.parseInt(item.getValue().toString()));
-            i++;
-        }
-        return result;
     }
 
     @GetMapping("/personCount")
