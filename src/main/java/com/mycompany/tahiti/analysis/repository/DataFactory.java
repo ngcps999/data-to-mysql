@@ -70,32 +70,18 @@ public class DataFactory {
 
     public Integer getBiluCount(){
         if(biluCountCache != null) return biluCountCache;
-        try{
-            jenaLibrary.openReadTransaction();
-            Integer biluCount;
-            Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
-            Iterator<Statement> iter = jenaLibrary.getStatementsByEntityType(model,"gongan:gongan.bilu");
-            int count = org.apache.jena.ext.com.google.common.collect.Iterators.size(iter);
-            biluCount = new Integer(count);
-            return biluCount;
-        } finally {
-            jenaLibrary.closeTransaction();
+        int count = 0;
+        for(String key:allSimpleCases.keySet()){
+            count = count+allSimpleCases.get(key).getBiluNumber();
         }
+        Integer biluCount;
+        biluCount = new Integer(count);
+        return biluCount;
     }
 
     public Integer getCaseCount(){
         if(caseCountCache != null) return caseCountCache;
-        try{
-            jenaLibrary.openReadTransaction();
-            Integer caseCount;
-            Model model = jenaLibrary.getModel(Configs.getConfig("jenaModelName"));
-            Iterator<Statement> iter = jenaLibrary.getStatementsByEntityType(model,"gongan:gongan.case");
-            int count = org.apache.jena.ext.com.google.common.collect.Iterators.size(iter);
-            caseCount = new Integer(count);
-            return caseCount;
-        } finally {
-            jenaLibrary.closeTransaction();
-        }
+        return allSimpleCases.size();
     }
 
     public Map<String,Integer> getTagBiluCount(){
