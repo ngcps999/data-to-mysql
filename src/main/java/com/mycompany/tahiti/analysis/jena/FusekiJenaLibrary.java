@@ -9,6 +9,7 @@ public class FusekiJenaLibrary extends BaseJenaLibrary{
     private String fusekiURI;
     private DatasetAccessor accessor;
     private Logger logger = Logger.getLogger(FusekiJenaLibrary.class);
+    private Model cacheModel = null;
 
     public FusekiJenaLibrary(String fusekiURI, boolean jenaDropExistModel, String modelName) {
         super(jenaDropExistModel, modelName);
@@ -29,6 +30,20 @@ public class FusekiJenaLibrary extends BaseJenaLibrary{
     @Override
     public Model getDefaultModel() {
         return accessor.getModel();
+    }
+
+    @Override
+    public Model getLatestModel() {
+        cacheModel = getModel(modelName);
+        return cacheModel;
+    }
+
+    @Override
+    public Model getRuntimeModel() {
+        if(cacheModel == null) {
+            cacheModel = getModel(modelName);
+        }
+        return cacheModel;
     }
 
 }

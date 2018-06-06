@@ -1,7 +1,6 @@
 package com.mycompany.tahiti.analysis.springboot;
 
 import com.mycompany.tahiti.analysis.repository.DataFactory;
-import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;

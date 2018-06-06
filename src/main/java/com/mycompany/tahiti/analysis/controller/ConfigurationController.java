@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/configuration")
+@RequestMapping("/api/configuration")
 @Api(description = "configuration controller")
 public class ConfigurationController {
 

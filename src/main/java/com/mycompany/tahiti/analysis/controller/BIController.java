@@ -18,7 +18,7 @@ import javax.xml.crypto.Data;
 import java.util.*;
 
 @RestController
-@RequestMapping("/bi")
+@RequestMapping("/api/bi")
 @Api(description = "Bi controller")
 public class BIController {
     int Bandan_lenght = 10;
