@@ -10,6 +10,7 @@ import java.util.List;
 public class PersonRichInfo extends PersonModel{
     List<InvolvedCaseWithRole> involvedCases = new ArrayList<>();
     List<SameCasePerson> sameCasePersonList = new ArrayList<>();
+    List<SameCaseEntity> sameCasePersonNameList = new ArrayList<>();
 
     @Data
     public class InvolvedCaseWithRole extends CaseBaseInfo {
@@ -24,6 +25,21 @@ public class PersonRichInfo extends PersonModel{
             if(this.getIdentity()!=null&&((SameCasePerson)obj).getIdentity()!=null&&this.getIdentity().equals(((SameCasePerson)obj).getIdentity())||this.getName()!=null&&((SameCasePerson)obj).getName()!=null&&this.getName().equals(((SameCasePerson)obj).getName())){
                 return true;
             }
+            return false;
+        }
+    }
+
+    @Data
+    public class SameCaseEntity extends ValueObject{
+        List<CaseBaseInfo> sameCases;
+        String subjectId;
+
+        public SameCaseEntity(String value) {
+            super(value);
+        }
+
+        public boolean equals(Object obj){
+            if(this.getValue()!= null && ((SameCaseEntity)obj).getValue()!=null && this.getValue().equals(((SameCaseEntity) obj).getValue()))return true;
             return false;
         }
     }
