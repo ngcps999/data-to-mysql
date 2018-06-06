@@ -57,12 +57,11 @@ public class DataFactory {
         if (personCountCache != null) return personCountCache;
         try {
             jenaLibrary.openReadTransaction();
-            Integer personCount;
             Model model = jenaLibrary.getRuntimeModel();
             Iterator<Statement> iter = jenaLibrary.getStatementsByEntityType(model, "common:person.person");
             int count = org.apache.jena.ext.com.google.common.collect.Iterators.size(iter);
-            personCount = new Integer(count);
-            return personCount;
+            personCountCache = new Integer(count);
+            return personCountCache;
         } finally {
             jenaLibrary.closeTransaction();
         }
@@ -74,14 +73,14 @@ public class DataFactory {
         for (String key : allSimpleCases.keySet()) {
             count = count + allSimpleCases.get(key).getBiluNumber();
         }
-        Integer biluCount;
-        biluCount = new Integer(count);
-        return biluCount;
+        biluCountCache = new Integer(count);
+        return biluCountCache;
     }
 
     public Integer getCaseCount() {
         if (caseCountCache != null) return caseCountCache;
-        return allSimpleCases.size();
+        caseCountCache = allSimpleCases.size();
+        return caseCountCache;
     }
 
     public Map<String, Integer> getTagBiluCount() {
@@ -93,7 +92,7 @@ public class DataFactory {
             Map<String, Integer> map = new HashMap();
             iteratorObjectToMap(iterator_tag, map);
             tagBiluCount = map;
-            return map;
+            return tagBiluCount;
         } finally {
             jenaLibrary.closeTransaction();
         }
