@@ -1,7 +1,6 @@
 package com.mycompany.tahiti.analysis.springboot;
 
 import com.mycompany.tahiti.analysis.repository.DataFactory;
-import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -32,7 +31,7 @@ public class TahitiAnalysisServerApplication {
         return new WebMvcConfigurerAdapter() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins("*").allowedMethods("*");
+                registry.addMapping("/api/**").allowedOrigins("*").allowedMethods("*");
             }
         };
     }

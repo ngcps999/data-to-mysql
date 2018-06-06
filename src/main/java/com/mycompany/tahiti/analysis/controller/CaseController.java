@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/cases")
+@RequestMapping("/api/cases")
 @Api(description = "case controller")
 public class CaseController {
     @Autowired
