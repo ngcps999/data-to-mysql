@@ -31,7 +31,7 @@ public class TahitiAnalysisServerApplication {
         return new WebMvcConfigurerAdapter() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/api/**").allowedOrigins("*").allowedMethods("*");
+                registry.addMapping("/api/**").allowedOrigins("*").allowedMethods("*").allowCredentials(true);
             }
         };
     }
