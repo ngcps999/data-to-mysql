@@ -31,11 +31,7 @@ node {
     }
   }
   
-  if (env.BRANCH_NAME != 'master') {
-    stage('docker build') {
-      docker.build(UUID.randomUUID().toString())
-    }
-  } else {
+  if (env.BRANCH_NAME == 'master') {
     withCredentials([string(credentialsId: 'registry-address', variable: 'registryAddress')]) {
       stage('docker build') {
         imageTag = "${serviceName}:${uniqueId}"
