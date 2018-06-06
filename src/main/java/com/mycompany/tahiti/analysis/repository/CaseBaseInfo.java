@@ -13,4 +13,9 @@ public class CaseBaseInfo {
     private String caseType;
     private List<String> suspects = new ArrayList<>();
     private Integer biluNumber;
+
+    public boolean equals(Object obj) {
+        if(this.caseId.equals(((CaseBaseInfo)obj).caseId))return true;
+        return false;
+    }
 }
