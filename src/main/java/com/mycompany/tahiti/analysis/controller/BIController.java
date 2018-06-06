@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/bi")
+@RequestMapping("/bi")
 @Api(description = "Bi controller")
 public class BIController {
     int Bandan_lenght = 10;

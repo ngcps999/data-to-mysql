@@ -45,7 +45,7 @@ spec:
           mountPath: /app/tdb_folder
           subPath: development-env
         args:
-          - --spring.profiles.active=tdbProd
+          - --spring.profiles.active=fusekiProd
       volumes:
         - name: tahiti-tdb-data
           persistentVolumeClaim:

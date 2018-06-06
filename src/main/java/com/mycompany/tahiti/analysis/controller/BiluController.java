@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/bilus")
+@RequestMapping("/bilus")
 @Api(description = "Bilu controller")
 public class BiluController {
     @Autowired
