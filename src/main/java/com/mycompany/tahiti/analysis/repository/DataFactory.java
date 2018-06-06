@@ -118,6 +118,7 @@ public class DataFactory {
             Iterator<Statement> iteratorPersonName = jenaLibrary.getStatementsByBatchSP(model,resourceList,"common:type.object.name");
             while(iteratorPersonName.hasNext()){
                 Statement statement = iteratorPersonName.next();
+                System.out.print(statement.getSubject().toString()+": "+statement.getObject().toString());
                 idNameMap.put(statement.getSubject().toString(),statement.getObject().toString());
             }
 

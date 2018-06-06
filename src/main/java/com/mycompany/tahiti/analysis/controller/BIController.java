@@ -1,20 +1,12 @@
 package com.mycompany.tahiti.analysis.controller;
 
-import com.mycompany.tahiti.analysis.configuration.Configs;
-import com.mycompany.tahiti.analysis.jena.JenaLibrary;
-import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import com.mycompany.tahiti.analysis.model.EntityType;
 import com.mycompany.tahiti.analysis.repository.CaseBaseInfo;
 import com.mycompany.tahiti.analysis.repository.DataFactory;
 import io.swagger.annotations.Api;
-import org.apache.jena.ext.com.google.common.collect.Iterators;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.base.Sys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.PostConstruct;
-import javax.xml.crypto.Data;
 import java.util.*;
 
 @RestController
@@ -46,14 +38,45 @@ public class BIController {
         return map;
     }
 
+    @GetMapping("/personCountTest")
+    @ResponseBody
+    public Map<String,Integer> personCountTest(){
+        Map<String,Integer> map = dataFactory.getPersonBiluCount();
+        Map<String, Integer> result = new IdentityHashMap<>();
+        int i=0;
+        List<Map.Entry<String,Integer>> entries = entriesSortedByValues(map);
+        for(Map.Entry item:entries){
+            if(i>=Bandan_lenght)break;
+            String key = item.getKey().toString();
+            result.put(new String(key),Integer.parseInt(item.getValue().toString()));
+            i++;
+        }
+        return result;
+    }
+
     @GetMapping("/personCount")
     @ResponseBody
-    public Map<String,Integer> personCount(){
+    public List<Map.Entry<String,Integer>> personCount(){
         Map<String,Integer> map = dataFactory.getPersonBiluCount();
-        //排序
-        Map<String, Integer> result = new LinkedHashMap<>();
-        map.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue().reversed()).forEachOrdered(e -> result.put(e.getKey(), e.getValue()));
-        return returnTopN(result,Bandan_lenght);
+        List<Map.Entry<String,Integer>> entries = entriesSortedByValues(map);
+        return entries.subList(0,Bandan_lenght);
+    }
+
+    static <K,V extends Comparable<? super V>>
+    List<Map.Entry<K, V>> entriesSortedByValues(Map<K,V> map) {
+
+        List<Map.Entry<K,V>> sortedEntries = new ArrayList<>(map.entrySet());
+
+        Collections.sort(sortedEntries,
+                new Comparator<Map.Entry<K,V>>() {
+                    @Override
+                    public int compare(Map.Entry<K,V> e1, Map.Entry<K,V> e2) {
+                        return e2.getValue().compareTo(e1.getValue());
+                    }
+                }
+        );
+
+        return sortedEntries;
     }
 
     @GetMapping("/tagCount")
