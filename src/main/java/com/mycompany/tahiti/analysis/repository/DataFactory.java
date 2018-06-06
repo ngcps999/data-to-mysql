@@ -106,6 +106,7 @@ public class DataFactory {
             Iterator<Statement> iterator_tag = jenaLibrary.getStatementsBySP(model,null,"common:type.object.tag");
             Map<String,Integer> map = new HashMap();
             iteratorObjectToMap(iterator_tag,map);
+            tagBiluCount = map;
             return map;
         }finally {
             jenaLibrary.closeTransaction();
@@ -126,6 +127,7 @@ public class DataFactory {
             Map<String,Integer> map = new HashMap();
             Iterator<Statement> iterator_names = jenaLibrary.getStatementsByBatchSP(model,resourceList,"common:type.object.name");
             iteratorObjectToMap(iterator_names,map);
+            personBiluCount = map;
             return map;
         }finally {
             jenaLibrary.closeTransaction();
