@@ -123,7 +123,6 @@ public class DataFactory {
             Map<String,Integer> nameBiluCountMap = new IdentityHashMap<>();
             for(String key:map.keySet()){
                 if(idNameMap.keySet().contains(key)){
-                    if(idNameMap.get(key)==null|idNameMap.get(key).isEmpty())System.out.println("key: "+key+ " count:"+map.get(key));
                     nameBiluCountMap.put(new String(idNameMap.get(key)),map.get(key));
                 }
             }
