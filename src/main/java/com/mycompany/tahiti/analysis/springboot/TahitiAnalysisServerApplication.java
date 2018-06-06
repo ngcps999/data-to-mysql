@@ -29,8 +29,8 @@ public class TahitiAnalysisServerApplication {
     @Autowired
     JenaLibrary jenaLibrary;
 
-    @Value("${engine.enable-fusion}") String enableFusion;
-    @Value("${engine.modelName}") String newModelName;
+    @Value("${conflation.enable-fusion}") String enableFusion;
+    @Value("${conflation.conflatedModelName}") String newModelName;
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {

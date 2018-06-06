@@ -41,4 +41,5 @@ public interface JenaLibrary {
     void saveModel(Model newModel, String newModelName);
     void updateRuntimeModelName(String newModelName);
 
+    Model deepCopyModel(Model model);
 }

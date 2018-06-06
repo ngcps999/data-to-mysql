@@ -3,6 +3,6 @@ server:
   servlet:
     context-path: /api
 
-engine:
+conflation:
   enable-fusion: true
-  modelName: biluFusion
+  conflatedModelName: biluFusion

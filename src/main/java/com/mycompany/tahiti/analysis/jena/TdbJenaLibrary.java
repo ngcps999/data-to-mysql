@@ -145,4 +145,9 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
             //writeLock.unlock();
         }
     }
+
+    @Override
+    public void saveModel(Model newModel, String newModelName) {
+        dataset.addNamedModel(newModelName, newModel);
+    }
 }

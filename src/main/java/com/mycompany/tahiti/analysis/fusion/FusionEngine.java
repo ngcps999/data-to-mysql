@@ -7,6 +7,7 @@ import lombok.val;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.util.ResourceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
@@ -25,11 +26,13 @@ public class FusionEngine {
 
             Map<String, String> idMap = PersonConflation(model);
 
-            // 产生新的model
-            Model newModel = jenaLibrary.getModel(newModelName);
+            // cope a new model
+            Model newModel = jenaLibrary.deepCopyModel(jenaLibrary.getRuntimeModel());
 
             // set data into new Model
-            // todo
+            for(String from : idMap.keySet()) {
+                ResourceUtils.renameResource(newModel.getResource(from), idMap.get(from));
+            }
 
             return newModel;
         } finally {
@@ -38,7 +41,7 @@ public class FusionEngine {
     }
 
     private Map<String, String> PersonConflation(Model model) {
-        Map<String, PersonForFusion> persons = new HashMap<>();
+        Map<String, PersonFeatures> persons = new HashMap<>();
         getAllPersonForFusion(model, persons);
 
         val identitiesBucket = generateBuckets(BucketType.Identity, persons);
@@ -53,12 +56,12 @@ public class FusionEngine {
         return subjectConflation;
     }
 
-    private void getAllPersonForFusion(Model model, Map<String, PersonForFusion> persons){
+    private void getAllPersonForFusion(Model model, Map<String, PersonFeatures> persons){
         Iterator<Statement> iterator = jenaLibrary.getStatementsByEntityType(model,"common:person.person");
         while (iterator.hasNext()){
             Resource personSubject = iterator.next().getSubject();
 
-            PersonForFusion person = new PersonForFusion();
+            PersonFeatures person = new PersonFeatures();
 
             person.setSubjectId(personSubject.toString());
             val pNames = jenaLibrary.getStringValueBySP(model, personSubject, "common:type.object.name");
@@ -93,12 +96,12 @@ public class FusionEngine {
         }
     }
 
-    private Map<String, List<PersonForFusion>> generateBuckets(BucketType type, Map<String, PersonForFusion> persons){
+    private Map<String, List<PersonFeatures>> generateBuckets(BucketType type, Map<String, PersonFeatures> persons){
         switch (type) {
             case Identity:
-                Map<String, List<PersonForFusion>> identitiesBucket = new HashMap<>();
+                Map<String, List<PersonFeatures>> identitiesBucket = new HashMap<>();
                 for(String sId : persons.keySet()){
-                    PersonForFusion person = persons.get(sId);
+                    PersonFeatures person = persons.get(sId);
                     if(person.getIdentity() != null && !person.getIdentity().isEmpty()){
                         if(!identitiesBucket.containsKey(person.getIdentity())){
                             identitiesBucket.put(person.getIdentity(), new ArrayList<>());
@@ -110,9 +113,9 @@ public class FusionEngine {
                 return identitiesBucket;
 
             case Phone:
-                Map<String, List<PersonForFusion>> phoneBucket = new HashMap<>();
+                Map<String, List<PersonFeatures>> phoneBucket = new HashMap<>();
                 for(String sId : persons.keySet()) {
-                    PersonForFusion person = persons.get(sId);
+                    PersonFeatures person = persons.get(sId);
                     for (String phone : person.getPhones()) {
                         if(phone == null || phone.isEmpty())
                             continue;
@@ -125,9 +128,9 @@ public class FusionEngine {
                 return phoneBucket;
 
             case NameCase:
-                Map<String, List<PersonForFusion>> nameCaseBucket = new HashMap<>();
+                Map<String, List<PersonFeatures>> nameCaseBucket = new HashMap<>();
                 for(String sId : persons.keySet()) {
-                    PersonForFusion person = persons.get(sId);
+                    PersonFeatures person = persons.get(sId);
                     for (String name : person.getNames()) {
                         if(name == null || name.isEmpty())
                             continue;
@@ -148,13 +151,13 @@ public class FusionEngine {
         }
     }
 
-    private void processBucket(Map<String, List<PersonForFusion>> bucket, Map<String, String> subjectConflation){
+    private void processBucket(Map<String, List<PersonFeatures>> bucket, Map<String, String> subjectConflation){
         for(String bucketId : bucket.keySet()){
 
             val bucketValue = bucket.get(bucketId);
             if(bucketValue.size() > 0){
                 String id = getKeptSubject(bucketValue, subjectConflation);
-                for(PersonForFusion p : bucketValue){
+                for(PersonFeatures p : bucketValue){
                     subjectConflation.put(p.subjectId, id);
                 }
             }
@@ -162,13 +165,17 @@ public class FusionEngine {
 
     }
 
-    private String getKeptSubject(List<PersonForFusion> personsInBucket, Map<String, String> subjectConflation){
+    private String getKeptSubject(List<PersonFeatures> personsInBucket, Map<String, String> subjectConflation){
+        for(PersonFeatures person : personsInBucket){
+            if(subjectConflation.keySet().contains(person.getSubjectId()))
+                return subjectConflation.get(person.getSubjectId());
+        }
 
         return prefix + UUID.randomUUID().toString();
     }
 
     @Data
-    private class PersonForFusion{
+    private class PersonFeatures {
         private String subjectId;
         private Set<String> names = new HashSet<>();
         private Set<String> phones = new HashSet<>();

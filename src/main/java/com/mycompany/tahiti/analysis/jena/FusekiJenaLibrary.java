@@ -31,4 +31,8 @@ public class FusekiJenaLibrary extends BaseJenaLibrary{
         return accessor.getModel();
     }
 
+    @Override
+    public void saveModel(Model newModel, String newModelName) {
+        accessor.add(newModelName, newModel);
+    }
 }
