@@ -48,15 +48,20 @@ public class TahitiAnalysisServerApplication {
         return dataFactory;
     }
 
+    public void conflate() {
+        if(enableFusion.trim().toLowerCase().equals("true")){
+            FusionEngine fusionEngine = new FusionEngine(jenaLibrary);
+            Model model = fusionEngine.generateFusionModel(newModelName);
+            jenaLibrary.openWriteTransaction();
+            jenaLibrary.saveModel(model, newModelName);
+            jenaLibrary.closeTransaction();
+            jenaLibrary.updateRuntimeModelName(newModelName);
+        }
+    }
+
     public static void main(String[] args){
         val context = SpringApplication.run(TahitiAnalysisServerApplication.class,args);
         val app = context.getBean(TahitiAnalysisServerApplication.class);
-        if(app.enableFusion.trim().toLowerCase().equals("true")){
-            FusionEngine fusionEngine = new FusionEngine();
-            Model model = fusionEngine.GenerateFusionModel(app.newModelName);
-
-            app.jenaLibrary.saveModel(model, app.newModelName);
-            app.jenaLibrary.updateRuntimeModelName(app.newModelName);
-        }
+        app.conflate();
     }
 }

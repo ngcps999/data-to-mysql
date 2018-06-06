@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class TdbJenaLibrary extends BaseJenaLibrary {
 
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-    Lock writeLock = readWriteLock.writeLock();
+    //Lock writeLock = readWriteLock.writeLock();
 
     private static final Logger LOG = Logger.getLogger(TdbJenaLibrary.class);
     public Dataset dataset = null;
@@ -38,7 +38,7 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
     @Override
     public void openReadTransaction(){
         try {
-            writeLock.lock();
+            //writeLock.lock();
             if(dataset.isInTransaction()) {
                 dataset.end();
             }
@@ -48,10 +48,9 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
         }
 
     }
-
+    @Override
     public void openWriteTransaction() {
         try {
-            writeLock.lock();
             if(dataset.isInTransaction()) {
                 dataset.end();
             }
@@ -66,7 +65,7 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
     public void closeTransaction(){
         try {
             dataset.end();
-            writeLock.unlock();
+            //writeLock.unlock();
         } catch (Exception e) {
             LOG.error(e.getMessage());
         }

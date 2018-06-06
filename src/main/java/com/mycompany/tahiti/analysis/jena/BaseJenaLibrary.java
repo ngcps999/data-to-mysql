@@ -234,6 +234,11 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
+    public void openWriteTransaction() {
+
+    }
+
+    @Override
     public void closeTransaction() {
 
     }

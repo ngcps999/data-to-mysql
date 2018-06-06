@@ -9,17 +9,20 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.util.ResourceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class FusionEngine {
-    @Autowired
     JenaLibrary jenaLibrary;
+    public FusionEngine(JenaLibrary jenaLibrar) {
+        this.jenaLibrary = jenaLibrar;
+    }
 
     private static final String prefix  = "http://knowledge.richinfo.com/";
 
-    public Model GenerateFusionModel(String newModelName){
+    public Model generateFusionModel(String newModelName){
         try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
