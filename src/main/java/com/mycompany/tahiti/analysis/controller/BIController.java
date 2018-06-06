@@ -24,8 +24,6 @@ public class BIController {
     int Bandan_lenght = 10;
     @Autowired
     DataFactory dataFactory;
-    @Autowired
-    TdbJenaLibrary jenaLibrary;
 
     @GetMapping("/overall")
     @ResponseBody
