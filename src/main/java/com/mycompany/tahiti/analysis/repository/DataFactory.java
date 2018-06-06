@@ -110,7 +110,7 @@ public class DataFactory {
             }
 
             Map<String,Integer> map = new HashMap();
-            Iterator<Statement> iterator_names = jenaLibrary.getStatementsByBatchSP(model,resourceList,"common:type.object.name");
+            Iterator<Statement> iterator_names = jenaLibrary.getStatementsByBatchPO(model,"gongan:gongan.bilu.entity",resourceList);
             iteratorObjectToMap(iterator_names,map);
             personBiluCount = map;
             return map;
@@ -130,9 +130,6 @@ public class DataFactory {
             }
         }
     }
-
-
-
 
     public Case getCaseById(String caseId) {
         if (caseCache.containsKey(caseId))
