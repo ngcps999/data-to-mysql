@@ -147,6 +147,8 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
 
     @Override
     public void saveModel(Model newModel, String newModelName) {
+        removeModel(newModelName);
         dataset.addNamedModel(newModelName, newModel);
+        dataset.commit();
     }
 }

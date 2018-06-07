@@ -22,7 +22,7 @@ public class FusionEngine {
 
     private static final String prefix  = "http://knowledge.richinfo.com/";
 
-    public Model generateFusionModel(String newModelName){
+    public Model generateFusionModel(){
         try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
@@ -150,16 +150,15 @@ public class FusionEngine {
                 return nameCaseBucket;
 
             default:
-                return null;
+                throw new RuntimeException("Now just allow type: Identity, Phone, NameCae! not allow " + type);
         }
     }
 
     private void processBucket(Map<String, List<PersonFeatures>> bucket, Map<String, String> subjectConflation){
         for(String bucketId : bucket.keySet()){
-
             val bucketValue = bucket.get(bucketId);
-            if(bucketValue.size() > 0){
-                String id = getKeptSubject(bucketValue, subjectConflation);
+            if(bucketValue.size() > 1){
+                String id = getTargetSubject(bucketValue, subjectConflation);
                 for(PersonFeatures p : bucketValue){
                     subjectConflation.put(p.subjectId, id);
                 }
@@ -168,7 +167,7 @@ public class FusionEngine {
 
     }
 
-    private String getKeptSubject(List<PersonFeatures> personsInBucket, Map<String, String> subjectConflation){
+    private String getTargetSubject(List<PersonFeatures> personsInBucket, Map<String, String> subjectConflation){
         for(PersonFeatures person : personsInBucket){
             if(subjectConflation.keySet().contains(person.getSubjectId()))
                 return subjectConflation.get(person.getSubjectId());
@@ -183,7 +182,6 @@ public class FusionEngine {
         private Set<String> names = new HashSet<>();
         private Set<String> phones = new HashSet<>();
         private String identity;
-
         // case SubjectId
         private Set<String> caseList = new HashSet<>();
     }

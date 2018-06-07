@@ -51,7 +51,7 @@ public class TahitiAnalysisServerApplication {
     public void conflate() {
         if(enableFusion.trim().toLowerCase().equals("true")){
             FusionEngine fusionEngine = new FusionEngine(jenaLibrary);
-            Model model = fusionEngine.generateFusionModel(newModelName);
+            Model model = fusionEngine.generateFusionModel();
             jenaLibrary.openWriteTransaction();
             jenaLibrary.saveModel(model, newModelName);
             jenaLibrary.closeTransaction();

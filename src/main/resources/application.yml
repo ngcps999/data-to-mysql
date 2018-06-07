@@ -5,4 +5,4 @@ server:
 
 conflation:
   enable-fusion: true
-  conflatedModelName: biluFusion
+  conflatedModelName: biluFusion.v2
