@@ -46,7 +46,7 @@ public class PersonController {
 
             for (Bilu bilu : aCase.getBilus()) {
                 for (Person personInBilu : bilu.getPersons()) {
-                    if (isNullOrEmpty(personInBilu.getSubjectId())&&isNullOrEmpty(personRichInfo.getSubjectId())&&!personInBilu.getSubjectId().equals(personRichInfo.getSubjectId())){
+                    if (!isNullOrEmpty(personInBilu.getSubjectId())&&!isNullOrEmpty(personRichInfo.getSubjectId())&&!personInBilu.getSubjectId().equals(personRichInfo.getSubjectId())){
                         PersonRichInfo.SameCasePerson sameCasePerson = personRichInfo.new SameCasePerson();
                         sameCasePerson.setSubjectId(personInBilu.getSubjectId());
                         sameCasePerson.setName(personInBilu.getName());
