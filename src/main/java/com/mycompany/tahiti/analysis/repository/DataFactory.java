@@ -4,6 +4,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.mycompany.tahiti.analysis.jena.JenaLibrary;
 import lombok.val;
+import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.base.Sys;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -33,7 +34,7 @@ public class DataFactory {
 
     //subjectId, Person
     //Only contains person subjectId + person name + bilu subjectId + case subjectId
-    private Map<String,Person> personRelationCache = new HashMap<>();
+    private Map<String, Person> personRelationCache = new HashMap<>();
 
     // caseId, Case
     private Map<String, Case> caseCache = new HashMap<>();
@@ -57,20 +58,75 @@ public class DataFactory {
         return true;
     }
 
-    public Map<String,Person> getPersonRelaticn(){
-        if(personRelationCache.size()>0) return personRelationCache;
-        try{
+    //!!! Note: Will put bilu subjectId and case subject Id in Person
+    public Map<String, Person> getPersonRelaticn() {
+        if (personRelationCache.size() > 0) return personRelationCache;
+        try {
             jenaLibrary.openReadTransaction();
-            Map<String,Person> personRelation = new HashMap<>();
+            Map<String, Person> personRelation = new HashMap<>();
 
             //get all person subjectId
+            Model model = jenaLibrary.getRuntimeModel();
+            Iterator<Statement> iter = jenaLibrary.getStatementsByEntityType(model, "common:person.person");
+            List<String> personResourceList = new ArrayList<>();
+            while (iter.hasNext()) {
+                String personSubjectId = iter.next().getSubject().toString();
+                personResourceList.add(personSubjectId);
+                Person person = new Person();
+                person.setSubjectId(personSubjectId);
+            }
+
             //get all person subjectId to biluId
+            Iterator<Statement> personBiluIter = jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.bilu.entity", personResourceList);
+            List<String> biluResoursceList = new ArrayList<>();
+            while (personBiluIter.hasNext()) {
+                Statement statement = personBiluIter.next();
+                String personSubjectId = statement.getString();
+                String biluSubjectId = statement.getSubject().toString();
+                if (!biluResoursceList.contains(biluSubjectId)) biluResoursceList.add(biluSubjectId);
+
+                if (!personRelation.get(personSubjectId).getBiluList().contains(biluSubjectId))
+                    personRelation.get(personSubjectId).getBiluList().add(biluSubjectId);
+            }
+
             //get all biluId to caseId
-            //enrich person name
+            Iterator<Statement> biluCaseIter = jenaLibrary.getStatementsByBatchSP(model, biluResoursceList, "gongan:gongan.case.bilu");
+            HashMap<String, String> biluCaseMap = new HashMap<>();
+            while (biluCaseIter.hasNext()) {
+                Statement statement = biluCaseIter.next();
+                biluCaseMap.put(statement.getSubject().toString(), statement.getString());
+            }
+            for (String personSubjectId : personRelation.keySet()){
+                Person person = personRelation.get(personSubjectId);
+                for (String bilu : person.getBiluList()) {
+                    if (biluCaseMap.keySet().contains(bilu)) {
+                        if (!person.getCaseList().contains(biluCaseMap.get(bilu)))
+                            person.getCaseList().add(biluCaseMap.get(bilu));
+                    }
+                }
+            }
+            //enrich person name and identification
+            Iterator<Statement> pNamesIter = jenaLibrary.getStatementsByBatchSP(model, personResourceList, "common:type.object.name");
+            while (pNamesIter.hasNext()){
+                Statement statement = pNamesIter.next();
+                String personSubjectId = statement.getSubject().toString();
+                personRelation.get(personSubjectId).setName(statement.getString());
+            }
+
+            Iterator<Statement> pIdentitiesIter = jenaLibrary.getStatementsByBatchSP(model, personResourceList, "common:person.person.identification");
+            while (pIdentitiesIter.hasNext()) {
+                Statement statement = pIdentitiesIter.next();
+                String personSubjectId = statement.getSubject().toString();
+                Resource personIdResource = statement.getResource();
+                val personIds = jenaLibrary.getStringValueBySP(model, personIdResource, "common:person.identification.number");
+                if (personIds.size() > 0){
+                    personRelation.get(personSubjectId).setIdentity(personIds.get(0));
+                }
+            }
 
             personRelationCache = personRelation;
             return personRelationCache;
-        }finally {
+        } finally {
             jenaLibrary.closeTransaction();
         }
     }
@@ -124,28 +180,30 @@ public class DataFactory {
         if (personBiluCount != null) return personBiluCount;
         try {
             jenaLibrary.openReadTransaction();
+            System.out.println("Jin!");
             Model model = jenaLibrary.getRuntimeModel();
             Iterator<Statement> iterator = jenaLibrary.getStatementsByEntityType(model, "common:person.person");
             List<String> resourceList = new ArrayList<>();
             while (iterator.hasNext()) {
-                resourceList.add(iterator.next().getSubject().toString());
+                String resource = iterator.next().getSubject().toString();
+                resourceList.add(resource);
             }
 
             Map<String, Integer> map = new HashMap();
             Iterator<Statement> iteratorBiluPerson = jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.bilu.entity", resourceList);
-            iteratorObjectToMap(iteratorBiluPerson,map);
+            iteratorObjectToMap(iteratorBiluPerson, map);
 
-            Map<String,String> idNameMap = new HashMap<>();
-            Iterator<Statement> iteratorPersonName = jenaLibrary.getStatementsByBatchSP(model,resourceList,"common:type.object.name");
-            while(iteratorPersonName.hasNext()){
+            Map<String, String> idNameMap = new HashMap<>();
+            Iterator<Statement> iteratorPersonName = jenaLibrary.getStatementsByBatchSP(model, resourceList, "common:type.object.name");
+            while (iteratorPersonName.hasNext()) {
                 Statement statement = iteratorPersonName.next();
-                idNameMap.put(statement.getSubject().toString(),statement.getObject().toString());
+                idNameMap.put(statement.getSubject().toString(), statement.getObject().toString());
             }
 
-            Map<String,Integer> nameBiluCountMap = new IdentityHashMap<>();
-            for(String key:map.keySet()){
-                if(idNameMap.keySet().contains(key)){
-                    nameBiluCountMap.put(new String(idNameMap.get(key)),map.get(key));
+            Map<String, Integer> nameBiluCountMap = new IdentityHashMap<>();
+            for (String key : map.keySet()) {
+                if (idNameMap.keySet().contains(key)) {
+                    nameBiluCountMap.put(new String(idNameMap.get(key)), map.get(key));
                 }
             }
             personBiluCount = nameBiluCountMap;
