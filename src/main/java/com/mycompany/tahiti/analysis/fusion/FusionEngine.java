@@ -9,6 +9,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.util.ResourceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -16,18 +17,19 @@ import java.util.stream.Collectors;
 
 public class FusionEngine {
     JenaLibrary jenaLibrary;
-    public FusionEngine(JenaLibrary jenaLibrar) {
-        this.jenaLibrary = jenaLibrar;
+    public FusionEngine(JenaLibrary jenaLibrary, String subjectPrefix) {
+        this.jenaLibrary = jenaLibrary;
+        this.prefix = subjectPrefix;
     }
 
-    private static final String prefix  = "http://knowledge.richinfo.com/";
+    String prefix;
 
     public Model generateFusionModel(){
         try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
 
-            Map<String, String> idMap = PersonConflation(model);
+            Map<String, String> idMap = personConflation(model);
 
             // cope a new model
             Model newModel = jenaLibrary.deepCopyModel(jenaLibrary.getRuntimeModel());
@@ -43,7 +45,7 @@ public class FusionEngine {
         }
     }
 
-    private Map<String, String> PersonConflation(Model model) {
+    private Map<String, String> personConflation(Model model) {
         Map<String, PersonFeatures> persons = new HashMap<>();
         getAllPersonForFusion(model, persons);
 
@@ -150,7 +152,7 @@ public class FusionEngine {
                 return nameCaseBucket;
 
             default:
-                throw new RuntimeException("Now just allow type: Identity, Phone, NameCae! not allow " + type);
+                throw new RuntimeException("Now just allow type: Identity, Phone, NameCase! not allow " + type);
         }
     }
 

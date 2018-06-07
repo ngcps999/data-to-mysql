@@ -6,3 +6,4 @@ server:
 conflation:
   enable-fusion: true
   conflatedModelName: biluFusion.v2
+  subject-prefix: http://knowledge.richinfo.com/

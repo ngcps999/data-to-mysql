@@ -31,6 +31,7 @@ public class TahitiAnalysisServerApplication {
 
     @Value("${conflation.enable-fusion}") String enableFusion;
     @Value("${conflation.conflatedModelName}") String newModelName;
+    @Value("${conflation.subject-prefix}") String subjectPrefix;
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
@@ -50,11 +51,12 @@ public class TahitiAnalysisServerApplication {
 
     public void conflate() {
         if(enableFusion.trim().toLowerCase().equals("true")){
-            FusionEngine fusionEngine = new FusionEngine(jenaLibrary);
+            FusionEngine fusionEngine = new FusionEngine(jenaLibrary, subjectPrefix);
             Model model = fusionEngine.generateFusionModel();
-            jenaLibrary.openWriteTransaction();
+
+            jenaLibrary.removeModel(newModelName);
             jenaLibrary.saveModel(model, newModelName);
-            jenaLibrary.closeTransaction();
+
             jenaLibrary.updateRuntimeModelName(newModelName);
         }
     }

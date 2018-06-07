@@ -79,8 +79,10 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
     @Override
     public void removeModel(String modelName) {
         try {
+            openWriteTransaction();
             dataset.removeNamedModel(modelName);
             dataset.commit();
+            closeTransaction();
             LOG.info(modelName + "：已被移除!");
         } finally {
         }
@@ -147,8 +149,9 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
 
     @Override
     public void saveModel(Model newModel, String newModelName) {
-        removeModel(newModelName);
+        openWriteTransaction();
         dataset.addNamedModel(newModelName, newModel);
         dataset.commit();
+        closeTransaction();
     }
 }
