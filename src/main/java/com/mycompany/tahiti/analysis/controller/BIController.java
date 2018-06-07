@@ -1,6 +1,7 @@
 package com.mycompany.tahiti.analysis.controller;
 
 import com.mycompany.tahiti.analysis.model.EntityType;
+import com.mycompany.tahiti.analysis.model.Graph;
 import com.mycompany.tahiti.analysis.repository.CaseBaseInfo;
 import com.mycompany.tahiti.analysis.repository.DataFactory;
 import io.swagger.annotations.Api;
@@ -91,6 +92,17 @@ public class BIController {
             }
         }
         return map;
+    }
+
+    @GetMapping("/peopleRelation")
+    @ResponseBody
+    public Graph getPeopleRelation(){
+        Graph graph = new Graph();
+        //subjectId, caseCount
+        //subjectId, personName
+        //select top person
+        //same case relation
+        return graph;
     }
 
     public Map<String, Integer> returnTopN(Map<String, Integer> raw_result,int n){

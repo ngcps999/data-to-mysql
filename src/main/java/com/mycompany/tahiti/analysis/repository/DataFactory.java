@@ -31,6 +31,10 @@ public class DataFactory {
     //tag, tagBiluCount
     private Map<String, Integer> tagBiluCount = null;
 
+    //subjectId, Person
+    //Only contains person subjectId + person name + bilu subjectId + case subjectId
+    private Map<String,Person> personRelationCache = new HashMap<>();
+
     // caseId, Case
     private Map<String, Case> caseCache = new HashMap<>();
 
@@ -51,6 +55,24 @@ public class DataFactory {
         allSimpleCases.clear();
         getAllCaseBaseInfo();
         return true;
+    }
+
+    public Map<String,Person> getPersonRelaticn(){
+        if(personRelationCache.size()>0) return personRelationCache;
+        try{
+            jenaLibrary.openReadTransaction();
+            Map<String,Person> personRelation = new HashMap<>();
+
+            //get all person subjectId
+            //get all person subjectId to biluId
+            //get all biluId to caseId
+            //enrich person name
+
+            personRelationCache = personRelation;
+            return personRelationCache;
+        }finally {
+            jenaLibrary.closeTransaction();
+        }
     }
 
     public Integer getPersonCount() {
