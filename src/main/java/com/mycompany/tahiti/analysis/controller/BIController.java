@@ -96,7 +96,7 @@ public class BIController {
         return map;
     }
 
-    @GetMapping("/peopleGraph")
+    /*@GetMapping("/peopleGraph")
     @ResponseBody
     public Graph getPeopleRelation(@RequestParam("entityNum") String entityNum) {
         Graph graph = new Graph();
@@ -109,7 +109,7 @@ public class BIController {
         //List<Map.Entry<String, Integer>> topEntries = entries.subList(0,(int)entityNum);
 
         return graph;
-    }
+    }*/
 
     public Map<String, Integer> returnTopN(Map<String, Integer> raw_result, int n) {
         Map<String, Integer> result = new LinkedHashMap<>();

@@ -62,6 +62,7 @@ public class CaseController {
         CaseRichInfo richInfo = new CaseRichInfo();
 
         if(aCase != null) {
+            richInfo.setSubjectId(aCase.getSubjectId());
             richInfo.setCaseId(aCase.getCaseId());
             richInfo.setCaseName(aCase.getCaseName());
             richInfo.setCaseType(aCase.getCaseType());
