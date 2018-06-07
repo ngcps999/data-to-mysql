@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class TdbJenaLibrary extends BaseJenaLibrary {
 
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-    Lock writeLock = readWriteLock.writeLock();
+    //Lock writeLock = readWriteLock.writeLock();
 
     private static final Logger LOG = Logger.getLogger(TdbJenaLibrary.class);
     public Dataset dataset = null;
@@ -38,7 +38,7 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
     @Override
     public void openReadTransaction(){
         try {
-            writeLock.lock();
+            //writeLock.lock();
             if(dataset.isInTransaction()) {
                 dataset.end();
             }
@@ -48,10 +48,9 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
         }
 
     }
-
+    @Override
     public void openWriteTransaction() {
         try {
-            writeLock.lock();
             if(dataset.isInTransaction()) {
                 dataset.end();
             }
@@ -66,7 +65,7 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
     public void closeTransaction(){
         try {
             dataset.end();
-            writeLock.unlock();
+            //writeLock.unlock();
         } catch (Exception e) {
             LOG.error(e.getMessage());
         }
@@ -80,8 +79,10 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
     @Override
     public void removeModel(String modelName) {
         try {
+            openWriteTransaction();
             dataset.removeNamedModel(modelName);
             dataset.commit();
+            closeTransaction();
             LOG.info(modelName + "：已被移除!");
         } finally {
         }
@@ -144,5 +145,13 @@ public class TdbJenaLibrary extends BaseJenaLibrary {
         } finally {
             //writeLock.unlock();
         }
+    }
+
+    @Override
+    public void saveModel(Model newModel, String newModelName) {
+        openWriteTransaction();
+        dataset.addNamedModel(newModelName, newModel);
+        dataset.commit();
+        closeTransaction();
     }
 }

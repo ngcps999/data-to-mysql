@@ -33,6 +33,10 @@ public class FusekiJenaLibrary extends BaseJenaLibrary{
     }
 
     @Override
+    public void saveModel(Model newModel, String newModelName) {
+        accessor.putModel(newModelName, newModel);
+    }
+    @Override
     public Model getLatestModel() {
         cacheModel = getModel(modelName);
         return cacheModel;

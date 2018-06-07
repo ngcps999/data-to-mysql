@@ -1,6 +1,10 @@
 package com.mycompany.tahiti.analysis.springboot;
 
+import com.mycompany.tahiti.analysis.fusion.FusionEngine;
+import com.mycompany.tahiti.analysis.jena.JenaLibrary;
 import com.mycompany.tahiti.analysis.repository.DataFactory;
+import lombok.val;
+import org.apache.jena.rdf.model.Model;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -22,9 +26,12 @@ public class TahitiAnalysisServerApplication {
     @Autowired
     DataFactory dataFactory;
 
-    public TahitiAnalysisServerApplication(@Value("${jenaModelName}") String jenaModelName){
-        //Configs.addConfig("jenaModelName", jenaModelName);
-    }
+    @Autowired
+    JenaLibrary jenaLibrary;
+
+    @Value("${conflation.enable-fusion}") String enableFusion;
+    @Value("${conflation.conflatedModelName}") String newModelName;
+    @Value("${conflation.subject-prefix}") String subjectPrefix;
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
@@ -42,7 +49,21 @@ public class TahitiAnalysisServerApplication {
         return dataFactory;
     }
 
+    public void conflate() {
+        if(enableFusion.trim().toLowerCase().equals("true")){
+            FusionEngine fusionEngine = new FusionEngine(jenaLibrary, subjectPrefix);
+            Model model = fusionEngine.generateFusionModel();
+
+            jenaLibrary.removeModel(newModelName);
+            jenaLibrary.saveModel(model, newModelName);
+
+            jenaLibrary.updateRuntimeModelName(newModelName);
+        }
+    }
+
     public static void main(String[] args){
-        SpringApplication.run(TahitiAnalysisServerApplication.class,args);
+        val context = SpringApplication.run(TahitiAnalysisServerApplication.class,args);
+        val app = context.getBean(TahitiAnalysisServerApplication.class);
+        app.conflate();
     }
 }

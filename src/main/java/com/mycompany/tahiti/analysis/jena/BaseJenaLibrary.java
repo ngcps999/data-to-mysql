@@ -43,6 +43,19 @@ public class BaseJenaLibrary implements JenaLibrary{
 
     }
 
+    @Override
+    public void saveModel(Model newModel, String newModelName) {
+    }
+
+    @Override
+    public void updateRuntimeModelName(String newModelName){
+        modelName = newModelName;
+    }
+
+    @Override
+    public Model deepCopyModel(Model model){
+        return ModelFactory.createDefaultModel().add(model);
+    }
 
     @Override
     public void closeDB() {
@@ -217,6 +230,11 @@ public class BaseJenaLibrary implements JenaLibrary{
 
     @Override
     public void openReadTransaction() {
+
+    }
+
+    @Override
+    public void openWriteTransaction() {
 
     }
 
