@@ -80,10 +80,13 @@ public class BIController {
         List<CaseBaseInfo> cases = dataFactory.getAllCaseBaseInfo();
         for(CaseBaseInfo aCase:cases){
             if(aCase.getCaseType()!=null &&!aCase.getCaseType().isEmpty()){
-                if(map.keySet().contains(aCase.getCaseType())){
-                    map.put(aCase.getCaseType(),map.get(aCase.getCaseType())+1);
-                }else{
-                    map.put(aCase.getCaseType(),1);
+                String[] caseCate = aCase.getCaseType().split(",");
+                for(String cate:caseCate){
+                    if(map.keySet().contains(cate)){
+                        map.put(cate,map.get(cate)+1);
+                    }else{
+                        map.put(cate,1);
+                    }
                 }
             }
         }
