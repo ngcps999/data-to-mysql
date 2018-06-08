@@ -37,7 +37,7 @@ public class DataFactory {
     private Map<String, Integer> tagBiluCount = null;
 
     //subjectId, Person
-    //Only contains person subjectId + person name + bilu subjectId + case subjectId
+    //Only contains person subjectId + person name + identity + bilu subjectId + case subjectId
     private Map<String, Person> personRelationCache = new HashMap<>();
 
     // caseId, Case
@@ -497,6 +497,30 @@ public class DataFactory {
             }
         }
     }
+
+    public CaseBaseInfo getCaseBaseInfoById(String subjectId) {
+        if (allSimpleCases.size() > 0)
+            return allSimpleCases.getOrDefault(subjectId, new CaseBaseInfo());
+        else {
+            try {
+                jenaLibrary.openReadTransaction();
+                Model model = jenaLibrary.getRuntimeModel();
+
+                val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
+
+                while (iterator.hasNext()) {
+                    CaseBaseInfo aCase = getCaseBaseInfo(model, iterator.next().getSubject());
+                    allSimpleCases.put(aCase.getSubjectId(), aCase);
+                }
+
+                return allSimpleCases.getOrDefault(subjectId, new CaseBaseInfo());
+
+            } finally {
+                jenaLibrary.closeTransaction();
+            }
+        }
+    }
+
 
     private CaseBaseInfo getCaseBaseInfo(Model model, Resource resource) {
         CaseBaseInfo caseBaseInfo = new CaseBaseInfo();
