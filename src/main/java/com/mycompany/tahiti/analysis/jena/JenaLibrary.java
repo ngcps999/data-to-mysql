@@ -11,6 +11,7 @@ public interface JenaLibrary {
     Model getModel(String modelName);
     Model getRuntimeModel();
     Model getLatestModel();
+    void updateCacheModel();
     Model getDefaultModel();
     void removeModel(String modelName);
     void closeDB();

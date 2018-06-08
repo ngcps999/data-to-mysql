@@ -56,8 +56,8 @@ public class TahitiAnalysisServerApplication {
 
             jenaLibrary.removeModel(newModelName);
             jenaLibrary.saveModel(model, newModelName);
-
             jenaLibrary.updateRuntimeModelName(newModelName);
+            jenaLibrary.updateCacheModel();
         }
     }
 

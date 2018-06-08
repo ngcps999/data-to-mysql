@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 public class BaseJenaLibrary implements JenaLibrary{
     protected boolean jenaDropExistModel = false;
     protected String modelName;
+    protected Model cacheModel = null;
+
     public BaseJenaLibrary(boolean jenaDropExistModel, String modelName) {
         this.jenaDropExistModel = jenaDropExistModel;
         this.modelName = modelName;
@@ -25,13 +27,22 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
-    public Model getRuntimeModel() {
-        return getModel(modelName);
+    public Model getLatestModel() {
+        cacheModel = getModel(modelName);
+        return cacheModel;
     }
 
     @Override
-    public Model getLatestModel() {
-        return getModel(modelName);
+    public Model getRuntimeModel() {
+        if(cacheModel == null) {
+            cacheModel = getModel(modelName);
+        }
+        return cacheModel;
+    }
+
+    @Override
+    public void updateCacheModel() {
+        cacheModel = getModel(modelName);
     }
 
     @Override
