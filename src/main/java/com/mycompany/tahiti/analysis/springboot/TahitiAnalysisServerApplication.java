@@ -5,6 +5,7 @@ import com.mycompany.tahiti.analysis.jena.JenaLibrary;
 import com.mycompany.tahiti.analysis.repository.DataFactory;
 import lombok.val;
 import org.apache.jena.rdf.model.Model;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -33,6 +34,8 @@ public class TahitiAnalysisServerApplication {
     @Value("${conflation.conflatedModelName}") String newModelName;
     @Value("${conflation.subject-prefix}") String subjectPrefix;
 
+    private static final Logger LOG = Logger.getLogger(TahitiAnalysisServerApplication.class);
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurerAdapter() {
@@ -47,6 +50,7 @@ public class TahitiAnalysisServerApplication {
     public DataFactory createDataFactory() {
         dataFactory.getAllCaseBaseInfo();
         dataFactory.getPersonRelaticn();
+        LOG.info("DataFactory is created!");
         return dataFactory;
     }
 
