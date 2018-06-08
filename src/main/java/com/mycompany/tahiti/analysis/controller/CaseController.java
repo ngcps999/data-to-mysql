@@ -200,57 +200,37 @@ public class CaseController {
     @ResponseBody
     @GetMapping("/{caseId}/person")
     public List<RelevantGraph> getRelevantBiluParagraphsByPersonId(@PathVariable("caseId") String caseId, @RequestParam("keywordList") List<String> keywordList) {
-        try {
-            jenaLibrary.openReadTransaction();
-            Model model = jenaLibrary.getRuntimeModel();
+        keywordList.remove("");
 
-            keywordList.remove("");
+        int before_paragraph_length = 30;
+        int after_paragraph_length = 40;
+        val result = new ArrayList<RelevantGraph>();
 
-            List<String> bilus_list = new ArrayList<>();
-            val iterator = jenaLibrary.getStatementsById(model, caseId);
-            while (iterator.hasNext()) {
-                Statement statement = iterator.next();
-                Resource resource = statement.getSubject();
-                List<String> bilus;
-                bilus = Lists.newArrayList(jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu")).stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
-                bilus_list.addAll(bilus);
-            }
+        Case aCase = dataFactory.getCaseById(caseId);
+        List<Bilu> bilus = aCase.getBilus();
 
-            int before_paragraph_length = 30;
-            int after_paragraph_length = 40;
-            val result = new ArrayList<RelevantGraph>();
-            Iterator<Statement> stIter = jenaLibrary.getStatementsByBatchSP(model, bilus_list, "common:common.document.contentStream");
-            while (stIter.hasNext()) {
-                Statement statement = stIter.next();
-                String content = statement.getString();
-                for (String keyword : keywordList) {
-                    if (content != null && content.contains(keyword)) {
-                        String BiluId = "";
-                        val ids = jenaLibrary.getStringValueBySP(model, statement.getSubject(), "common:type.object.id");
-                        if (ids.size() > 0) BiluId = ids.get(0);
+        for (Bilu bilu : bilus) {
+            String content = bilu.getContent();
+            for (String keyword : keywordList) {
+                if (content != null && content.contains(keyword)) {
+                    String BiluId = bilu.getBiluId();
+                    String BiluName = bilu.getName();
 
-                        String BiluName = "";
-                        val names = jenaLibrary.getStringValueBySP(model, statement.getSubject(), "common:type.object.name");
-                        if (names.size() > 0) BiluName = names.get(0);
-
-                        for (int i = -1; (i = content.indexOf(keyword, i + 1)) != -1; i++) {
-                            int start_index = i-before_paragraph_length>0?i-before_paragraph_length:0;
-                            int end_index = start_index+before_paragraph_length+after_paragraph_length+keyword.length()<content.length()?start_index+before_paragraph_length+after_paragraph_length+keyword.length():content.length()-1;
-                            String paragraph = content.substring(start_index, end_index);
-                            val p1 = new RelevantGraph();
-                            p1.setBiluName(BiluName);
-                            p1.setBiluId(BiluId);
-                            p1.setKeyword(keyword);
-                            p1.setParagraph(paragraph);
-                            result.add(p1);
-                        }
+                    for (int i = -1; (i = content.indexOf(keyword, i + 1)) != -1; i++) {
+                        int start_index = i - before_paragraph_length > 0 ? i - before_paragraph_length : 0;
+                        int end_index = start_index + before_paragraph_length + after_paragraph_length + keyword.length() < content.length() ? start_index + before_paragraph_length + after_paragraph_length + keyword.length() : content.length() - 1;
+                        String paragraph = content.substring(start_index, end_index);
+                        val p1 = new RelevantGraph();
+                        p1.setBiluName(BiluName);
+                        p1.setBiluId(BiluId);
+                        p1.setKeyword(keyword);
+                        p1.setParagraph(paragraph);
+                        result.add(p1);
                     }
                 }
             }
-            return result;
-        } finally {
-            jenaLibrary.closeTransaction();
         }
+        return result;
     }
 
     @ResponseBody

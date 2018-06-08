@@ -92,8 +92,10 @@ public class FusionEngine {
             val relatedBilus = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "gongan:gongan.bilu.entity", personSubject))
                     .stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
 
+            val biluSet = new HashSet<String>(relatedBilus);
+
             // set cases
-            val relatedCases = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", relatedBilus))
+            val relatedCases = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", biluSet))
                     .stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
             person.getCaseList().addAll(relatedCases);
 
