@@ -1,5 +1,6 @@
 package com.mycompany.tahiti.analysis.jena;
 
+import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.val;
 import org.apache.jena.rdf.model.*;
@@ -11,6 +12,8 @@ import java.util.stream.Collectors;
 public class BaseJenaLibrary implements JenaLibrary{
     protected boolean jenaDropExistModel = false;
     protected String modelName;
+    protected Model cacheModel = null;
+
     public BaseJenaLibrary(boolean jenaDropExistModel, String modelName) {
         this.jenaDropExistModel = jenaDropExistModel;
         this.modelName = modelName;
@@ -27,13 +30,22 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
-    public Model getRuntimeModel() {
-        return getModel(modelName);
+    public Model getLatestModel() {
+        cacheModel = getModel(modelName);
+        return cacheModel;
     }
 
     @Override
-    public Model getLatestModel() {
-        return getModel(modelName);
+    public Model getRuntimeModel() {
+        if(cacheModel == null) {
+            cacheModel = getModel(modelName);
+        }
+        return cacheModel;
+    }
+
+    @Override
+    public void updateCacheModel() {
+        cacheModel = getModel(modelName);
     }
 
     @Override
@@ -58,6 +70,21 @@ public class BaseJenaLibrary implements JenaLibrary{
     @Override
     public Model deepCopyModel(Model model){
         return ModelFactory.createDefaultModel().add(model);
+    }
+
+    @Override
+    public List<Statement> getResultByPOContains(String p, String o) {
+        openReadTransaction();
+        val model = getRuntimeModel();
+        SimpleSelector simpleSelector = new SimpleSelector() {
+            @Override
+            public boolean selects(Statement s) {
+                return s.getPredicate().toString().contains(p) && s.getObject().toString().contains(o);
+            }
+        };
+        val statements = Lists.newArrayList(model.listStatements(simpleSelector));
+        closeTransaction();
+        return statements;
     }
 
     @Override

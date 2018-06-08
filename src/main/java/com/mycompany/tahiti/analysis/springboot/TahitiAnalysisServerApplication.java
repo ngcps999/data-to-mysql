@@ -46,6 +46,7 @@ public class TahitiAnalysisServerApplication {
     @Bean
     public DataFactory createDataFactory() {
         dataFactory.getAllCaseBaseInfo();
+        dataFactory.getPersonRelaticn();
         return dataFactory;
     }
 
@@ -56,8 +57,8 @@ public class TahitiAnalysisServerApplication {
 
             jenaLibrary.removeModel(newModelName);
             jenaLibrary.saveModel(model, newModelName);
-
             jenaLibrary.updateRuntimeModelName(newModelName);
+            jenaLibrary.updateCacheModel();
         }
     }
 

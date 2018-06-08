@@ -12,6 +12,7 @@ public interface JenaLibrary {
     Model getModel(String modelName);
     Model getRuntimeModel();
     Model getLatestModel();
+    void updateCacheModel();
     Model getDefaultModel();
     void removeModel(String modelName);
     void closeDB();
@@ -47,4 +48,6 @@ public interface JenaLibrary {
     void updateRuntimeModelName(String newModelName);
 
     Model deepCopyModel(Model model);
+
+    List<Statement> getResultByPOContains(String p, String o);
 }
