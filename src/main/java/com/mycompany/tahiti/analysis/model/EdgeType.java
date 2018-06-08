@@ -3,7 +3,8 @@ package com.mycompany.tahiti.analysis.model;
 public enum EdgeType {
 
     GuanlianRen("关联人"),
-    GuanlianAnjian("关联案件");
+    GuanlianAnjian("关联案件"),
+    Gongan("共案");
 
     private final String type;
     EdgeType(String type) {
