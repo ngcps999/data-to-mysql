@@ -10,8 +10,10 @@ import lombok.val;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import sun.rmi.runtime.Log;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,9 +22,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/cases")
 @Api(description = "case controller")
 public class CaseController {
-    @Autowired
-    JenaLibrary jenaLibrary;
-
     @Autowired
     DataFactory dataFactory;
 

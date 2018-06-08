@@ -16,6 +16,8 @@ public interface JenaLibrary {
     void removeModel(String modelName);
     void closeDB();
 
+    String getModelName();
+
     // read
     List<Statement> getStatements(Model model);
     Iterator<Statement> getStatementsByEntityType(Model model, String type);

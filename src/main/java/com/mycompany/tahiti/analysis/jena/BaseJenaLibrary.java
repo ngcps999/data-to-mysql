@@ -15,6 +15,12 @@ public class BaseJenaLibrary implements JenaLibrary{
         this.jenaDropExistModel = jenaDropExistModel;
         this.modelName = modelName;
     }
+
+    @Override
+    public String getModelName(){
+        return modelName;
+    }
+
     @Override
     public Model getModel(String modelName) {
         return null;

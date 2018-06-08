@@ -23,9 +23,6 @@ import java.util.stream.Collectors;
 @Api(description = "Bilu controller")
 public class BiluController {
     @Autowired
-    JenaLibrary jenaLibrary;
-
-    @Autowired
     DataFactory dataFactory;
 
     @ResponseBody

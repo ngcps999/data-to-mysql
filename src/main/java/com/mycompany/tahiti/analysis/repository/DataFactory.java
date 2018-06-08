@@ -3,11 +3,12 @@ package com.mycompany.tahiti.analysis.repository;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.mycompany.tahiti.analysis.jena.JenaLibrary;
+import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import lombok.val;
-import org.apache.jena.base.Sys;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -18,6 +19,8 @@ import java.util.stream.Collectors;
 public class DataFactory {
     @Autowired
     JenaLibrary jenaLibrary;
+
+    private static final Logger LOG = Logger.getLogger(TdbJenaLibrary.class);
 
     // This is only for cache, not full data
     //For BI overall
@@ -387,6 +390,9 @@ public class DataFactory {
     }
 
     public List<CaseBaseInfo> getAllCaseBaseInfo() {
+
+        LOG.info("Current Model is" + jenaLibrary.getModelName());
+
         if (allSimpleCases.size() > 0)
             return allSimpleCases.values().stream().collect(Collectors.toList());
         else {
