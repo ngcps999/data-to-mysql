@@ -1,9 +1,6 @@
 package com.mycompany.tahiti.analysis.controller;
 
-import com.mycompany.tahiti.analysis.model.Edge;
-import com.mycompany.tahiti.analysis.model.EntityType;
-import com.mycompany.tahiti.analysis.model.Graph;
-import com.mycompany.tahiti.analysis.model.Node;
+import com.mycompany.tahiti.analysis.model.*;
 import com.mycompany.tahiti.analysis.repository.CaseBaseInfo;
 import com.mycompany.tahiti.analysis.repository.DataFactory;
 import com.mycompany.tahiti.analysis.repository.Person;
@@ -115,11 +112,11 @@ public class BIController {
             Map<String, Object> properties = new HashMap<>();
             if (personRelationCache.get(entry.getKey()).getName() != null && !personRelationCache.get(entry.getKey()).getName().isEmpty()){
                 properties.put("name", personRelationCache.get(entry.getKey()).getName());
-                properties.put("type","人");
+                properties.put("type", NodeType.Person);
                 properties.put("crimeCount",entry.getValue());
             }else if(personRelationCache.get(entry.getKey()).getIdentity() != null && !personRelationCache.get(entry.getKey()).getIdentity().isEmpty()){
                 properties.put("name", personRelationCache.get(entry.getKey()).getIdentity());
-                properties.put("type","身份证");
+                properties.put("type",NodeType.Identity);
                 properties.put("crimeCount",entry.getValue());
             }
             node.setProperties(properties);
