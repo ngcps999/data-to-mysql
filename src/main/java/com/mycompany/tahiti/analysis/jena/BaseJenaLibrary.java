@@ -1,5 +1,6 @@
 package com.mycompany.tahiti.analysis.jena;
 
+import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.val;
 import org.apache.jena.rdf.model.*;
@@ -55,6 +56,21 @@ public class BaseJenaLibrary implements JenaLibrary{
     @Override
     public Model deepCopyModel(Model model){
         return ModelFactory.createDefaultModel().add(model);
+    }
+
+    @Override
+    public List<Statement> getResultByPOContains(String p, String o) {
+        openReadTransaction();
+        val model = getRuntimeModel();
+        SimpleSelector simpleSelector = new SimpleSelector() {
+            @Override
+            public boolean selects(Statement s) {
+                return s.getPredicate().toString().contains(p) && s.getObject().toString().contains(o);
+            }
+        };
+        val statements = Lists.newArrayList(model.listStatements(simpleSelector));
+        closeTransaction();
+        return statements;
     }
 
     @Override

@@ -44,4 +44,6 @@ public interface JenaLibrary {
     void updateRuntimeModelName(String newModelName);
 
     Model deepCopyModel(Model model);
+
+    List<Statement> getResultByPOContains(String p, String o);
 }
