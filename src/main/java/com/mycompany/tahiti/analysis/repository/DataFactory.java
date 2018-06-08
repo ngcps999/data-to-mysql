@@ -74,6 +74,7 @@ public class DataFactory {
                 personResourceList.add(personSubjectId);
                 Person person = new Person();
                 person.setSubjectId(personSubjectId);
+                personRelation.put(personSubjectId,person);
             }
 
             //get all person subjectId to biluId
@@ -81,20 +82,20 @@ public class DataFactory {
             List<String> biluResoursceList = new ArrayList<>();
             while (personBiluIter.hasNext()) {
                 Statement statement = personBiluIter.next();
-                String personSubjectId = statement.getString();
+                String personSubjectId = statement.getObject().toString();
                 String biluSubjectId = statement.getSubject().toString();
                 if (!biluResoursceList.contains(biluSubjectId)) biluResoursceList.add(biluSubjectId);
-
-                if (!personRelation.get(personSubjectId).getBiluList().contains(biluSubjectId))
+                if (!personRelation.get(personSubjectId).getBiluList().contains(biluSubjectId)){
                     personRelation.get(personSubjectId).getBiluList().add(biluSubjectId);
+                }
             }
 
             //get all biluId to caseId
-            Iterator<Statement> biluCaseIter = jenaLibrary.getStatementsByBatchSP(model, biluResoursceList, "gongan:gongan.case.bilu");
+            Iterator<Statement> biluCaseIter = jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", biluResoursceList);
             HashMap<String, String> biluCaseMap = new HashMap<>();
             while (biluCaseIter.hasNext()) {
                 Statement statement = biluCaseIter.next();
-                biluCaseMap.put(statement.getSubject().toString(), statement.getString());
+                biluCaseMap.put(statement.getObject().toString(),statement.getSubject().toString());
             }
             for (String personSubjectId : personRelation.keySet()){
                 Person person = personRelation.get(personSubjectId);
@@ -180,7 +181,6 @@ public class DataFactory {
         if (personBiluCount != null) return personBiluCount;
         try {
             jenaLibrary.openReadTransaction();
-            System.out.println("Jin!");
             Model model = jenaLibrary.getRuntimeModel();
             Iterator<Statement> iterator = jenaLibrary.getStatementsByEntityType(model, "common:person.person");
             List<String> resourceList = new ArrayList<>();
