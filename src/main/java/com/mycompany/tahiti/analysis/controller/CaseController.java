@@ -1,22 +1,13 @@
 package com.mycompany.tahiti.analysis.controller;
 
-import com.google.common.collect.Lists;
-import com.mycompany.tahiti.analysis.jena.JenaLibrary;
-import com.mycompany.tahiti.analysis.repository.*;
-import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import com.mycompany.tahiti.analysis.model.*;
+import com.mycompany.tahiti.analysis.repository.*;
 import io.swagger.annotations.Api;
 import lombok.val;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import sun.rmi.runtime.Log;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/cases")
@@ -74,7 +65,10 @@ public class CaseController {
     @ResponseBody
     @GetMapping("/{caseId}")
     public CaseRichInfo getCaseById(@PathVariable("caseId") String caseId) {
-        Case aCase = dataFactory.getCaseById(caseId);
+
+        String subjectId = dataFactory.getSubjectIdById(caseId);
+
+        Case aCase = dataFactory.getCaseById(subjectId);
 
         CaseRichInfo richInfo = new CaseRichInfo();
 
@@ -155,49 +149,50 @@ public class CaseController {
                         richInfo.getDetailedPersons().add(personModel);
                     }
 
-                    // set graph
-                    Node pNode = new Node(personData.getSubjectId());
-                    Map<String, Object> props = new HashMap<>();
-                    if(!name.isEmpty()) {
-                        props.put("name", name);
-                        props.put("type", NodeType.Person.toString());
-                        if(!identity.isEmpty())
+                    if(!name.isEmpty() || !identity.isEmpty()) {
+                        // set graph
+                        Node pNode = new Node(personData.getSubjectId());
+                        Map<String, Object> props = new HashMap<>();
+                        if (!name.isEmpty()) {
+                            props.put("name", name);
+                            props.put("type", NodeType.Person.toString());
+                            if (!identity.isEmpty())
+                                props.put("identity", identity);
+                        } else {
                             props.put("identity", identity);
-                    }
-                    else {
-                        props.put("identity", identity);
-                        props.put("type", NodeType.Identity.toString());
-                    }
+                            props.put("type", NodeType.Identity.toString());
+                        }
 
-                    if(!contact.isEmpty()) {
-                        props.put("phone", contact);
-                    }
+                        if (!contact.isEmpty()) {
+                            props.put("phone", contact);
+                        }
 
-                    pNode.setProperties(props);
-                    richInfo.getGraph().getEntities().add(pNode);
+                        pNode.setProperties(props);
+                        richInfo.getGraph().getEntities().add(pNode);
 
-                    Edge edge = new Edge(new Random().nextInt(), aCase.getSubjectId(), personData.getSubjectId());
-                    edge.setChiType(EdgeType.GuanlianRen.toString());
+                        Edge edge = new Edge(new Random().nextInt(), aCase.getSubjectId(), personData.getSubjectId());
+                        edge.setChiType(EdgeType.GuanlianRen.toString());
 
-                    richInfo.getGraph().getRelationships().add(edge);
+                        richInfo.getGraph().getRelationships().add(edge);
 
-                    // find other cased related to this person
-                    for(String otherCaseId : personData.getCaseList()) {
-                        if (otherCaseId.equals(aCase.getCaseId()))
-                            continue;
+                        // find other cased related to this person
+                        for (String otherCaseSubjectId : personData.getCaseList()) {
+                            if (otherCaseSubjectId.equals(aCase.getSubjectId()))
+                                continue;
 
-                        Case otherCase = dataFactory.getCaseById(otherCaseId);
+                            CaseBaseInfo otherCase = dataFactory.getCaseBaseInfoById(otherCaseSubjectId);
 
-                        Node caseNode = new Node(otherCase.getSubjectId());
-                        caseNode.setProperties(new HashMap<>());
+                            Node caseNode = new Node(otherCase.getSubjectId());
+                            caseNode.setProperties(new HashMap<>());
 
-                        caseNode.getProperties().put("name", otherCase.getCaseName());
-                        caseNode.getProperties().put("type", NodeType.Case.toString());
-                        richInfo.getGraph().getEntities().add(caseNode);
+                            caseNode.getProperties().put("name", otherCase.getCaseName());
+                            caseNode.getProperties().put("type", NodeType.Case.toString());
+                            richInfo.getGraph().getEntities().add(caseNode);
 
-                        Edge csEdge = new Edge(new Random().nextInt(), personData.getSubjectId(), otherCase.getSubjectId());
-                        csEdge.setChiType(EdgeType.GuanlianAnjian.toString());
-                        richInfo.getGraph().getRelationships().add(csEdge);
+                            Edge csEdge = new Edge(new Random().nextInt(), personData.getSubjectId(), otherCase.getSubjectId());
+                            csEdge.setChiType(EdgeType.GuanlianAnjian.toString());
+                            richInfo.getGraph().getRelationships().add(csEdge);
+                        }
                     }
                 }
             }
@@ -217,13 +212,16 @@ public class CaseController {
     @ResponseBody
     @GetMapping("/{caseId}/person")
     public List<RelevantGraph> getRelevantBiluParagraphsByPersonId(@PathVariable("caseId") String caseId, @RequestParam("keywordList") List<String> keywordList) {
+
+        String subjectId = dataFactory.getSubjectIdById(caseId);
+
         keywordList.remove("");
 
         int before_paragraph_length = 30;
         int after_paragraph_length = 40;
         val result = new ArrayList<RelevantGraph>();
 
-        Case aCase = dataFactory.getCaseById(caseId);
+        Case aCase = dataFactory.getCaseById(subjectId);
         List<Bilu> bilus = aCase.getBilus();
 
         for (Bilu bilu : bilus) {

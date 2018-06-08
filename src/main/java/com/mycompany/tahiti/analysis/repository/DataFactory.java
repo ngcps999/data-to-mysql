@@ -3,10 +3,7 @@ package com.mycompany.tahiti.analysis.repository;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.mycompany.tahiti.analysis.jena.JenaLibrary;
-import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import lombok.val;
-import org.apache.jena.atlas.iterator.Iter;
-import org.apache.jena.base.Sys;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -22,7 +19,7 @@ public class DataFactory {
     @Autowired
     JenaLibrary jenaLibrary;
 
-    private static final Logger LOG = Logger.getLogger(TdbJenaLibrary.class);
+    private static final Logger LOG = Logger.getLogger(DataFactory.class);
 
     // This is only for cache, not full data
     //For BI overall
@@ -40,10 +37,10 @@ public class DataFactory {
     //Only contains person subjectId + person name + identity + bilu subjectId + case subjectId
     private Map<String, Person> personRelationCache = new HashMap<>();
 
-    // caseId, Case
+    // subjectId, Case
     private Map<String, Case> caseCache = new HashMap<>();
 
-    // biluId， Bilu
+    // subjectId， Bilu
     private Map<String, Bilu> biluCache = new HashMap<>();
 
     // subjectId, Person
@@ -233,46 +230,34 @@ public class DataFactory {
         }
     }
 
-    public Case getCaseById(String caseId) {
-        if (caseCache.containsKey(caseId))
-            return caseCache.get(caseId);
+    public Case getCaseById(String subjectId) {
+        if (caseCache.containsKey(subjectId))
+            return caseCache.get(subjectId);
         else {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
-                val iterator = jenaLibrary.getStatementsById(model, caseId);
 
-                if (iterator.hasNext()) {
-                    Statement statement = iterator.next();
-                    Resource resource = statement.getSubject();
-                    Case aCase = getCaseInfo(model, resource);
-                    caseCache.put(caseId, aCase);
-                    return aCase;
-                } else
-                    return new Case();
+                Case aCase = getCaseInfo(model, model.getResource(subjectId));
+                caseCache.put(subjectId, aCase);
+                return aCase;
             } finally {
                 jenaLibrary.closeTransaction();
             }
         }
     }
 
-    public Bilu getBiluById(String biluId) {
-        if (biluCache.containsKey(biluId))
-            return biluCache.get(biluId);
+    public Bilu getBiluById(String subjectId) {
+        if (biluCache.containsKey(subjectId))
+            return biluCache.get(subjectId);
         else {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
-                val iterator = jenaLibrary.getStatementsById(model, biluId);
 
-                if (iterator.hasNext()) {
-                    Statement statement = iterator.next();
-                    Resource resource = statement.getSubject();
-                    Bilu bilu = getBiluInfo(model, resource);
-                    biluCache.put(biluId, bilu);
-                    return bilu;
-                } else
-                    return new Bilu();
+                Bilu bilu = getBiluInfo(model, model.getResource(subjectId));
+                biluCache.put(subjectId, bilu);
+                return bilu;
             } finally {
                 jenaLibrary.closeTransaction();
             }
@@ -334,18 +319,13 @@ public class DataFactory {
         val relatedBilus = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "gongan:gongan.bilu.entity", resource))
                 .stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
 
-        val biluSet = new HashSet<String>(relatedBilus);
-
-        val biluIds = jenaLibrary.getStringValuesByBatchSP(model, biluSet, "common:type.object.id");
-        person.setBiluList(biluIds);
+        person.setBiluList(relatedBilus);
 
         // set cases
-        val relatedCases = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", biluSet))
+        val relatedCases = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", new HashSet<>(relatedBilus)))
                 .stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
 
-        val caseSet = new HashSet<String>(relatedCases);
-        val caseIds = jenaLibrary.getStringValuesByBatchSP(model, caseSet, "common:type.object.id");
-        person.setCaseList(caseIds);
+        person.setCaseList(relatedCases);
 
         return person;
     }
@@ -475,7 +455,7 @@ public class DataFactory {
 
     public List<CaseBaseInfo> getAllCaseBaseInfo() {
 
-        LOG.info("Current Model is" + jenaLibrary.getModelName());
+        LOG.info("Current Model is " + jenaLibrary.getModelName());
 
         if (allSimpleCases.size() > 0)
             return allSimpleCases.values().stream().collect(Collectors.toList());
@@ -522,7 +502,6 @@ public class DataFactory {
         }
     }
 
-
     private CaseBaseInfo getCaseBaseInfo(Model model, Resource resource) {
         CaseBaseInfo caseBaseInfo = new CaseBaseInfo();
 
@@ -567,5 +546,22 @@ public class DataFactory {
         }
 
         return caseBaseInfo;
+    }
+
+    public String getSubjectIdById(String id){
+        try {
+            jenaLibrary.openReadTransaction();
+            Model model = jenaLibrary.getRuntimeModel();
+            val iterator = jenaLibrary.getStatementsById(model, id);
+
+            if (iterator.hasNext()) {
+                return iterator.next().getSubject().toString();
+            } else {
+                LOG.error("can't find id: " + id);
+                return "";
+            }
+        } finally {
+            jenaLibrary.closeTransaction();
+        }
     }
 }

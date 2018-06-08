@@ -114,13 +114,15 @@ public class BIController {
                 properties.put("name", personRelationCache.get(entry.getKey()).getName());
                 properties.put("type", NodeType.Person.toString());
                 properties.put("crimeCount",entry.getValue());
+                node.setProperties(properties);
+                graph.getEntities().add(node);
             }else if(personRelationCache.get(entry.getKey()).getIdentity() != null && !personRelationCache.get(entry.getKey()).getIdentity().isEmpty()){
                 properties.put("name", personRelationCache.get(entry.getKey()).getIdentity());
                 properties.put("type",NodeType.Identity.toString());
                 properties.put("crimeCount",entry.getValue());
+                node.setProperties(properties);
+                graph.getEntities().add(node);
             }
-            node.setProperties(properties);
-            graph.getEntities().add(node);
         }
         //generate edge
         for(Node node1 : graph.getEntities()){

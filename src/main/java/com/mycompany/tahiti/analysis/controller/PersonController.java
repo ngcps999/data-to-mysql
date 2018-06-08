@@ -34,9 +34,10 @@ public class PersonController {
         personRichInfo.setInvolvedCases(involvedCases);
         personRichInfo.setSameCasePersonList(sameCasePersonListFinal);
         personRichInfo.setSameCasePersonNameList(sameCaseNameList);
-        for (String caseId : person.getCaseList()) {
-            Case aCase = dataFactory.getCaseById(caseId);
+        for (String caseSubjectId : person.getCaseList()) {
+            Case aCase = dataFactory.getCaseById(caseSubjectId);
             PersonRichInfo.InvolvedCaseWithRole involvedCaseWithRole = personRichInfo.new InvolvedCaseWithRole();
+            involvedCaseWithRole.setSubjectId(aCase.getSubjectId());
             involvedCaseWithRole.setCaseId(aCase.getCaseId());
             involvedCaseWithRole.setCaseName(aCase.getCaseName());
             involvedCaseWithRole.setCaseType(aCase.getCaseType());
@@ -58,6 +59,7 @@ public class PersonController {
                             List<CaseBaseInfo> sameCases = new ArrayList<>();
                             CaseBaseInfo caseBaseInfo = new CaseBaseInfo();
                             caseBaseInfo.setCaseName(aCase.getCaseName());
+                            caseBaseInfo.setSubjectId(aCase.getSubjectId());
                             caseBaseInfo.setCaseId(aCase.getCaseId());
                             sameCases.add(caseBaseInfo);
                             sameCasePerson.setSameCases(sameCases);
@@ -67,6 +69,7 @@ public class PersonController {
                                 if ( !isNullOrEmpty(item.getIdentity()) && !isNullOrEmpty(sameCasePerson.getIdentity()) && item.getIdentity().equals(sameCasePerson.getIdentity()) || !isNullOrEmpty(item.getName()) && !isNullOrEmpty(sameCasePerson.getName()) && item.getName().equals(sameCasePerson.getName())) {
                                     CaseBaseInfo caseBaseInfo = new CaseBaseInfo();
                                     caseBaseInfo.setCaseName(aCase.getCaseName());
+                                    caseBaseInfo.setSubjectId(aCase.getSubjectId());
                                     caseBaseInfo.setCaseId(aCase.getCaseId());
                                     if (!item.getSameCases().contains(caseBaseInfo)) {
                                         item.getSameCases().add(caseBaseInfo);
