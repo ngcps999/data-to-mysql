@@ -3,12 +3,14 @@ package com.mycompany.tahiti.analysis.repository;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.mycompany.tahiti.analysis.jena.JenaLibrary;
+import com.mycompany.tahiti.analysis.jena.TdbJenaLibrary;
 import lombok.val;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.base.Sys;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -19,6 +21,8 @@ import java.util.stream.Collectors;
 public class DataFactory {
     @Autowired
     JenaLibrary jenaLibrary;
+
+    private static final Logger LOG = Logger.getLogger(TdbJenaLibrary.class);
 
     // This is only for cache, not full data
     //For BI overall
@@ -77,8 +81,10 @@ public class DataFactory {
                 personRelation.put(personSubjectId,person);
             }
 
+            HashSet<String> personSet = new HashSet<>(personResourceList);
+
             //get all person subjectId to biluId
-            Iterator<Statement> personBiluIter = jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.bilu.entity", personResourceList);
+            Iterator<Statement> personBiluIter = jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.bilu.entity", personSet);
             List<String> biluResoursceList = new ArrayList<>();
             while (personBiluIter.hasNext()) {
                 Statement statement = personBiluIter.next();
@@ -91,7 +97,7 @@ public class DataFactory {
             }
 
             //get all biluId to caseId
-            Iterator<Statement> biluCaseIter = jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", biluResoursceList);
+            Iterator<Statement> biluCaseIter = jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", personSet);
             HashMap<String, String> biluCaseMap = new HashMap<>();
             while (biluCaseIter.hasNext()) {
                 Statement statement = biluCaseIter.next();
@@ -107,14 +113,14 @@ public class DataFactory {
                 }
             }
             //enrich person name and identification
-            Iterator<Statement> pNamesIter = jenaLibrary.getStatementsByBatchSP(model, personResourceList, "common:type.object.name");
+            Iterator<Statement> pNamesIter = jenaLibrary.getStatementsByBatchSP(model, personSet, "common:type.object.name");
             while (pNamesIter.hasNext()){
                 Statement statement = pNamesIter.next();
                 String personSubjectId = statement.getSubject().toString();
                 personRelation.get(personSubjectId).setName(statement.getString());
             }
 
-            Iterator<Statement> pIdentitiesIter = jenaLibrary.getStatementsByBatchSP(model, personResourceList, "common:person.person.identification");
+            Iterator<Statement> pIdentitiesIter = jenaLibrary.getStatementsByBatchSP(model, personSet, "common:person.person.identification");
             while (pIdentitiesIter.hasNext()) {
                 Statement statement = pIdentitiesIter.next();
                 String personSubjectId = statement.getSubject().toString();
@@ -183,7 +189,7 @@ public class DataFactory {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
             Iterator<Statement> iterator = jenaLibrary.getStatementsByEntityType(model, "common:person.person");
-            List<String> resourceList = new ArrayList<>();
+            HashSet<String> resourceList = new HashSet<>();
             while (iterator.hasNext()) {
                 String resource = iterator.next().getSubject().toString();
                 resourceList.add(resource);
@@ -327,13 +333,17 @@ public class DataFactory {
         val relatedBilus = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "gongan:gongan.bilu.entity", resource))
                 .stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
 
-        val biluIds = jenaLibrary.getStringValuesByBatchSP(model, relatedBilus, "common:type.object.id");
+        val biluSet = new HashSet<String>(relatedBilus);
+
+        val biluIds = jenaLibrary.getStringValuesByBatchSP(model, biluSet, "common:type.object.id");
         person.setBiluList(biluIds);
 
         // set cases
-        val relatedCases = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", relatedBilus))
+        val relatedCases = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", biluSet))
                 .stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
-        val caseIds = jenaLibrary.getStringValuesByBatchSP(model, relatedCases, "common:type.object.id");
+
+        val caseSet = new HashSet<String>(relatedCases);
+        val caseIds = jenaLibrary.getStringValuesByBatchSP(model, caseSet, "common:type.object.id");
         person.setCaseList(caseIds);
 
         return person;
@@ -463,6 +473,9 @@ public class DataFactory {
     }
 
     public List<CaseBaseInfo> getAllCaseBaseInfo() {
+
+        LOG.info("Current Model is" + jenaLibrary.getModelName());
+
         if (allSimpleCases.size() > 0)
             return allSimpleCases.values().stream().collect(Collectors.toList());
         else {
@@ -510,15 +523,21 @@ public class DataFactory {
         // set suspect
         caseBaseInfo.setSuspects(new LinkedList<>());
 
-        val bilus = Lists.newArrayList(jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu")).stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
-        List<String> biluConnections = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "common:common.connection.from", bilus)).stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+        val bilus = Lists.newArrayList(jenaLibrary.getStatementsBySP(model, resource, "gongan:gongan.case.bilu"))
+                .stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
+
+        val biluSet = new HashSet<String>(bilus);
+        List<String> biluConnections = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "common:common.connection.from", biluSet))
+                .stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
 
         for (String connection : biluConnections) {
             List<String> connectTypes = jenaLibrary.getStringValueBySP(model, model.getResource(connection), "common:common.connection.type");
             if (connectTypes.contains("common:common.connection.BiluEntityXianyiren")) {
                 val toStatements = Lists.newArrayList(jenaLibrary.getStatementsBySP(model, model.getResource(connection), "common:common.connection.to"))
                         .stream().map(s -> s.getResource().toString()).distinct().collect(Collectors.toList());
-                caseBaseInfo.getSuspects().addAll(jenaLibrary.getStringValuesByBatchSP(model, toStatements, "common:type.object.name"));
+
+                val toSet = new HashSet<String>(toStatements);
+                caseBaseInfo.getSuspects().addAll(jenaLibrary.getStringValuesByBatchSP(model, toSet, "common:type.object.name"));
             }
         }
 
