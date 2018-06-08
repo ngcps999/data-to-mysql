@@ -44,10 +44,28 @@ public class CaseController {
         if (keyword.isEmpty())
             return allCases;
 
+        List<String> caseSIds = new LinkedList<>();
         List<CaseBaseInfo> cases = new LinkedList<>();
         for (CaseBaseInfo cs : allCases) {
-            if (cs.getCaseName().contains(keyword))
+            if (cs.getCaseName().contains(keyword)) {
+                caseSIds.add(cs.getSubjectId());
                 cases.add(cs);
+            }
+        }
+
+        Map<String, Person> persons = dataFactory.getPersonRelaticn();
+        for(String personSubject : persons.keySet()){
+            Person person = persons.get(personSubject);
+            if(keyword.equals(person.getName()) || keyword.equals(person.getIdentity())){
+                val caseSubjects = person.getCaseList();
+                for(String caseSubject : caseSubjects){
+                    if(!caseSIds.contains(caseSubject)) {
+                        val caseBaseInfo = dataFactory.getCaseBaseInfoById(caseSubject);
+                        cases.add(caseBaseInfo);
+                        caseSIds.add(caseBaseInfo.getSubjectId());
+                    }
+                }
+            }
         }
 
         return cases;
