@@ -112,11 +112,11 @@ public class BIController {
             Map<String, Object> properties = new HashMap<>();
             if (personRelationCache.get(entry.getKey()).getName() != null && !personRelationCache.get(entry.getKey()).getName().isEmpty()){
                 properties.put("name", personRelationCache.get(entry.getKey()).getName());
-                properties.put("type", NodeType.Person);
+                properties.put("type", NodeType.Person.toString());
                 properties.put("crimeCount",entry.getValue());
             }else if(personRelationCache.get(entry.getKey()).getIdentity() != null && !personRelationCache.get(entry.getKey()).getIdentity().isEmpty()){
                 properties.put("name", personRelationCache.get(entry.getKey()).getIdentity());
-                properties.put("type",NodeType.Identity);
+                properties.put("type",NodeType.Identity.toString());
                 properties.put("crimeCount",entry.getValue());
             }
             node.setProperties(properties);
