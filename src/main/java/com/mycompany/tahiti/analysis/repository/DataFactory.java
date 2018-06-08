@@ -95,9 +95,10 @@ public class DataFactory {
                     personRelation.get(personSubjectId).getBiluList().add(biluSubjectId);
                 }
             }
+            HashSet<String> biluSet = new HashSet<>(biluResoursceList);
 
             //get all biluId to caseId
-            Iterator<Statement> biluCaseIter = jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", personSet);
+            Iterator<Statement> biluCaseIter = jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", biluSet);
             HashMap<String, String> biluCaseMap = new HashMap<>();
             while (biluCaseIter.hasNext()) {
                 Statement statement = biluCaseIter.next();
