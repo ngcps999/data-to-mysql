@@ -132,7 +132,7 @@ public class BIController {
                     }
                     if(sameCaseCount>0){
                         Edge edge = new Edge(new Random().nextInt(),node1.getId(),node2.getId());
-                        edge.setChiType("共案");
+                        edge.setChiType(EdgeType.Gongan.toString());
                         Map<String, Object> properties = new HashMap<>();
                         properties.put("accompliceCount",sameCaseCount);
                         edge.setProperties(properties);
