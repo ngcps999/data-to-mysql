@@ -59,6 +59,8 @@ public class DataFactory {
         personCache.clear();
         allSimpleCases.clear();
         getAllCaseBaseInfo();
+        getPersonRelation();
+        getPhoneCaseRelationCache();
         return true;
     }
 
@@ -150,13 +152,17 @@ public class DataFactory {
                 //get all thing -> bilu
                 Model model = jenaLibrary.getRuntimeModel();
                 Iterator<Statement> iter = jenaLibrary.getStatementsBySP(model, null, "gongan:gongan.bilu.thing");
-                Map<String, String> thingBiluMap = new HashMap<>();
+                Map<String, List<String>> thingBiluMap = new HashMap<>();
+                HashSet<String> biluSet = new HashSet<>();
                 while (iter.hasNext()) {
                     val statement = iter.next();
-                    thingBiluMap.put(statement.getResource().toString(), statement.getSubject().toString());
+                    if(!thingBiluMap.containsKey(statement.getResource().toString()))
+                        thingBiluMap.put(statement.getResource().toString(), new ArrayList<>());
+
+                    thingBiluMap.get(statement.getResource().toString()).add(statement.getSubject().toString());
+                    biluSet.add(statement.getSubject().toString());
                 }
 
-                HashSet<String> biluSet = new HashSet<>(thingBiluMap.values().stream().distinct().collect(Collectors.toList()));
                 //get all biluId to caseId
                 Iterator<Statement> biluCaseIter = jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", biluSet);
                 HashMap<String, String> biluCaseMap = new HashMap<>();
@@ -168,22 +174,24 @@ public class DataFactory {
                 HashSet<String> phoneSet = new HashSet<>(thingBiluMap.keySet().stream().distinct().collect(Collectors.toList()));
                 //enrich phone number
                 Iterator<Statement> phoneIter = jenaLibrary.getStatementsByBatchSP(model, phoneSet, "common:thing.phone.phoneNumber");
-                Map<String,String> phoneMap = new HashMap<>();
+
                 while (phoneIter.hasNext()) {
                     Statement statement = phoneIter.next();
 
                     String phoneNum = statement.getString();
                     if (!phoneNum.isEmpty()) {
                         String phoneSID = statement.getSubject().toString();
-                        String biluSId = thingBiluMap.getOrDefault(phoneSID, null);
-                        if (biluSId != null) {
-                            String caseSId = biluCaseMap.getOrDefault(biluSId, null);
-                            if (caseSId != null) {
-                                if(!phoneCaseRelationCache.containsKey(phoneNum)) {
-                                    phoneCaseRelationCache.put(phoneNum, new ArrayList<>());
+                        List<String> biluSIds = thingBiluMap.getOrDefault(phoneSID, null);
+                        if (biluSIds != null) {
+                            for(String biluSId : biluSIds) {
+                                String caseSId = biluCaseMap.getOrDefault(biluSId, null);
+                                if (caseSId != null) {
+                                    if (!phoneCaseRelationCache.containsKey(phoneNum)) {
+                                        phoneCaseRelationCache.put(phoneNum, new ArrayList<>());
+                                    }
+                                    if (!phoneCaseRelationCache.get(phoneNum).contains(caseSId))
+                                        phoneCaseRelationCache.get(phoneNum).add(caseSId);
                                 }
-                                if(!phoneCaseRelationCache.get(phoneNum).contains(caseSId))
-                                    phoneCaseRelationCache.get(phoneNum).add(caseSId);
                             }
                         }
                     }
@@ -439,15 +447,15 @@ public class DataFactory {
                 val connectionType = jenaLibrary.getStringValueBySP(model, model.getResource(connection), "common:common.connection.type");
 
                 if (connectionType.contains("common:common.connection.BiluEntityXianyiren"))
-                    role += Role.BiluEntityXianyiren.toString() + "；";
+                    role += role.contains(Role.BiluEntityXianyiren.toString())? "" : (Role.BiluEntityXianyiren.toString() + "；");
                 if (connectionType.contains("common:common.connection.BiluEntityZhengren"))
-                    role += Role.BiluEntityZhengren.toString() + "；";
+                    role += role.contains(Role.BiluEntityZhengren.toString())? "" : (Role.BiluEntityZhengren.toString() + "；");
                 if (connectionType.contains("common:common.connection.BiluEntityBaoanren"))
-                    role += Role.BiluEntityBaoanren.toString() + "；";
+                    role += role.contains(Role.BiluEntityBaoanren.toString())? "" : (Role.BiluEntityBaoanren.toString() + "；");
                 if (connectionType.contains("common:common.connection.BiluEntityDangshiren"))
-                    role += Role.BiluEntityDangshiren.toString() + "；";
+                    role += role.contains(Role.BiluEntityDangshiren.toString())? "" : (Role.BiluEntityDangshiren.toString() + "；");
                 if (connectionType.contains("common:common.connection.BiluEntityShouhairen"))
-                    role += Role.BiluEntityShouhairen.toString() + "；";
+                    role += role.contains(Role.BiluEntityShouhairen.toString())? "" : (Role.BiluEntityShouhairen.toString() + "；");
             }
 
             int roleLength = role.length();
@@ -515,8 +523,10 @@ public class DataFactory {
             for (String pSubjectId : bilu.getConnections().keySet()) {
                 if (!aCase.getConnections().containsKey(pSubjectId))
                     aCase.getConnections().put(pSubjectId, bilu.getConnections().get(pSubjectId));
-                else
-                    aCase.getConnections().put(pSubjectId, bilu.getConnections().get(pSubjectId) + "；" + aCase.getConnections().get(pSubjectId));
+                else {
+                    if(!aCase.getConnections().get(pSubjectId).contains(bilu.getConnections().get(pSubjectId)))
+                        aCase.getConnections().put(pSubjectId, bilu.getConnections().get(pSubjectId) + "；" + aCase.getConnections().get(pSubjectId));
+                }
             }
         }
         return aCase;
@@ -613,6 +623,8 @@ public class DataFactory {
                 caseBaseInfo.getSuspects().addAll(jenaLibrary.getStringValuesByBatchSP(model, toSet, "common:type.object.name"));
             }
         }
+
+        caseBaseInfo.setSuspects(caseBaseInfo.getSuspects().stream().distinct().collect(Collectors.toList()));
 
         return caseBaseInfo;
     }

@@ -37,7 +37,7 @@ public class FusionEngine {
 
             Map<String, String> idMap = personConflation(model);
 
-            LOG.info("idMap is finished!");
+            LOG.info("idMap is finished! size is " + idMap.size());
             // cope a new model
             Model newModel = jenaLibrary.deepCopyModel(jenaLibrary.getRuntimeModel());
 
