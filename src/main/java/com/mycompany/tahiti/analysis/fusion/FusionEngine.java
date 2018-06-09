@@ -2,7 +2,6 @@ package com.mycompany.tahiti.analysis.fusion;
 
 import com.google.common.collect.Lists;
 import com.mycompany.tahiti.analysis.jena.JenaLibrary;
-import com.mycompany.tahiti.analysis.repository.DataFactory;
 import lombok.Data;
 import lombok.val;
 import org.apache.jena.rdf.model.Model;
@@ -10,9 +9,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.util.ResourceUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,7 +33,7 @@ public class FusionEngine {
 
             Map<String, String> idMap = personConflation(model);
 
-            LOG.info("idMap is finished! size is " + idMap.size());
+            LOG.info("idMap is finished! size is " + idMap);
             // cope a new model
             Model newModel = jenaLibrary.deepCopyModel(jenaLibrary.getRuntimeModel());
 
