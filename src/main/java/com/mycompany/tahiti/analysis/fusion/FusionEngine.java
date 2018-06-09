@@ -2,12 +2,14 @@ package com.mycompany.tahiti.analysis.fusion;
 
 import com.google.common.collect.Lists;
 import com.mycompany.tahiti.analysis.jena.JenaLibrary;
+import com.mycompany.tahiti.analysis.repository.DataFactory;
 import lombok.Data;
 import lombok.val;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.util.ResourceUtils;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,9 @@ import java.util.stream.Collectors;
 
 public class FusionEngine {
     JenaLibrary jenaLibrary;
+
+    private static final Logger LOG = Logger.getLogger(FusionEngine.class);
+
     public FusionEngine(JenaLibrary jenaLibrary, String subjectPrefix) {
         this.jenaLibrary = jenaLibrary;
         this.prefix = subjectPrefix;
@@ -26,11 +31,13 @@ public class FusionEngine {
 
     public Model generateFusionModel(){
         try {
+            LOG.info("start conflation ... ");
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
 
             Map<String, String> idMap = personConflation(model);
 
+            LOG.info("idMap is finished!");
             // cope a new model
             Model newModel = jenaLibrary.deepCopyModel(jenaLibrary.getRuntimeModel());
 
@@ -39,6 +46,7 @@ public class FusionEngine {
                 ResourceUtils.renameResource(newModel.getResource(from), idMap.get(from));
             }
 
+            LOG.info("conflation is generated, newModel is generated!");
             return newModel;
         } finally {
             jenaLibrary.closeTransaction();
@@ -92,8 +100,10 @@ public class FusionEngine {
             val relatedBilus = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "gongan:gongan.bilu.entity", personSubject))
                     .stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
 
+            val biluSet = new HashSet<String>(relatedBilus);
+
             // set cases
-            val relatedCases = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", relatedBilus))
+            val relatedCases = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", biluSet))
                     .stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
             person.getCaseList().addAll(relatedCases);
 

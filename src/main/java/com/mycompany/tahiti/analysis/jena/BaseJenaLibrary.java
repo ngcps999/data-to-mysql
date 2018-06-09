@@ -5,10 +5,7 @@ import lombok.Data;
 import lombok.val;
 import org.apache.jena.rdf.model.*;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
@@ -21,6 +18,12 @@ public class BaseJenaLibrary implements JenaLibrary{
         this.jenaDropExistModel = jenaDropExistModel;
         this.modelName = modelName;
     }
+
+    @Override
+    public String getModelName(){
+        return modelName;
+    }
+
     @Override
     public Model getModel(String modelName) {
         return null;
@@ -132,7 +135,7 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
-    public Iterator<Statement> getStatementsByBatchSP(Model model, List<String> subjects, String property_str) {
+    public Iterator<Statement> getStatementsByBatchSP(Model model, HashSet<String> subjects, String property_str) {
         SimpleSelector selector = new SimpleSelector(null, null, (RDFNode) null) {
             Property property = model.getProperty(property_str);
 
@@ -159,7 +162,7 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
-    public Iterator<Statement> getStatementsByBatchPO(Model model, String property, List<String> objects)
+    public Iterator<Statement> getStatementsByBatchPO(Model model, String property, HashSet<String> objects)
     {
         SimpleSelector simpleSelector = new SimpleSelector(null, model.getProperty(property), (RDFNode)null){
             public boolean selects(Statement st) {
@@ -208,7 +211,7 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
-    public List<String> getStringValuesByBatchSP(Model model, List<String> subjects, String property)
+    public List<String> getStringValuesByBatchSP(Model model, HashSet<String> subjects, String property)
     {
         Property p = model.getProperty(property);
         SimpleSelector simpleSelector = new SimpleSelector(null, p, (RDFNode) null) {

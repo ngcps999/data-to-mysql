@@ -14,9 +14,9 @@ public class Person {
     private String birthDay;
     private String identity;
 
-    // caseId
+    // case subjectId
     private List<String> caseList = new ArrayList<>();
 
-    // biluId
+    // case subjectId
     private List<String> biluList = new ArrayList<>();
 }
