@@ -37,6 +37,9 @@ public class DataFactory {
     //Only contains person subjectId + person name + identity + bilu subjectId + case subjectId
     private Map<String, Person> personRelationCache = new HashMap<>();
 
+    // key: phone numbet, value list of case subjectId
+    private Map<String, List<String>> phoneCaseRelationCache = new HashMap<>();
+
     // subjectId, Case
     private Map<String, Case> caseCache = new HashMap<>();
 
@@ -60,7 +63,7 @@ public class DataFactory {
     }
 
     //!!! Note: Will put bilu subjectId and case subject Id in Person
-    public Map<String, Person> getPersonRelaticn() {
+    public Map<String, Person> getPersonRelation() {
         if (personRelationCache.size() > 0) return personRelationCache;
         try {
             jenaLibrary.openReadTransaction();
@@ -133,6 +136,63 @@ public class DataFactory {
             return personRelationCache;
         } finally {
             jenaLibrary.closeTransaction();
+        }
+    }
+
+    public Map<String, List<String>> getPhoneCaseRelationCache(){
+        if(phoneCaseRelationCache.size() > 0)
+            return phoneCaseRelationCache;
+        else
+        {
+            try {
+                jenaLibrary.openReadTransaction();
+
+                //get all thing -> bilu
+                Model model = jenaLibrary.getRuntimeModel();
+                Iterator<Statement> iter = jenaLibrary.getStatementsBySP(model, null, "gongan:gongan.bilu.thing");
+                Map<String, String> thingBiluMap = new HashMap<>();
+                while (iter.hasNext()) {
+                    val statement = iter.next();
+                    thingBiluMap.put(statement.getResource().toString(), statement.getSubject().toString());
+                }
+
+                HashSet<String> biluSet = new HashSet<>(thingBiluMap.values().stream().distinct().collect(Collectors.toList()));
+                //get all biluId to caseId
+                Iterator<Statement> biluCaseIter = jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", biluSet);
+                HashMap<String, String> biluCaseMap = new HashMap<>();
+                while (biluCaseIter.hasNext()) {
+                    Statement statement = biluCaseIter.next();
+                    biluCaseMap.put(statement.getObject().toString(),statement.getSubject().toString());
+                }
+
+                HashSet<String> phoneSet = new HashSet<>(thingBiluMap.keySet().stream().distinct().collect(Collectors.toList()));
+                //enrich phone number
+                Iterator<Statement> phoneIter = jenaLibrary.getStatementsByBatchSP(model, phoneSet, "common:thing.phone.phoneNumber");
+                Map<String,String> phoneMap = new HashMap<>();
+                while (phoneIter.hasNext()) {
+                    Statement statement = phoneIter.next();
+
+                    String phoneNum = statement.getString();
+                    if (!phoneNum.isEmpty()) {
+                        String phoneSID = statement.getSubject().toString();
+                        String biluSId = thingBiluMap.getOrDefault(phoneSID, null);
+                        if (biluSId != null) {
+                            String caseSId = biluCaseMap.getOrDefault(biluSId, null);
+                            if (caseSId != null) {
+                                if(!phoneCaseRelationCache.containsKey(phoneNum)) {
+                                    phoneCaseRelationCache.put(phoneNum, new ArrayList<>());
+                                }
+                                if(!phoneCaseRelationCache.get(phoneNum).contains(caseSId))
+                                    phoneCaseRelationCache.get(phoneNum).add(caseSId);
+                            }
+                        }
+                    }
+                }
+
+                return phoneCaseRelationCache;
+            } finally {
+                jenaLibrary.closeTransaction();
+            }
         }
     }
 
@@ -282,51 +342,60 @@ public class DataFactory {
     }
 
     private Person getPersonInfo(Model model, Resource resource) {
-        Person person = new Person();
+        Person person = personRelationCache.getOrDefault(resource.toString(), null);
 
-        person.setSubjectId(resource.toString());
-        val pNames = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.name");
-        if (pNames.size() > 0)
-            person.setName(pNames.get(0));
+        if(person == null) {
+            person = new Person();
 
-        val personIdentities = jenaLibrary.getStatementsBySP(model, resource, "common:person.person.identification");
-        if (personIdentities.hasNext()) {
-            val personIds = jenaLibrary.getStringValueBySP(model, personIdentities.next().getResource(), "common:person.identification.number");
-            if (personIds.size() > 0)
-                person.setIdentity(personIds.get(0));
+            person.setSubjectId(resource.toString());
+            val pNames = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.name");
+            if (pNames.size() > 0)
+                person.setName(pNames.get(0));
+
+            val personIdentities = jenaLibrary.getStatementsBySP(model, resource, "common:person.person.identification");
+            if (personIdentities.hasNext()) {
+                val personIds = jenaLibrary.getStringValueBySP(model, personIdentities.next().getResource(), "common:person.identification.number");
+                if (personIds.size() > 0)
+                    person.setIdentity(personIds.get(0));
+            }
+
+            // set bilus
+            val relatedBilus = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "gongan:gongan.bilu.entity", resource))
+                    .stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+
+            person.setBiluList(relatedBilus);
+
+            // set cases
+            val relatedCases = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", new HashSet<>(relatedBilus)))
+                    .stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
+
+            person.setCaseList(relatedCases);
         }
 
-        val contactIters = jenaLibrary.getStatementsBySP(model, resource, "common:person.person.contact");
-        if (contactIters.hasNext()) {
-            val contacts = jenaLibrary.getStringValueBySP(model, contactIters.next().getResource(), "common:person.contact.number");
-            if (contacts.size() > 0)
-                person.setPhone(contacts.get(0));
+        if(person.getPhone() == null || person.getPhone().isEmpty()) {
+            val contactIters = jenaLibrary.getStatementsBySP(model, resource, "common:person.person.contact");
+            if (contactIters.hasNext()) {
+                val contacts = jenaLibrary.getStringValueBySP(model, contactIters.next().getResource(), "common:person.contact.number");
+                if (contacts.size() > 0)
+                    person.setPhone(contacts.get(0));
+            }
         }
 
-        val birthdays = jenaLibrary.getStringValueBySP(model, resource, "common:person.person.birthDate");
-        if (birthdays.size() > 0)
-            person.setBirthDay(birthdays.get(0));
-
-        val genders = jenaLibrary.getStringValueBySP(model, resource, "common:person.person.gender");
-        if (genders.size() > 0) {
-            if (genders.get(0).toLowerCase().equals("female"))
-                person.setGender("女");
-            else if (genders.get(0).toLowerCase().equals("male"))
-                person.setGender("男");
+        if(person.getBirthDay() == null || person.getBirthDay().isEmpty()) {
+            val birthdays = jenaLibrary.getStringValueBySP(model, resource, "common:person.person.birthDate");
+            if (birthdays.size() > 0)
+                person.setBirthDay(birthdays.get(0));
         }
 
-        // set bilus
-        val relatedBilus = Lists.newArrayList(jenaLibrary.getStatementsByPO(model, "gongan:gongan.bilu.entity", resource))
-                .stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
-
-        person.setBiluList(relatedBilus);
-
-        // set cases
-        val relatedCases = Lists.newArrayList(jenaLibrary.getStatementsByBatchPO(model, "gongan:gongan.case.bilu", new HashSet<>(relatedBilus)))
-                .stream().map(s -> s.getSubject().toString()).distinct().collect(Collectors.toList());
-
-        person.setCaseList(relatedCases);
-
+        if(person.getGender() == null || person.getGender().isEmpty()) {
+            val genders = jenaLibrary.getStringValueBySP(model, resource, "common:person.person.gender");
+            if (genders.size() > 0) {
+                if (genders.get(0).toLowerCase().equals("female"))
+                    person.setGender("女");
+                else if (genders.get(0).toLowerCase().equals("male"))
+                    person.setGender("男");
+            }
+        }
         return person;
     }
 

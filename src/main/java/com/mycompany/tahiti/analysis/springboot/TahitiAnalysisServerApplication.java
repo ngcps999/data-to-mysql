@@ -49,7 +49,8 @@ public class TahitiAnalysisServerApplication {
     @Bean
     public DataFactory createDataFactory() {
         dataFactory.getAllCaseBaseInfo();
-        dataFactory.getPersonRelaticn();
+        dataFactory.getPersonRelation();
+        dataFactory.getPhoneCaseRelationCache();
         LOG.info("DataFactory is created!");
         return dataFactory;
     }

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/cases")
@@ -38,25 +39,28 @@ public class CaseController {
         List<String> caseSIds = new LinkedList<>();
         List<CaseBaseInfo> cases = new LinkedList<>();
         for (CaseBaseInfo cs : allCases) {
-            if (cs.getCaseName().contains(keyword)) {
+            if (cs.getCaseName().contains(keyword) || cs.getCaseId().contains(keyword)) {
                 caseSIds.add(cs.getSubjectId());
-                cases.add(cs);
             }
         }
 
-        Map<String, Person> persons = dataFactory.getPersonRelaticn();
+        Map<String, Person> persons = dataFactory.getPersonRelation();
         for(String personSubject : persons.keySet()){
             Person person = persons.get(personSubject);
             if(keyword.equals(person.getName()) || keyword.equals(person.getIdentity())){
-                val caseSubjects = person.getCaseList();
-                for(String caseSubject : caseSubjects){
-                    if(!caseSIds.contains(caseSubject)) {
-                        val caseBaseInfo = dataFactory.getCaseBaseInfoById(caseSubject);
-                        cases.add(caseBaseInfo);
-                        caseSIds.add(caseBaseInfo.getSubjectId());
-                    }
-                }
+                caseSIds.addAll(person.getCaseList());
             }
+        }
+
+        Map<String, List<String>> phonesCaseMap = dataFactory.getPhoneCaseRelationCache();
+        if(phonesCaseMap.containsKey(keyword)){
+            caseSIds.addAll(phonesCaseMap.get(keyword));
+        }
+
+        val uniqueCases = caseSIds.stream().distinct().collect(Collectors.toList());
+
+        for(String caseSubject : uniqueCases) {
+            cases.add(dataFactory.getCaseBaseInfoById(caseSubject));
         }
 
         return cases;
