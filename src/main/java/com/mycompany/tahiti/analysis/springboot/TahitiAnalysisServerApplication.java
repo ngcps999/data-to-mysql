@@ -54,14 +54,16 @@ public class TahitiAnalysisServerApplication {
     }
 
     @Bean
-    public DataFactory createDataFactory() {
+    @Autowired
+    public DataFactory createDataFactory(JenaLibrary jenaLibrary) {
+        conflate(jenaLibrary);
         dataFactory.getAllCaseBaseInfo();
         dataFactory.getPersonRelaticn();
         LOG.info("DataFactory is created!");
         return dataFactory;
     }
 
-    public void conflate() {
+    public void conflate(JenaLibrary jenaLibrary) {
         if(enableFusion.trim().toLowerCase().equals("true")){
             FusionEngine fusionEngine = new FusionEngine(jenaLibrary, subjectPrefix);
             Model model = fusionEngine.generateFusionModel();
@@ -75,7 +77,5 @@ public class TahitiAnalysisServerApplication {
 
     public static void main(String[] args){
         val context = SpringApplication.run(TahitiAnalysisServerApplication.class,args);
-        val app = context.getBean(TahitiAnalysisServerApplication.class);
-        app.conflate();
     }
 }
