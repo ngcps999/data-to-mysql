@@ -99,7 +99,7 @@ public class BIController {
     @ResponseBody
     public Graph getPeopleRelation(@RequestParam("entityNum") String entityNum) {
         Graph graph = new Graph();
-        Map<String, Person> personRelationCache = dataFactory.getPersonRelaticn();
+        Map<String, Person> personRelationCache = dataFactory.getPersonRelation();
         Map<String, Integer> personCaseCount = new HashMap<>();
         for (String subjectId : personRelationCache.keySet()) {
             personCaseCount.put(subjectId, personRelationCache.get(subjectId).getCaseList().size());

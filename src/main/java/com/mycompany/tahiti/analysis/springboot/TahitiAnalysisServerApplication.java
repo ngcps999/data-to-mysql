@@ -58,7 +58,8 @@ public class TahitiAnalysisServerApplication {
     public DataFactory createDataFactory(JenaLibrary jenaLibrary) {
         conflate(jenaLibrary);
         dataFactory.getAllCaseBaseInfo();
-        dataFactory.getPersonRelaticn();
+        dataFactory.getPersonRelation();
+        dataFactory.getPhoneCaseRelationCache();
         LOG.info("DataFactory is created!");
         return dataFactory;
     }
