@@ -197,6 +197,7 @@ public class CaseController {
 
                             caseNode.getProperties().put("name", otherCase.getCaseName());
                             caseNode.getProperties().put("type", NodeType.Case.toString());
+                            caseNode.getProperties().put("id", otherCase.getCaseId());
                             richInfo.getGraph().getEntities().add(caseNode);
 
                             Edge csEdge = new Edge(new Random().nextInt(), personData.getSubjectId(), otherCase.getSubjectId());
