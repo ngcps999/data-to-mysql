@@ -197,6 +197,7 @@ public class CaseController {
 
                             caseNode.getProperties().put("name", otherCase.getCaseName());
                             caseNode.getProperties().put("type", NodeType.Case.toString());
+                            caseNode.getProperties().put("id", otherCase.getCaseId());
                             richInfo.getGraph().getEntities().add(caseNode);
 
                             Edge csEdge = new Edge(new Random().nextInt(), personData.getSubjectId(), otherCase.getSubjectId());
@@ -212,6 +213,7 @@ public class CaseController {
             Map<String, Object> properties = new HashMap<>();
             properties.put("name", aCase.getCaseName());
             properties.put("type", NodeType.Case.toString());
+            properties.put("id", aCase.getCaseId());
             node.setProperties(properties);
 
             richInfo.getGraph().getEntities().add(node);
