@@ -148,6 +148,40 @@ public class BaseJenaLibrary implements JenaLibrary{
     }
 
     @Override
+    public Map<String, List<String>> getSOMapByBatchSP(Model model, HashSet<String> subjects, String property_str)
+    {
+        Iterator<Statement> iter = getStatementsByBatchSP(model, subjects, property_str);
+
+        Map<String, List<String>> spMap = new HashMap<>();
+        while (iter.hasNext()) {
+            Statement statement = iter.next();
+            String object = statement.getObject().toString();
+            String subject = statement.getSubject().toString();
+            if (!spMap.containsKey(subject))
+                spMap.put(subject, new LinkedList<>());
+            spMap.get(subject).add(object);
+        }
+        return spMap;
+    }
+
+    @Override
+    public Map<String, List<String>> getOSMapByBatchSP(Model model, HashSet<String> subjects, String property_str)
+    {
+        Iterator<Statement> iter = getStatementsByBatchSP(model, subjects, property_str);
+
+        Map<String, List<String>> spMap = new HashMap<>();
+        while (iter.hasNext()) {
+            Statement statement = iter.next();
+            String object = statement.getObject().toString();
+            String subject = statement.getSubject().toString();
+            if (!spMap.containsKey(object))
+                spMap.put(object, new LinkedList<>());
+            spMap.get(object).add(subject);
+        }
+        return spMap;
+    }
+
+    @Override
     public Iterator<Statement> getStatementsByPOValue(Model model, String property, String value)
     {
         SimpleSelector simpleSelector = new SimpleSelector(null, model.getProperty(property), value);
@@ -170,6 +204,40 @@ public class BaseJenaLibrary implements JenaLibrary{
             }
         };
         return model.listStatements(simpleSelector);
+    }
+
+    @Override
+    public Map<String, List<String>> getSOMapByBatchPO(Model model, String property, HashSet<String> objects)
+    {
+        Iterator<Statement> iter = getStatementsByBatchPO(model, property, objects);
+
+        Map<String, List<String>> spMap = new HashMap<>();
+        while (iter.hasNext()) {
+            Statement statement = iter.next();
+            String object = statement.getObject().toString();
+            String subject = statement.getSubject().toString();
+            if (!spMap.containsKey(subject))
+                spMap.put(subject, new LinkedList<>());
+            spMap.get(subject).add(object);
+        }
+        return spMap;
+    }
+
+    @Override
+    public Map<String, List<String>> getOSMapByBatchPO(Model model, String property, HashSet<String> objects)
+    {
+        Iterator<Statement> iter = getStatementsByBatchPO(model, property, objects);
+
+        Map<String, List<String>> spMap = new HashMap<>();
+        while (iter.hasNext()) {
+            Statement statement = iter.next();
+            String object = statement.getObject().toString();
+            String subject = statement.getSubject().toString();
+            if (!spMap.containsKey(object))
+                spMap.put(object, new LinkedList<>());
+            spMap.get(object).add(subject);
+        }
+        return spMap;
     }
 
     @Override
