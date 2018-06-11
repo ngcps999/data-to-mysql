@@ -72,6 +72,12 @@ public class CaseController {
 
         String subjectId = dataFactory.getSubjectIdById(caseId);
 
+        return getCaseBySubjectId(subjectId);
+    }
+
+    @ResponseBody
+    @GetMapping("/subjectId/{subjectId}")
+    public CaseRichInfo getCaseBySubjectId(@RequestParam("subjectId") String subjectId) {
         Case aCase = dataFactory.getCaseById(subjectId);
 
         CaseRichInfo richInfo = new CaseRichInfo();
