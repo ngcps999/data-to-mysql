@@ -3,15 +3,12 @@ package com.mycompany.tahiti.analysis.fusion;
 import com.mycompany.tahiti.analysis.jena.JenaLibrary;
 import lombok.Data;
 import lombok.val;
-import org.apache.jena.atlas.lib.ListUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.util.ResourceUtils;
 import org.apache.log4j.Logger;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FusionEngine {
     JenaLibrary jenaLibrary;
