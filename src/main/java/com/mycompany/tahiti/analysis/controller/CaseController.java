@@ -213,6 +213,7 @@ public class CaseController {
             Map<String, Object> properties = new HashMap<>();
             properties.put("name", aCase.getCaseName());
             properties.put("type", NodeType.Case.toString());
+            properties.put("id", aCase.getCaseId());
             node.setProperties(properties);
 
             richInfo.getGraph().getEntities().add(node);
