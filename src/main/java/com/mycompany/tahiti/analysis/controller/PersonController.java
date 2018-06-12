@@ -38,8 +38,10 @@ public class PersonController {
             Case aCase = dataFactory.getCaseById(caseSubjectId);
             PersonRichInfo.InvolvedCaseWithRole involvedCaseWithRole = personRichInfo.new InvolvedCaseWithRole();
             involvedCaseWithRole.setSubjectId(aCase.getSubjectId());
-            involvedCaseWithRole.setCaseId(aCase.getCaseId());
-            involvedCaseWithRole.setCaseName(aCase.getCaseName());
+            if(aCase.getCaseId() != null && !aCase.getCaseId().isEmpty())
+                involvedCaseWithRole.setCaseId(aCase.getCaseId());
+            if(aCase.getCaseName() != null && !aCase.getCaseName().isEmpty())
+                involvedCaseWithRole.setCaseName(aCase.getCaseName());
             involvedCaseWithRole.setCaseType(aCase.getCaseType());
             involvedCaseWithRole.setBiluNumber(aCase.getBilus().size());
             involvedCaseWithRole.setRole(aCase.getConnections().get(subjectId));
@@ -58,9 +60,11 @@ public class PersonController {
                             sameCasePerson.setPhone(personInBilu.getPhone());
                             List<CaseBaseInfo> sameCases = new ArrayList<>();
                             CaseBaseInfo caseBaseInfo = new CaseBaseInfo();
-                            caseBaseInfo.setCaseName(aCase.getCaseName());
+                            if(aCase.getCaseName() != null && !aCase.getCaseName().isEmpty())
+                                caseBaseInfo.setCaseName(aCase.getCaseName());
                             caseBaseInfo.setSubjectId(aCase.getSubjectId());
-                            caseBaseInfo.setCaseId(aCase.getCaseId());
+                            if(aCase.getCaseId() != null && !aCase.getCaseId().isEmpty())
+                                caseBaseInfo.setCaseId(aCase.getCaseId());
                             sameCases.add(caseBaseInfo);
                             sameCasePerson.setSameCases(sameCases);
                             sameCasePersonList.add(sameCasePerson);
@@ -68,9 +72,11 @@ public class PersonController {
                             for (PersonRichInfo.SameCasePerson item : sameCasePersonList) {
                                 if ( !isNullOrEmpty(item.getIdentity()) && !isNullOrEmpty(sameCasePerson.getIdentity()) && item.getIdentity().equals(sameCasePerson.getIdentity()) || !isNullOrEmpty(item.getName()) && !isNullOrEmpty(sameCasePerson.getName()) && item.getName().equals(sameCasePerson.getName())) {
                                     CaseBaseInfo caseBaseInfo = new CaseBaseInfo();
-                                    caseBaseInfo.setCaseName(aCase.getCaseName());
+                                    if(aCase.getCaseName() != null && !aCase.getCaseName().isEmpty())
+                                        caseBaseInfo.setCaseName(aCase.getCaseName());
                                     caseBaseInfo.setSubjectId(aCase.getSubjectId());
-                                    caseBaseInfo.setCaseId(aCase.getCaseId());
+                                    if(aCase.getCaseId() != null && !aCase.getCaseId().isEmpty())
+                                        caseBaseInfo.setCaseId(aCase.getCaseId());
                                     if (!item.getSameCases().contains(caseBaseInfo)) {
                                         item.getSameCases().add(caseBaseInfo);
                                     }

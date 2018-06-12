@@ -39,27 +39,28 @@ public class CaseController {
         List<String> caseSIds = new LinkedList<>();
         List<CaseBaseInfo> cases = new LinkedList<>();
         for (CaseBaseInfo cs : allCases) {
-            if (cs.getCaseName().contains(keyword) || cs.getCaseId().contains(keyword)) {
+            if ((cs.getCaseName() != null && cs.getCaseName().contains(keyword))
+                    || (cs.getCaseId() != null && cs.getCaseId().contains(keyword))) {
                 caseSIds.add(cs.getSubjectId());
             }
         }
 
         Map<String, Person> persons = dataFactory.getPersonRelation();
-        for(String personSubject : persons.keySet()){
+        for (String personSubject : persons.keySet()) {
             Person person = persons.get(personSubject);
-            if(keyword.equals(person.getName()) || keyword.equals(person.getIdentity())){
+            if (keyword.equals(person.getName()) || keyword.equals(person.getIdentity())) {
                 caseSIds.addAll(person.getCaseList());
             }
         }
 
         Map<String, List<String>> phonesCaseMap = dataFactory.getPhoneCaseRelationCache();
-        if(phonesCaseMap.containsKey(keyword)){
+        if (phonesCaseMap.containsKey(keyword)) {
             caseSIds.addAll(phonesCaseMap.get(keyword));
         }
 
         val uniqueCases = caseSIds.stream().distinct().collect(Collectors.toList());
 
-        for(String caseSubject : uniqueCases) {
+        for (String caseSubject : uniqueCases) {
             cases.add(dataFactory.getCaseBaseInfoById(caseSubject));
         }
 
@@ -76,16 +77,18 @@ public class CaseController {
     }
 
     @ResponseBody
-    @GetMapping("/subjectId/{subjectId}")
+    @GetMapping("/caseDetails")
     public CaseRichInfo getCaseBySubjectId(@RequestParam("subjectId") String subjectId) {
         Case aCase = dataFactory.getCaseById(subjectId);
 
         CaseRichInfo richInfo = new CaseRichInfo();
 
-        if(aCase != null) {
+        if (aCase != null) {
             richInfo.setSubjectId(aCase.getSubjectId());
-            richInfo.setCaseId(aCase.getCaseId());
-            richInfo.setCaseName(aCase.getCaseName());
+            if (aCase.getCaseId() != null && !aCase.getCaseId().isEmpty())
+                richInfo.setCaseId(aCase.getCaseId());
+            if (aCase.getCaseName() != null && !aCase.getCaseName().isEmpty())
+                richInfo.setCaseName(aCase.getCaseName());
             richInfo.setCaseType(aCase.getCaseType());
             richInfo.setBiluNumber(aCase.getBilus().size());
 
@@ -97,12 +100,12 @@ public class CaseController {
 
             for (Bilu bilu : aCase.getBilus()) {
                 // set phones
-                for(String sId : bilu.getPhones().keySet()) {
+                for (String sId : bilu.getPhones().keySet()) {
                     richInfo.getPhones().put(sId, new ValueObject(bilu.getPhones().get(sId)));
                 }
 
                 // set bankcards
-                for(String sId : bilu.getBankCards().keySet()) {
+                for (String sId : bilu.getBankCards().keySet()) {
                     richInfo.getBankCards().put(sId, new ValueObject(bilu.getBankCards().get(sId)));
                 }
 
@@ -114,7 +117,7 @@ public class CaseController {
 
                 // set names, identities, detailedPersons, graph;
                 for (Person personData : bilu.getPersons()) {
-                    if(processedPerson.contains(personData.getSubjectId()))
+                    if (processedPerson.contains(personData.getSubjectId()))
                         continue;
 
                     processedPerson.add(personData.getSubjectId());
@@ -122,7 +125,7 @@ public class CaseController {
                     String name = "";
                     if (personData.getName() != null && !personData.getName().isEmpty()) {
                         name = personData.getName();
-                        if(!names.contains(name)) {
+                        if (!names.contains(name)) {
                             richInfo.getNames().put(personData.getSubjectId(), new ValueObject(name));
                             names.add(name);
                         }
@@ -131,7 +134,7 @@ public class CaseController {
                     String identity = "";
                     if (personData.getIdentity() != null && !personData.getIdentity().isEmpty()) {
                         identity = personData.getIdentity();
-                        if(!identities.contains(identity)) {
+                        if (!identities.contains(identity)) {
                             richInfo.getIdentities().put(personData.getSubjectId(), new ValueObject(identity));
                             identities.add(identity);
                         }
@@ -151,7 +154,7 @@ public class CaseController {
                         personModel.setIdentity(personData.getIdentity());
                         personModel.setPhone(personData.getPhone());
 
-                        if(aCase.getConnections().containsKey(personData.getSubjectId()))
+                        if (aCase.getConnections().containsKey(personData.getSubjectId()))
                             personModel.setRole(aCase.getConnections().get(personData.getSubjectId()));
                         else
                             personModel.setRole("");
@@ -159,7 +162,7 @@ public class CaseController {
                         richInfo.getDetailedPersons().add(personModel);
                     }
 
-                    if(!name.isEmpty() || !identity.isEmpty()) {
+                    if (!name.isEmpty() || !identity.isEmpty()) {
                         // set graph
                         Node pNode = new Node(personData.getSubjectId());
                         Map<String, Object> props = new HashMap<>();
@@ -195,9 +198,12 @@ public class CaseController {
                             Node caseNode = new Node(otherCase.getSubjectId());
                             caseNode.setProperties(new HashMap<>());
 
-                            caseNode.getProperties().put("name", otherCase.getCaseName());
+                            if (otherCase.getCaseName() != null && !otherCase.getCaseName().isEmpty())
+                                caseNode.getProperties().put("name", otherCase.getCaseName());
                             caseNode.getProperties().put("type", NodeType.Case.toString());
-                            caseNode.getProperties().put("id", otherCase.getCaseId());
+                            if (otherCase.getCaseId() != null && !otherCase.getCaseId().isEmpty())
+                                caseNode.getProperties().put("id", otherCase.getCaseId());
+
                             richInfo.getGraph().getEntities().add(caseNode);
 
                             Edge csEdge = new Edge(new Random().nextInt(), personData.getSubjectId(), otherCase.getSubjectId());
@@ -211,9 +217,11 @@ public class CaseController {
             // node - current case
             Node node = new Node(aCase.getSubjectId());
             Map<String, Object> properties = new HashMap<>();
-            properties.put("name", aCase.getCaseName());
+            if (aCase.getCaseName() != null && !aCase.getCaseName().isEmpty())
+                properties.put("name", aCase.getCaseName());
             properties.put("type", NodeType.Case.toString());
-            properties.put("id", aCase.getCaseId());
+            if (aCase.getCaseId() != null && !aCase.getCaseId().isEmpty())
+                properties.put("id", aCase.getCaseId());
             node.setProperties(properties);
 
             richInfo.getGraph().getEntities().add(node);
@@ -223,9 +231,16 @@ public class CaseController {
 
     @ResponseBody
     @GetMapping("/{caseId}/person")
-    public List<RelevantGraph> getRelevantBiluParagraphsByPersonId(@PathVariable("caseId") String caseId, @RequestParam("keywordList") List<String> keywordList) {
+    public List<RelevantGraph> getRelevantBiluParagraphsByCaseId(@PathVariable("caseId") String caseId, @RequestParam("keywordList") List<String> keywordList) {
 
         String subjectId = dataFactory.getSubjectIdById(caseId);
+
+        return getRelevantBiluParagraphsByCaseSubjectId(subjectId, keywordList);
+    }
+
+    @ResponseBody
+    @GetMapping("/keywordsInBiluParagraph")
+    public List<RelevantGraph> getRelevantBiluParagraphsByCaseSubjectId(@RequestParam("caseSubjectId") String caseSubjectId, @RequestParam("keywordList") List<String> keywordList) {
 
         keywordList.remove("");
 
@@ -233,7 +248,7 @@ public class CaseController {
         int after_paragraph_length = 40;
         val result = new ArrayList<RelevantGraph>();
 
-        Case aCase = dataFactory.getCaseById(subjectId);
+        Case aCase = dataFactory.getCaseById(caseSubjectId);
         List<Bilu> bilus = aCase.getBilus();
 
         for (Bilu bilu : bilus) {
@@ -258,13 +273,5 @@ public class CaseController {
             }
         }
         return result;
-    }
-
-    @ResponseBody
-    @GetMapping("/{caseId}/keyword/{keyword}")
-    public List<RelevantGraph> getRelevantBiluParagraphsByKeyword(@PathVariable("caseId") String caseId, @PathVariable("keyword") String keyword) {
-        List<String> keywordList = new ArrayList();
-        keywordList.add(keyword);
-        return getRelevantBiluParagraphsByPersonId(caseId, keywordList);
     }
 }
