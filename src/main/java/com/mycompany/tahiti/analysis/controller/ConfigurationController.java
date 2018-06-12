@@ -32,6 +32,15 @@ public class ConfigurationController {
         }
     }
 
+    @GetMapping("/updateCache")
+    public void updateCacheq() {
+        if(jenaLibrary instanceof BaseJenaLibrary) {
+            ((BaseJenaLibrary) jenaLibrary).getLatestModel();
+        } else {
+            throw new RuntimeException("Currently just support jenalibrary");
+        }
+    }
+
     @GetMapping("/size/{jenaModelName}")
     public long getModelSize(@PathVariable("jenaModelName") String jenaModelName) {
         val library = (BaseJenaLibrary) jenaLibrary;
