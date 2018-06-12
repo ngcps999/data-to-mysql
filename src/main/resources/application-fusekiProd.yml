@@ -1,5 +1,5 @@
 jena:
   type: fuseki
   dropExistModel: false
-  modelName: biluProd
+  modelName: biluFusion
   fusekiURI: http://172.19.10.40/knowledge
