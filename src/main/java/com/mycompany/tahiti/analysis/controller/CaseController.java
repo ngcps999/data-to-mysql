@@ -230,7 +230,7 @@ public class CaseController {
     }
 
     @ResponseBody
-    @GetMapping("/{caseId}/keywordList")
+    @GetMapping("/{caseId}/person")
     public List<RelevantGraph> getRelevantBiluParagraphsByCaseId(@PathVariable("caseId") String caseId, @RequestParam("keywordList") List<String> keywordList) {
 
         String subjectId = dataFactory.getSubjectIdById(caseId);
