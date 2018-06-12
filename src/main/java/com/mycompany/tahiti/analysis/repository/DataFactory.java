@@ -58,6 +58,14 @@ public class DataFactory {
         biluCache.clear();
         personCache.clear();
         allSimpleCases.clear();
+        personRelationCache.clear();
+        phoneCaseRelationCache.clear();
+        personBiluCount.clear();
+        tagBiluCount.clear();
+        personCountCache = null;
+        biluCountCache = null;
+        caseCountCache = null;
+
         getAllCaseBaseInfo();
         getPersonRelation();
         getPhoneCaseRelationCache();
