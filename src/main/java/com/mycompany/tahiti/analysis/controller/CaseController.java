@@ -235,12 +235,12 @@ public class CaseController {
 
         String subjectId = dataFactory.getSubjectIdById(caseId);
 
-        return getRelevantBiluParagraphsBySubjectId(subjectId, keywordList);
+        return getRelevantBiluParagraphsByCaseSubjectId(subjectId, keywordList);
     }
 
     @ResponseBody
     @GetMapping("/keywordsInBiluParagraph")
-    public List<RelevantGraph> getRelevantBiluParagraphsBySubjectId(@RequestParam("subjectId") String subjectId, @RequestParam("keywordList") List<String> keywordList) {
+    public List<RelevantGraph> getRelevantBiluParagraphsByCaseSubjectId(@RequestParam("caseSubjectId") String caseSubjectId, @RequestParam("keywordList") List<String> keywordList) {
 
         keywordList.remove("");
 
@@ -248,7 +248,7 @@ public class CaseController {
         int after_paragraph_length = 40;
         val result = new ArrayList<RelevantGraph>();
 
-        Case aCase = dataFactory.getCaseById(subjectId);
+        Case aCase = dataFactory.getCaseById(caseSubjectId);
         List<Bilu> bilus = aCase.getBilus();
 
         for (Bilu bilu : bilus) {
