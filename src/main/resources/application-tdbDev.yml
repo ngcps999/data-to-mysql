@@ -1,5 +1,5 @@
 jena:
-  tdbName: src/main/resources/bilu
+  tdbName: src/main/resources/biluOCR
   type: tdb
   dropExistModel: false
   modelName: biluDev
