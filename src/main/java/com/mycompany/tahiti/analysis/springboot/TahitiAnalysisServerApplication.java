@@ -56,7 +56,7 @@ public class TahitiAnalysisServerApplication {
     @Bean
     @Autowired
     public DataFactory createDataFactory(JenaLibrary jenaLibrary) {
-        conflate(jenaLibrary);
+//        conflate(jenaLibrary);
         dataFactory.getAllCaseBaseInfo();
         dataFactory.getPersonRelation();
         dataFactory.getPhoneCaseRelationCache();

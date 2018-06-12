@@ -1,5 +1,5 @@
 jena:
   type: fuseki
   dropExistModel: false
-  modelName: biluDev
+  modelName: biluFusionDev
   fusekiURI: http://localhost:3330/knowledge
