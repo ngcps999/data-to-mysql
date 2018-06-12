@@ -33,7 +33,7 @@ public class ConfigurationController {
     }
 
     @GetMapping("/updateCache")
-    public void updateCacheq() {
+    public void updateCache() {
         if(jenaLibrary instanceof BaseJenaLibrary) {
             ((BaseJenaLibrary) jenaLibrary).getLatestModel();
         } else {
