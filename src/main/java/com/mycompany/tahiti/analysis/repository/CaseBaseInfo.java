@@ -15,7 +15,7 @@ public class CaseBaseInfo {
     private Integer biluNumber;
 
     public boolean equals(Object obj) {
-        if (this.caseId != null && obj != null && this.caseId.equals(((CaseBaseInfo) obj).caseId))
+        if (this.subjectId != null && obj != null && this.subjectId.equals(((CaseBaseInfo) obj).subjectId))
             return true;
         return false;
     }
