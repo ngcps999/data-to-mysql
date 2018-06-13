@@ -35,9 +35,9 @@ public class ConfigurationController {
     @GetMapping("/updateCache")
     public void updateCache() {
         if(jenaLibrary instanceof BaseJenaLibrary) {
-            ((BaseJenaLibrary) jenaLibrary).getLatestModel();
+            jenaLibrary.updateCacheModel();
         } else {
-            throw new RuntimeException("Currently just support jenalibrary");
+            throw new RuntimeException("Currently just support jena library");
         }
     }
 
