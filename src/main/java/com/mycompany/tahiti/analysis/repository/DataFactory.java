@@ -81,6 +81,9 @@ public class DataFactory {
 
             //get all person subjectId
             Model model = jenaLibrary.getRuntimeModel();
+            if(model == null)
+                return null;
+
             Iterator<Statement> iter = jenaLibrary.getStatementsByEntityType(model, "common:person.person");
             List<String> personResourceList = new ArrayList<>();
             while (iter.hasNext()) {
@@ -159,6 +162,9 @@ public class DataFactory {
 
                 //get all thing -> bilu
                 Model model = jenaLibrary.getRuntimeModel();
+                if(model == null)
+                    return null;
+
                 Iterator<Statement> iter = jenaLibrary.getStatementsBySP(model, null, "gongan:gongan.bilu.thing");
                 Map<String, List<String>> thingBiluMap = new HashMap<>();
                 HashSet<String> biluSet = new HashSet<>();
@@ -550,6 +556,8 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
+                if(model == null)
+                    return null;
 
                 val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
 
