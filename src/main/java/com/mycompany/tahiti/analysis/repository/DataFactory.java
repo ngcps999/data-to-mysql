@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import javax.validation.constraints.Null;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -60,8 +61,8 @@ public class DataFactory {
         allSimpleCases.clear();
         personRelationCache.clear();
         phoneCaseRelationCache.clear();
-        personBiluCount.clear();
-        tagBiluCount.clear();
+        personBiluCount = null;
+        tagBiluCount = null;
         personCountCache = null;
         biluCountCache = null;
         caseCountCache = null;
@@ -81,6 +82,9 @@ public class DataFactory {
 
             //get all person subjectId
             Model model = jenaLibrary.getRuntimeModel();
+            if(model == null)
+                return new HashMap<>();
+
             Iterator<Statement> iter = jenaLibrary.getStatementsByEntityType(model, "common:person.person");
             List<String> personResourceList = new ArrayList<>();
             while (iter.hasNext()) {
@@ -159,6 +163,9 @@ public class DataFactory {
 
                 //get all thing -> bilu
                 Model model = jenaLibrary.getRuntimeModel();
+                if(model == null)
+                    return new HashMap<>();
+
                 Iterator<Statement> iter = jenaLibrary.getStatementsBySP(model, null, "gongan:gongan.bilu.thing");
                 Map<String, List<String>> thingBiluMap = new HashMap<>();
                 HashSet<String> biluSet = new HashSet<>();
@@ -217,6 +224,9 @@ public class DataFactory {
         try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
+            if(model == null)
+                return 0;
+
             Iterator<Statement> iter = jenaLibrary.getStatementsByEntityType(model, "common:person.person");
             int count = org.apache.jena.ext.com.google.common.collect.Iterators.size(iter);
             personCountCache = new Integer(count);
@@ -247,6 +257,8 @@ public class DataFactory {
         try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
+            if(model == null)
+                return new HashMap<>();
             Iterator<Statement> iterator_tag = jenaLibrary.getStatementsBySP(model, null, "common:type.object.tag");
             Map<String, Integer> map = new HashMap();
             iteratorObjectToMap(iterator_tag, map);
@@ -262,6 +274,9 @@ public class DataFactory {
         try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
+            if(model == null)
+                return new HashMap<>();
+
             Iterator<Statement> iterator = jenaLibrary.getStatementsByEntityType(model, "common:person.person");
             HashSet<String> resourceList = new HashSet<>();
             while (iterator.hasNext()) {
@@ -313,6 +328,8 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
+                if(model == null)
+                    throw new NullPointerException("model is null!");
 
                 Case aCase = getCaseInfo(model, model.getResource(subjectId));
                 caseCache.put(subjectId, aCase);
@@ -330,6 +347,8 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
+                if(model == null)
+                    throw new NullPointerException("model is null!");
 
                 Bilu bilu = getBiluInfo(model, model.getResource(subjectId));
                 biluCache.put(subjectId, bilu);
@@ -347,6 +366,8 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
+                if(model == null)
+                    throw new NullPointerException("model is null!");
 
                 Person person = getPersonInfo(model, model.getResource(pSubjectId));
                 personCache.put(pSubjectId, person);
@@ -550,6 +571,8 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
+                if(model == null)
+                    return new ArrayList<>();
 
                 val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
 
@@ -573,6 +596,8 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
+                if(model == null)
+                    throw new NullPointerException("model is null!");
 
                 val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
 
@@ -641,6 +666,9 @@ public class DataFactory {
         try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
+            if(model == null)
+                throw new NullPointerException("model is null!");
+
             val iterator = jenaLibrary.getStatementsById(model, id);
 
             if (iterator.hasNext()) {
