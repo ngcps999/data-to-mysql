@@ -82,7 +82,7 @@ public class DataFactory {
             //get all person subjectId
             Model model = jenaLibrary.getRuntimeModel();
             if(model == null)
-                return null;
+                return new HashMap<>();
 
             Iterator<Statement> iter = jenaLibrary.getStatementsByEntityType(model, "common:person.person");
             List<String> personResourceList = new ArrayList<>();
@@ -163,7 +163,7 @@ public class DataFactory {
                 //get all thing -> bilu
                 Model model = jenaLibrary.getRuntimeModel();
                 if(model == null)
-                    return null;
+                    return new HashMap<>();
 
                 Iterator<Statement> iter = jenaLibrary.getStatementsBySP(model, null, "gongan:gongan.bilu.thing");
                 Map<String, List<String>> thingBiluMap = new HashMap<>();
@@ -224,7 +224,7 @@ public class DataFactory {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
             if(model == null)
-                return null;
+                return 0;
 
             Iterator<Statement> iter = jenaLibrary.getStatementsByEntityType(model, "common:person.person");
             int count = org.apache.jena.ext.com.google.common.collect.Iterators.size(iter);
@@ -257,7 +257,7 @@ public class DataFactory {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
             if(model == null)
-                return null;
+                return new HashMap<>();
             Iterator<Statement> iterator_tag = jenaLibrary.getStatementsBySP(model, null, "common:type.object.tag");
             Map<String, Integer> map = new HashMap();
             iteratorObjectToMap(iterator_tag, map);
@@ -274,7 +274,7 @@ public class DataFactory {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
             if(model == null)
-                return null;
+                return new HashMap<>();
 
             Iterator<Statement> iterator = jenaLibrary.getStatementsByEntityType(model, "common:person.person");
             HashSet<String> resourceList = new HashSet<>();
@@ -327,8 +327,6 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
-                if(model == null)
-                    return null;
 
                 Case aCase = getCaseInfo(model, model.getResource(subjectId));
                 caseCache.put(subjectId, aCase);
@@ -346,8 +344,6 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
-                if(model == null)
-                    return null;
 
                 Bilu bilu = getBiluInfo(model, model.getResource(subjectId));
                 biluCache.put(subjectId, bilu);
@@ -365,8 +361,6 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
-                if(model == null)
-                    return null;
 
                 Person person = getPersonInfo(model, model.getResource(pSubjectId));
                 personCache.put(pSubjectId, person);
@@ -571,7 +565,7 @@ public class DataFactory {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
                 if(model == null)
-                    return null;
+                    return new ArrayList<>();
 
                 val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
 
@@ -595,8 +589,6 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
-                if(model == null)
-                    return null;
 
                 val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
 
@@ -665,8 +657,6 @@ public class DataFactory {
         try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
-            if(model == null)
-                return null;
 
             val iterator = jenaLibrary.getStatementsById(model, id);
 
