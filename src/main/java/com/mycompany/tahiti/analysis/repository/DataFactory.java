@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import javax.validation.constraints.Null;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -327,6 +328,8 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
+                if(model == null)
+                    throw new NullPointerException("model is null!");
 
                 Case aCase = getCaseInfo(model, model.getResource(subjectId));
                 caseCache.put(subjectId, aCase);
@@ -344,6 +347,8 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
+                if(model == null)
+                    throw new NullPointerException("model is null!");
 
                 Bilu bilu = getBiluInfo(model, model.getResource(subjectId));
                 biluCache.put(subjectId, bilu);
@@ -361,6 +366,8 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
+                if(model == null)
+                    throw new NullPointerException("model is null!");
 
                 Person person = getPersonInfo(model, model.getResource(pSubjectId));
                 personCache.put(pSubjectId, person);
@@ -589,6 +596,8 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
+                if(model == null)
+                    throw new NullPointerException("model is null!");
 
                 val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
 
@@ -657,6 +666,8 @@ public class DataFactory {
         try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
+            if(model == null)
+                throw new NullPointerException("model is null!");
 
             val iterator = jenaLibrary.getStatementsById(model, id);
 
