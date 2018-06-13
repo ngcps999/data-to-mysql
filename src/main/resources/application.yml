@@ -4,6 +4,6 @@ server:
     context-path: /api
 
 conflation:
-  enable-fusion: true
+  enable-fusion: false
   conflatedModelName: biluFusion.v2
   subject-prefix: http://knowledge.richinfo.com/

@@ -68,15 +68,6 @@ public class CaseController {
     }
 
     @ResponseBody
-    @GetMapping("/{caseId}")
-    public CaseRichInfo getCaseById(@PathVariable("caseId") String caseId) {
-
-        String subjectId = dataFactory.getSubjectIdById(caseId);
-
-        return getCaseBySubjectId(subjectId);
-    }
-
-    @ResponseBody
     @GetMapping("/caseDetails")
     public CaseRichInfo getCaseBySubjectId(@RequestParam("subjectId") String subjectId) {
         Case aCase = dataFactory.getCaseById(subjectId);
@@ -227,15 +218,6 @@ public class CaseController {
             richInfo.getGraph().getEntities().add(node);
         }
         return richInfo;
-    }
-
-    @ResponseBody
-    @GetMapping("/{caseId}/person")
-    public List<RelevantGraph> getRelevantBiluParagraphsByCaseId(@PathVariable("caseId") String caseId, @RequestParam("keywordList") List<String> keywordList) {
-
-        String subjectId = dataFactory.getSubjectIdById(caseId);
-
-        return getRelevantBiluParagraphsByCaseSubjectId(subjectId, keywordList);
     }
 
     @ResponseBody
