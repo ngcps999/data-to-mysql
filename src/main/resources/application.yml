@@ -3,7 +3,18 @@ server:
   servlet:
     context-path: /api
 
+spring:
+  application:
+    name: tahiti-analysis-service
+
 conflation:
   enable-fusion: false
   conflatedModelName: biluFusion.v2
   subject-prefix: http://knowledge.richinfo.com/
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    serviceUrl:
+      defaultZone: http://47.95.96.227:8861/eureka/

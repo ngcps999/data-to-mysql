@@ -8,14 +8,22 @@
     <artifactId>tahiti-analysis-service</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
+        <java.version>1.8</java.version>
+        <es.version>5.6.8</es.version>
+        <mongo.version>3.6.3</mongo.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <start-class>com.mycompany.tahiti.analysis.springboot.TahitiAnalysisServerApplication</start-class>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
-
+        <spring-cloud.version>Edgware.SR3</spring-cloud.version>
     </properties>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.0.2.RELEASE</version>
+        <version>1.5.13.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     
@@ -84,7 +92,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>2.0.2.RELEASE</version>
+            <version>1.5.13.RELEASE</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.mongodb/mongodb-driver -->
         <dependency>
@@ -105,12 +113,14 @@
             <version>3.5.0</version>
         </dependency>
 
-        <!-- Test Dependencies -->
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <version>1.5.13.RELEASE</version>
             <scope>test</scope>
         </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/org.apache.jena/jena-tdb -->
         <dependency>
@@ -123,7 +133,25 @@
             <artifactId>jena-fuseki-embedded</artifactId>
             <version>3.6.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+            <version>1.4.4.RELEASE</version>
+        </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <build>
         <finalName>ROOT</finalName>
         <plugins>

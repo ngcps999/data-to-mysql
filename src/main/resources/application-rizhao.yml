@@ -2,4 +2,11 @@ jena:
   type: fuseki
   dropExistModel: false
   modelName: biluProdFusion
-  fusekiURI: http://DEPLOY_TARGET_MACHINE:864/knowledge
+  fusekiURI: http://miami-fuseki:3330/knowledge
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    serviceUrl:
+      defaultZone: http://miami-springcloud-eureka:8861/eureka/
