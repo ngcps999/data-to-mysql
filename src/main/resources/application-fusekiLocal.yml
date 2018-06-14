@@ -1,0 +1,12 @@
+jena:
+  type: fuseki
+  dropExistModel: false
+  modelName: biluFusionLocal
+  fusekiURI: http://localhost:3330/knowledge
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8861/eureka/
