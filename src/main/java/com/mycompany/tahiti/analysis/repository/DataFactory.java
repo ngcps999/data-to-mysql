@@ -681,16 +681,16 @@ public class DataFactory {
         }
     }
 
-    public String getBiluSiYaoSu(String biluSubjectId){
+    public String getBiluCrimeComponent(String biluSubjectId){
         try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
             if(model == null)
                 throw new NullPointerException("model is null!");
 
-            val siyaosu = jenaLibrary.getStringValueBySP(model, model.getResource(biluSubjectId), "gongan:gongan.bilu.crimeComponentString");
-            if(siyaosu.size() > 0)
-                return siyaosu.get(0);
+            val components = jenaLibrary.getStringValueBySP(model, model.getResource(biluSubjectId), "gongan:gongan.bilu.crimeComponentString");
+            if(components.size() > 0)
+                return components.get(0);
             else
                 return "";
 
