@@ -1,7 +1,6 @@
 server:
   port: 9876
-  servlet:
-    context-path: /api
+  servlet-path: /api
 
 spring:
   application:
