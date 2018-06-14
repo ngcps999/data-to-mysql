@@ -28,6 +28,7 @@ public class BiluController {
         biluRichInfo.setName(bilu.getName());
         biluRichInfo.setContent(bilu.getContent());
         biluRichInfo.setTags(bilu.getPersons().stream().map(p->p.getName()).collect(Collectors.toList()));
+        biluRichInfo.setCrimeComponent(dataFactory.getBiluSiYaoSu(subjectId));
 
         return biluRichInfo;
     }

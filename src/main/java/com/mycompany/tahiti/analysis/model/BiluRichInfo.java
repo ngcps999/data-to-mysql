@@ -8,6 +8,7 @@ import java.util.List;
 @Data
 public class BiluRichInfo extends BiluBaseInfo {
     private String content;
+    private String crimeComponent;
     private List<String> tags = new ArrayList<>();
 //    private List<Person> persons = new ArrayList<>();
 }
