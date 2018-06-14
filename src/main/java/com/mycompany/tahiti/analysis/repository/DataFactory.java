@@ -11,7 +11,6 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import javax.validation.constraints.Null;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -680,5 +679,24 @@ public class DataFactory {
         } finally {
             jenaLibrary.closeTransaction();
         }
+    }
+
+    public String getBiluCrimeComponent(String biluSubjectId){
+        try {
+            jenaLibrary.openReadTransaction();
+            Model model = jenaLibrary.getRuntimeModel();
+            if(model == null)
+                throw new NullPointerException("model is null!");
+
+            val components = jenaLibrary.getStringValueBySP(model, model.getResource(biluSubjectId), "gongan:gongan.bilu.crimeComponentString");
+            if(components.size() > 0)
+                return components.get(0);
+            else
+                return "";
+
+        } finally {
+            jenaLibrary.closeTransaction();
+        }
+
     }
 }

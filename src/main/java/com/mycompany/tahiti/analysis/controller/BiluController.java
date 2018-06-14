@@ -1,6 +1,8 @@
 package com.mycompany.tahiti.analysis.controller;
 
+import com.google.gson.Gson;
 import com.mycompany.tahiti.analysis.model.BiluRichInfo;
+import com.mycompany.tahiti.analysis.model.CrimeComponent.CrimeComponent;
 import com.mycompany.tahiti.analysis.repository.Bilu;
 import com.mycompany.tahiti.analysis.repository.DataFactory;
 import io.swagger.annotations.Api;
@@ -28,6 +30,7 @@ public class BiluController {
         biluRichInfo.setName(bilu.getName());
         biluRichInfo.setContent(bilu.getContent());
         biluRichInfo.setTags(bilu.getPersons().stream().map(p->p.getName()).collect(Collectors.toList()));
+        biluRichInfo.setCrimeComponent(new Gson().fromJson(dataFactory.getBiluCrimeComponent(subjectId), CrimeComponent.class));
 
         return biluRichInfo;
     }
