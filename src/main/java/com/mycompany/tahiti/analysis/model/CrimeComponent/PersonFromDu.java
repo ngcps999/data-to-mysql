@@ -13,7 +13,7 @@ public class PersonFromDu {
     private String name;
     private String alias;
     private Integer age;
-    private Date birthDate;
+    private String birthDate;
     private Gender gender;
 
     private List<Contact> contact;
