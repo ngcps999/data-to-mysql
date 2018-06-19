@@ -61,4 +61,9 @@ public class ConfigurationController {
         return result;
     }
 
+    @GetMapping("/hello")
+    public String sayHello() {
+        return "Hello, this is publish service";
+    }
+
 }
