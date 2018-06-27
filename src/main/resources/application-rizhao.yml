@@ -4,6 +4,11 @@ jena:
   modelName: biluProdFusion
   fusekiURI: http://miami-fuseki:3330/knowledge
 
+spring:
+  data:
+    mongodb:
+      uri: mongodb://10.53.187.41:27017/zhinengtiaojie
+
 eureka:
   instance:
     prefer-ip-address: true

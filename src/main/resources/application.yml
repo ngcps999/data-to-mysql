@@ -5,6 +5,9 @@ server:
 spring:
   application:
     name: tahiti-analysis-service
+    data:
+      mongodb:
+        uri: mongodb://tahiti:Qs7UDDUliY@47.104.8.27:27101/zhinengtiaojie
 
 conflation:
   enable-fusion: false
