@@ -15,3 +15,9 @@ eureka:
   client:
     serviceUrl:
       defaultZone: http://miami-springcloud-eureka:8861/eureka/
+
+miami:
+  mongocase:
+    database: bihuan
+    collection:
+      case: aj_basic
