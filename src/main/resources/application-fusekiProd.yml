@@ -3,3 +3,14 @@ jena:
   dropExistModel: false
   modelName: biluFusion
   fusekiURI: http://172.19.9.110/knowledge
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://tahiti:Qs7UDDUliY@47.104.8.27:27101/zhinengtiaojie
+
+miami:
+  mongocase:
+    database: zhinengtiaojie
+    collection:
+      case: aj_basic
