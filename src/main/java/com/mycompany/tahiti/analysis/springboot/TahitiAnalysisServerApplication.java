@@ -24,10 +24,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @ComponentScan("com.mycompany.tahiti")
 @EnableSwagger2
-@SpringBootApplication(exclude = {
-        MongoAutoConfiguration.class,
-        MongoDataAutoConfiguration.class
-})
+@SpringBootApplication
 @EnableEurekaClient
 public class TahitiAnalysisServerApplication {
     @Autowired

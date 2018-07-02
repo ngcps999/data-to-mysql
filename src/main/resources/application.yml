@@ -5,6 +5,9 @@ server:
 spring:
   application:
     name: tahiti-analysis-service
+    data:
+      mongodb:
+        uri: mongodb://tahiti:Qs7UDDUliY@47.104.8.27:27101/zhinengtiaojie
 
 conflation:
   enable-fusion: false
@@ -17,3 +20,9 @@ eureka:
   client:
     serviceUrl:
       defaultZone: http://47.95.96.227:8861/eureka/
+
+miami:
+  mongocase:
+    database: zhinengtiaojie
+    collection:
+      case: aj_basic

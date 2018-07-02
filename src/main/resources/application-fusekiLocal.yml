@@ -1,8 +1,13 @@
 jena:
   type: fuseki
   dropExistModel: false
-  modelName: biluFusionLocal
+  modelName: biluDevFusion
   fusekiURI: http://localhost:3330/knowledge
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://tahiti:Qs7UDDUliY@47.104.8.27:27101/zhinengtiaojie
 
 eureka:
   instance:
@@ -10,3 +15,9 @@ eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8861/eureka/
+
+miami:
+  mongocase:
+    database: zhinengtiaojie
+    collection:
+      case: aj_basic

@@ -2,6 +2,7 @@ package com.mycompany.tahiti.analysis.repository;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 import com.mycompany.tahiti.analysis.jena.JenaLibrary;
 import lombok.val;
 import org.apache.jena.rdf.model.Model;
@@ -18,6 +19,9 @@ import java.util.stream.Collectors;
 public class DataFactory {
     @Autowired
     JenaLibrary jenaLibrary;
+
+    @Autowired
+    MongoCaseRepo mongoCaseRepo;
 
     private static final Logger LOG = Logger.getLogger(DataFactory.class);
 
@@ -52,6 +56,10 @@ public class DataFactory {
     // This is all cases with SimpleCase
     // subjectId, SimpleCase
     private Map<String, CaseBaseInfo> allSimpleCases = new HashMap<>();
+
+    // data from mongodb aj_basic
+    // ajbh, CaseMongo
+    private Map<String, CaseMongo> caseMongoMap = new HashMap<>();
 
     public boolean clear() {
         caseCache.clear();
@@ -575,8 +583,19 @@ public class DataFactory {
 
                 val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
 
+                val gson = new Gson();
                 while (iterator.hasNext()) {
                     CaseBaseInfo aCase = getCaseBaseInfo(model, iterator.next().getSubject());
+                    String caseMongoString = mongoCaseRepo.getCase(aCase.getCaseId());
+                    CaseMongo caseMongo = gson.fromJson(caseMongoString, CaseMongo.class);
+                    if(caseMongo != null && caseMongo.getAJBH() != null && !caseMongo.getAJBH().isEmpty()) {
+                        caseMongoMap.put(aCase.getCaseId(), caseMongo);
+                        if (aCase.getCaseType() == null || aCase.getCaseType().isEmpty())
+                            aCase.setCaseType(caseMongo.getAJLXName());
+                        if (caseMongo.getAJMC() != null && !caseMongo.getAJMC().isEmpty())
+                            aCase.setCaseName(caseMongo.getAJMC());
+                    }
+
                     allSimpleCases.put(aCase.getSubjectId(), aCase);
                 }
 
