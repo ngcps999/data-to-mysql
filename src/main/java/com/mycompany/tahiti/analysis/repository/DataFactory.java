@@ -583,11 +583,12 @@ public class DataFactory {
 
                 val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
 
+                val gson = new Gson();
                 while (iterator.hasNext()) {
                     CaseBaseInfo aCase = getCaseBaseInfo(model, iterator.next().getSubject());
                     String caseMongoString = mongoCaseRepo.getCase(aCase.getCaseId());
-                    CaseMongo caseMongo = new Gson().fromJson(caseMongoString, CaseMongo.class);
-                    if(caseMongo != null) {
+                    CaseMongo caseMongo = gson.fromJson(caseMongoString, CaseMongo.class);
+                    if(caseMongo != null && caseMongo.getAJBH() != null && !caseMongo.getAJBH().isEmpty()) {
                         caseMongoMap.put(aCase.getCaseId(), caseMongo);
                         if (aCase.getCaseType() == null || aCase.getCaseType().isEmpty())
                             aCase.setCaseType(caseMongo.getAJLXName());
