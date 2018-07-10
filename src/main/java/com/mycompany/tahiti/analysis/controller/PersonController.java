@@ -104,6 +104,13 @@ public class PersonController {
         return personRichInfo;
     }
 
+
+    @ResponseBody
+    @GetMapping("/getSubjectIdByIdentity/{id}")
+    public String getPersonSubjectIdByIdentity(@PathVariable("id") String id){
+        return dataFactory.getPersonSubjectIdByIdentity(id);
+    }
+
     public boolean hasNameOnly(PersonRichInfo.SameCasePerson sameCasePerson) {
         if (!isNullOrEmpty(sameCasePerson.getName()) && isNullOrEmpty(sameCasePerson.getBirthDay()) && isNullOrEmpty(sameCasePerson.getGender()) && isNullOrEmpty(sameCasePerson.getIdentity()) && isNullOrEmpty(sameCasePerson.getPhone()) && isNullOrEmpty(sameCasePerson.getRole()))
             return true;

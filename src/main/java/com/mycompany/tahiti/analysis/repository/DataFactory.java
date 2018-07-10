@@ -366,6 +366,13 @@ public class DataFactory {
         }
     }
 
+    public String getPersonSubjectIdByIdentity(String identity){
+        // todo
+        // @wenqiang
+
+        return "";
+    }
+
     public Person getPersonById(String pSubjectId) {
         if (personCache.containsKey(pSubjectId))
             return personCache.get(pSubjectId);
@@ -440,6 +447,11 @@ public class DataFactory {
                     person.setGender("男");
             }
         }
+
+        // enrich person
+        // todo @wenqiang
+        // 如果人有身份证号，通过人的API，拿到更多的信息
+
         return person;
     }
 
