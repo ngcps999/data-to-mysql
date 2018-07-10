@@ -504,10 +504,7 @@ public class DataFactory {
                     .url(builder.toString())
                     .build();
             Response response = client.newCall(request).execute();
-            if (!response.isSuccessful()) {
-                if (response.code() != 404)
-                    throw new RuntimeException("Response code: " + response.code() + " Response body: " + response.body().string());
-            } else if (response.body() != null && response.body().source() != null) {
+            if (response.isSuccessful() && response.body() != null && response.body().source() != null) {
                 val basicInfoElement = jsonParser.parse(Okio.buffer(response.body().source()).readUtf8()).getAsJsonObject().get("basicInfo");
                 if (basicInfoElement != null) {
                     JsonObject basicInfoJO = basicInfoElement.getAsJsonObject();
@@ -529,11 +526,8 @@ public class DataFactory {
                     }
                 }
             }
-        }
-// enrich person
-// todo @wenqiang
-// 如果人有身份证号，通过人的API，拿到更多的信息，from gexin
 
+        }
         return person;
     }
 
