@@ -7,7 +7,7 @@ jena:
 spring:
   data:
     mongodb:
-      uri: mongodb://10.53.187.41:27017/zhinengtiaojie
+      uri: mongodb://10.53.187.41:27017
 
 eureka:
   instance:
