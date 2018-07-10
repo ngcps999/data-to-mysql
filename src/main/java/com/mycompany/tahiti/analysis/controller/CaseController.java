@@ -7,6 +7,7 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,7 +70,7 @@ public class CaseController {
 
     @ResponseBody
     @GetMapping("/caseDetails")
-    public CaseRichInfo getCaseBySubjectId(@RequestParam("subjectId") String subjectId) {
+    public CaseRichInfo getCaseBySubjectId(@RequestParam("subjectId") String subjectId) throws IOException {
         Case aCase = dataFactory.getCaseById(subjectId);
 
         CaseRichInfo richInfo = new CaseRichInfo();
@@ -222,7 +223,7 @@ public class CaseController {
 
     @ResponseBody
     @GetMapping("/keywordsInBiluParagraph")
-    public List<RelevantGraph> getRelevantBiluParagraphsByCaseSubjectId(@RequestParam("caseSubjectId") String caseSubjectId, @RequestParam("keywordList") List<String> keywordList) {
+    public List<RelevantGraph> getRelevantBiluParagraphsByCaseSubjectId(@RequestParam("caseSubjectId") String caseSubjectId, @RequestParam("keywordList") List<String> keywordList) throws IOException {
 
         keywordList.remove("");
 

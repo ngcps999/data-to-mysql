@@ -1,18 +1,30 @@
 package com.mycompany.tahiti.analysis.repository;
 
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mycompany.tahiti.analysis.jena.JenaLibrary;
 import lombok.val;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okio.Okio;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.jena.ext.com.google.common.collect.Iterators;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Repository
@@ -24,7 +36,14 @@ public class DataFactory {
     MongoCaseRepo mongoCaseRepo;
 
     private static final Logger LOG = Logger.getLogger(DataFactory.class);
-
+    @Value("${miami.person.uri}")
+    private String personURI;
+    Gson gson = new Gson();
+    JsonParser jsonParser = new JsonParser();
+    private final OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(Integer.MAX_VALUE, TimeUnit.MILLISECONDS)
+            .readTimeout(Integer.MAX_VALUE, TimeUnit.MILLISECONDS)
+            .build();
     // This is only for cache, not full data
     //For BI overall
     private Integer personCountCache = null;
@@ -329,7 +348,7 @@ public class DataFactory {
         }
     }
 
-    public Case getCaseById(String subjectId) {
+    public Case getCaseById(String subjectId) throws IOException {
         if (caseCache.containsKey(subjectId))
             return caseCache.get(subjectId);
         else {
@@ -348,7 +367,7 @@ public class DataFactory {
         }
     }
 
-    public Bilu getBiluById(String subjectId) {
+    public Bilu getBiluById(String subjectId) throws IOException {
         if (biluCache.containsKey(subjectId))
             return biluCache.get(subjectId);
         else {
@@ -401,7 +420,7 @@ public class DataFactory {
         }
     }
 
-    public Person getPersonById(String pSubjectId) {
+    public Person getPersonById(String pSubjectId) throws IOException {
         if (personCache.containsKey(pSubjectId))
             return personCache.get(pSubjectId);
         else {
@@ -420,7 +439,7 @@ public class DataFactory {
         }
     }
 
-    private Person getPersonInfo(Model model, Resource resource) {
+    private Person getPersonInfo(Model model, Resource resource) throws IOException {
         Person person = personRelationCache.getOrDefault(resource.toString(), null);
 
         if (person == null) {
@@ -476,14 +495,49 @@ public class DataFactory {
             }
         }
 
-        // enrich person
-        // todo @wenqiang
-        // 如果人有身份证号，通过人的API，拿到更多的信息，from gexin
+        if (person.getIdentity() != null && !person.getIdentity().isEmpty()) {
+            String identity = person.getIdentity();
+            Request.Builder requestBuilder = new Request.Builder();
+            URIBuilder builder = new URIBuilder().setPath(personURI + identity);
+            Request request = requestBuilder
+                    .header("Authorization", "df620992-d943-4684-924b-b83c9605c47a")
+                    .url(builder.toString())
+                    .build();
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                if (response.code() != 404)
+                    throw new RuntimeException("Response code: " + response.code() + " Response body: " + response.body().string());
+            } else if (response.body() != null && response.body().source() != null) {
+                val basicInfoElement = jsonParser.parse(Okio.buffer(response.body().source()).readUtf8()).getAsJsonObject().get("basicInfo");
+                if (basicInfoElement != null) {
+                    JsonObject basicInfoJO = basicInfoElement.getAsJsonObject();
+                    if (basicInfoJO != null) {
+                        if (basicInfoJO.has("dateOfBirth")) {
+                            val dateOfBirth = basicInfoJO.get("dateOfBirth");
+                            if (dateOfBirth != null && !dateOfBirth.getAsString().isEmpty()) {
+                                basicInfoJO.remove("dateOfBirth");
+                                BasicInfo basicInfo = gson.fromJson(basicInfoJO.toString(), BasicInfo.class);
+                                basicInfo.setDateOfBirth(LocalDate.parse(dateOfBirth.getAsString()));
+                                person.setBasicInfo(basicInfo);
+                            }
+                        }
+                        HashMap<String, Object> personMap = gson.fromJson(gson.toJson(person), new TypeToken<HashMap<String, Object>>() {
+                        }.getType());
+                        personMap.putAll(gson.fromJson(basicInfoJO, new TypeToken<HashMap<String, Object>>() {
+                        }.getType()));
+                        person = gson.fromJson(gson.toJson(personMap), Person.class);
+                    }
+                }
+            }
+        }
+// enrich person
+// todo @wenqiang
+// 如果人有身份证号，通过人的API，拿到更多的信息，from gexin
 
         return person;
     }
 
-    private Bilu getBiluInfo(Model model, Resource resource) {
+    private Bilu getBiluInfo(Model model, Resource resource) throws IOException {
         Bilu bilu = new Bilu();
 
         bilu.setSubjectId(resource.toString());
@@ -563,7 +617,7 @@ public class DataFactory {
         return bilu;
     }
 
-    private Case getCaseInfo(Model model, Resource resource) {
+    private Case getCaseInfo(Model model, Resource resource) throws IOException {
         Case aCase = new Case();
 
         if (allSimpleCases.containsKey(resource.toString()))

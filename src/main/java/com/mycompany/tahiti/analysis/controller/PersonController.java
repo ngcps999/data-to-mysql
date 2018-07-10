@@ -6,6 +6,7 @@ import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class PersonController {
 
     @ResponseBody
     @GetMapping("/details")
-    public PersonRichInfo getPersonDetail(@RequestParam("subjectId") String subjectId, @RequestParam("minSameCaseNum") Integer minSameCaseNum) {
+    public PersonRichInfo getPersonDetail(@RequestParam("subjectId") String subjectId, @RequestParam("minSameCaseNum") Integer minSameCaseNum) throws IOException {
         PersonRichInfo personRichInfo = new PersonRichInfo();
         Person person = dataFactory.getPersonById(subjectId);
         personRichInfo.setSubjectId(subjectId);

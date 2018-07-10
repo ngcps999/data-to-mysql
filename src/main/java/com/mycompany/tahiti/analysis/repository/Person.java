@@ -19,4 +19,6 @@ public class Person {
 
     // case subjectId
     private List<String> biluList = new ArrayList<>();
+
+    private BasicInfo basicInfo;
 }
