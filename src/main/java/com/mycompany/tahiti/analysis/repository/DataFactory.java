@@ -1,18 +1,30 @@
 package com.mycompany.tahiti.analysis.repository;
 
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mycompany.tahiti.analysis.jena.JenaLibrary;
 import lombok.val;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okio.Okio;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.jena.ext.com.google.common.collect.Iterators;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Repository
@@ -24,7 +36,14 @@ public class DataFactory {
     MongoCaseRepo mongoCaseRepo;
 
     private static final Logger LOG = Logger.getLogger(DataFactory.class);
-
+    @Value("${miami.person.uri}")
+    private String personURI;
+    Gson gson = new Gson();
+    JsonParser jsonParser = new JsonParser();
+    private final OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(Integer.MAX_VALUE, TimeUnit.MILLISECONDS)
+            .readTimeout(Integer.MAX_VALUE, TimeUnit.MILLISECONDS)
+            .build();
     // This is only for cache, not full data
     //For BI overall
     private Integer personCountCache = null;
@@ -61,6 +80,8 @@ public class DataFactory {
     // ajbh, CaseMongo
     private Map<String, CaseMongo> caseMongoMap = new HashMap<>();
 
+    private Map<String, String> identitySubIdMap = new HashMap<>();
+
     public boolean clear() {
         caseCache.clear();
         biluCache.clear();
@@ -68,6 +89,7 @@ public class DataFactory {
         allSimpleCases.clear();
         personRelationCache.clear();
         phoneCaseRelationCache.clear();
+        identitySubIdMap.clear();
         personBiluCount = null;
         tagBiluCount = null;
         personCountCache = null;
@@ -89,7 +111,7 @@ public class DataFactory {
 
             //get all person subjectId
             Model model = jenaLibrary.getRuntimeModel();
-            if(model == null)
+            if (model == null)
                 return new HashMap<>();
 
             Iterator<Statement> iter = jenaLibrary.getStatementsByEntityType(model, "common:person.person");
@@ -99,7 +121,7 @@ public class DataFactory {
                 personResourceList.add(personSubjectId);
                 Person person = new Person();
                 person.setSubjectId(personSubjectId);
-                personRelation.put(personSubjectId,person);
+                personRelation.put(personSubjectId, person);
             }
 
             HashSet<String> personSet = new HashSet<>(personResourceList);
@@ -112,7 +134,7 @@ public class DataFactory {
                 String personSubjectId = statement.getObject().toString();
                 String biluSubjectId = statement.getSubject().toString();
                 if (!biluResoursceList.contains(biluSubjectId)) biluResoursceList.add(biluSubjectId);
-                if (!personRelation.get(personSubjectId).getBiluList().contains(biluSubjectId)){
+                if (!personRelation.get(personSubjectId).getBiluList().contains(biluSubjectId)) {
                     personRelation.get(personSubjectId).getBiluList().add(biluSubjectId);
                 }
             }
@@ -123,9 +145,9 @@ public class DataFactory {
             HashMap<String, String> biluCaseMap = new HashMap<>();
             while (biluCaseIter.hasNext()) {
                 Statement statement = biluCaseIter.next();
-                biluCaseMap.put(statement.getObject().toString(),statement.getSubject().toString());
+                biluCaseMap.put(statement.getObject().toString(), statement.getSubject().toString());
             }
-            for (String personSubjectId : personRelation.keySet()){
+            for (String personSubjectId : personRelation.keySet()) {
                 Person person = personRelation.get(personSubjectId);
                 for (String bilu : person.getBiluList()) {
                     if (biluCaseMap.keySet().contains(bilu)) {
@@ -136,7 +158,7 @@ public class DataFactory {
             }
             //enrich person name and identification
             Iterator<Statement> pNamesIter = jenaLibrary.getStatementsByBatchSP(model, personSet, "common:type.object.name");
-            while (pNamesIter.hasNext()){
+            while (pNamesIter.hasNext()) {
                 Statement statement = pNamesIter.next();
                 String personSubjectId = statement.getSubject().toString();
                 personRelation.get(personSubjectId).setName(statement.getString());
@@ -148,7 +170,7 @@ public class DataFactory {
                 String personSubjectId = statement.getSubject().toString();
                 Resource personIdResource = statement.getResource();
                 val personIds = jenaLibrary.getStringValueBySP(model, personIdResource, "common:person.identification.number");
-                if (personIds.size() > 0){
+                if (personIds.size() > 0) {
                     personRelation.get(personSubjectId).setIdentity(personIds.get(0));
                 }
             }
@@ -160,17 +182,16 @@ public class DataFactory {
         }
     }
 
-    public Map<String, List<String>> getPhoneCaseRelationCache(){
-        if(phoneCaseRelationCache.size() > 0)
+    public Map<String, List<String>> getPhoneCaseRelationCache() {
+        if (phoneCaseRelationCache.size() > 0)
             return phoneCaseRelationCache;
-        else
-        {
+        else {
             try {
                 jenaLibrary.openReadTransaction();
 
                 //get all thing -> bilu
                 Model model = jenaLibrary.getRuntimeModel();
-                if(model == null)
+                if (model == null)
                     return new HashMap<>();
 
                 Iterator<Statement> iter = jenaLibrary.getStatementsBySP(model, null, "gongan:gongan.bilu.thing");
@@ -178,7 +199,7 @@ public class DataFactory {
                 HashSet<String> biluSet = new HashSet<>();
                 while (iter.hasNext()) {
                     val statement = iter.next();
-                    if(!thingBiluMap.containsKey(statement.getResource().toString()))
+                    if (!thingBiluMap.containsKey(statement.getResource().toString()))
                         thingBiluMap.put(statement.getResource().toString(), new ArrayList<>());
 
                     thingBiluMap.get(statement.getResource().toString()).add(statement.getSubject().toString());
@@ -190,7 +211,7 @@ public class DataFactory {
                 HashMap<String, String> biluCaseMap = new HashMap<>();
                 while (biluCaseIter.hasNext()) {
                     Statement statement = biluCaseIter.next();
-                    biluCaseMap.put(statement.getObject().toString(),statement.getSubject().toString());
+                    biluCaseMap.put(statement.getObject().toString(), statement.getSubject().toString());
                 }
 
                 HashSet<String> phoneSet = new HashSet<>(thingBiluMap.keySet().stream().distinct().collect(Collectors.toList()));
@@ -205,7 +226,7 @@ public class DataFactory {
                         String phoneSID = statement.getSubject().toString();
                         List<String> biluSIds = thingBiluMap.getOrDefault(phoneSID, null);
                         if (biluSIds != null) {
-                            for(String biluSId : biluSIds) {
+                            for (String biluSId : biluSIds) {
                                 String caseSId = biluCaseMap.getOrDefault(biluSId, null);
                                 if (caseSId != null) {
                                     if (!phoneCaseRelationCache.containsKey(phoneNum)) {
@@ -231,7 +252,7 @@ public class DataFactory {
         try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
-            if(model == null)
+            if (model == null)
                 return 0;
 
             Iterator<Statement> iter = jenaLibrary.getStatementsByEntityType(model, "common:person.person");
@@ -264,7 +285,7 @@ public class DataFactory {
         try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
-            if(model == null)
+            if (model == null)
                 return new HashMap<>();
             Iterator<Statement> iterator_tag = jenaLibrary.getStatementsBySP(model, null, "common:type.object.tag");
             Map<String, Integer> map = new HashMap();
@@ -281,7 +302,7 @@ public class DataFactory {
         try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
-            if(model == null)
+            if (model == null)
                 return new HashMap<>();
 
             Iterator<Statement> iterator = jenaLibrary.getStatementsByEntityType(model, "common:person.person");
@@ -328,14 +349,14 @@ public class DataFactory {
         }
     }
 
-    public Case getCaseById(String subjectId) {
+    public Case getCaseById(String subjectId) throws IOException {
         if (caseCache.containsKey(subjectId))
             return caseCache.get(subjectId);
         else {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
-                if(model == null)
+                if (model == null)
                     throw new NullPointerException("model is null!");
 
                 Case aCase = getCaseInfo(model, model.getResource(subjectId));
@@ -347,14 +368,14 @@ public class DataFactory {
         }
     }
 
-    public Bilu getBiluById(String subjectId) {
+    public Bilu getBiluById(String subjectId) throws IOException {
         if (biluCache.containsKey(subjectId))
             return biluCache.get(subjectId);
         else {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
-                if(model == null)
+                if (model == null)
                     throw new NullPointerException("model is null!");
 
                 Bilu bilu = getBiluInfo(model, model.getResource(subjectId));
@@ -366,14 +387,48 @@ public class DataFactory {
         }
     }
 
-    public Person getPersonById(String pSubjectId) {
+    public String getPersonSubjectIdByIdentity(String identity) {
+        if (identitySubIdMap != null && identitySubIdMap.containsKey(identity)) {
+            return identitySubIdMap.get(identity);
+        } else {
+            try {
+                jenaLibrary.openReadTransaction();
+                Model model = jenaLibrary.getRuntimeModel();
+                if (model == null) {
+                    throw new NullPointerException("model is null!");
+                }
+                val iterator = jenaLibrary.getStatementsByPOValue(model, "common:person.identification.number", identity);
+
+                if (iterator.hasNext()) {
+                    String objectSubId = iterator.next().getSubject().toString();
+                    val nextIterator = jenaLibrary.getStatementsByPO(model, "common:person.person.identification", model.getResource(objectSubId));
+                    if (nextIterator.hasNext()) {
+                        String subId = nextIterator.next().getSubject().toString();
+                        identitySubIdMap.put(identity, subId);
+                        return subId;
+                    } else {
+                        LOG.error("can't find id: " + identity);
+                        return "";
+                    }
+                } else {
+                    LOG.error("can't find id: " + identity);
+                    return "";
+                }
+
+            } finally {
+                jenaLibrary.closeTransaction();
+            }
+        }
+    }
+
+    public Person getPersonById(String pSubjectId) throws IOException {
         if (personCache.containsKey(pSubjectId))
             return personCache.get(pSubjectId);
         else {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
-                if(model == null)
+                if (model == null)
                     throw new NullPointerException("model is null!");
 
                 Person person = getPersonInfo(model, model.getResource(pSubjectId));
@@ -385,10 +440,10 @@ public class DataFactory {
         }
     }
 
-    private Person getPersonInfo(Model model, Resource resource) {
+    private Person getPersonInfo(Model model, Resource resource) throws IOException {
         Person person = personRelationCache.getOrDefault(resource.toString(), null);
 
-        if(person == null) {
+        if (person == null) {
             person = new Person();
 
             person.setSubjectId(resource.toString());
@@ -416,7 +471,7 @@ public class DataFactory {
             person.setCaseList(relatedCases);
         }
 
-        if(person.getPhone() == null || person.getPhone().isEmpty()) {
+        if (person.getPhone() == null || person.getPhone().isEmpty()) {
             val contactIters = jenaLibrary.getStatementsBySP(model, resource, "common:person.person.contact");
             if (contactIters.hasNext()) {
                 val contacts = jenaLibrary.getStringValueBySP(model, contactIters.next().getResource(), "common:person.contact.number");
@@ -425,13 +480,13 @@ public class DataFactory {
             }
         }
 
-        if(person.getBirthDay() == null || person.getBirthDay().isEmpty()) {
+        if (person.getBirthDay() == null || person.getBirthDay().isEmpty()) {
             val birthdays = jenaLibrary.getStringValueBySP(model, resource, "common:person.person.birthDate");
             if (birthdays.size() > 0)
                 person.setBirthDay(birthdays.get(0));
         }
 
-        if(person.getGender() == null || person.getGender().isEmpty()) {
+        if (person.getGender() == null || person.getGender().isEmpty()) {
             val genders = jenaLibrary.getStringValueBySP(model, resource, "common:person.person.gender");
             if (genders.size() > 0) {
                 if (genders.get(0).toLowerCase().equals("female"))
@@ -440,10 +495,44 @@ public class DataFactory {
                     person.setGender("男");
             }
         }
+
+        if (person.getIdentity() != null && !person.getIdentity().isEmpty()) {
+            String identity = person.getIdentity();
+            Request.Builder requestBuilder = new Request.Builder();
+            URIBuilder builder = new URIBuilder().setPath(personURI + identity);
+            Request request = requestBuilder
+                    .header("Authorization", "df620992-d943-4684-924b-b83c9605c47a")
+                    .url(builder.toString())
+                    .build();
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful() && response.body() != null && response.body().source() != null) {
+                val basicInfoElement = jsonParser.parse(Okio.buffer(response.body().source()).readUtf8()).getAsJsonObject().get("basicInfo");
+                if (basicInfoElement != null) {
+                    JsonObject basicInfoJO = basicInfoElement.getAsJsonObject();
+                    if (basicInfoJO != null) {
+                        if (basicInfoJO.has("dateOfBirth")) {
+                            val dateOfBirth = basicInfoJO.get("dateOfBirth");
+                            if (dateOfBirth != null && !dateOfBirth.getAsString().isEmpty()) {
+                                basicInfoJO.remove("dateOfBirth");
+                                BasicInfo basicInfo = gson.fromJson(basicInfoJO.toString(), BasicInfo.class);
+                                basicInfo.setDateOfBirth(LocalDate.parse(dateOfBirth.getAsString()));
+                                person.setBasicInfo(basicInfo);
+                            }
+                        }
+                        HashMap<String, Object> personMap = gson.fromJson(gson.toJson(person), new TypeToken<HashMap<String, Object>>() {
+                        }.getType());
+                        personMap.putAll(gson.fromJson(basicInfoJO, new TypeToken<HashMap<String, Object>>() {
+                        }.getType()));
+                        person = gson.fromJson(gson.toJson(personMap), Person.class);
+                    }
+                }
+            }
+
+        }
         return person;
     }
 
-    private Bilu getBiluInfo(Model model, Resource resource) {
+    private Bilu getBiluInfo(Model model, Resource resource) throws IOException {
         Bilu bilu = new Bilu();
 
         bilu.setSubjectId(resource.toString());
@@ -483,15 +572,15 @@ public class DataFactory {
                 val connectionType = jenaLibrary.getStringValueBySP(model, model.getResource(connection), "common:common.connection.type");
 
                 if (connectionType.contains("common:common.connection.BiluEntityXianyiren"))
-                    role += role.contains(Role.BiluEntityXianyiren.toString())? "" : (Role.BiluEntityXianyiren.toString() + "；");
+                    role += role.contains(Role.BiluEntityXianyiren.toString()) ? "" : (Role.BiluEntityXianyiren.toString() + "；");
                 if (connectionType.contains("common:common.connection.BiluEntityZhengren"))
-                    role += role.contains(Role.BiluEntityZhengren.toString())? "" : (Role.BiluEntityZhengren.toString() + "；");
+                    role += role.contains(Role.BiluEntityZhengren.toString()) ? "" : (Role.BiluEntityZhengren.toString() + "；");
                 if (connectionType.contains("common:common.connection.BiluEntityBaoanren"))
-                    role += role.contains(Role.BiluEntityBaoanren.toString())? "" : (Role.BiluEntityBaoanren.toString() + "；");
+                    role += role.contains(Role.BiluEntityBaoanren.toString()) ? "" : (Role.BiluEntityBaoanren.toString() + "；");
                 if (connectionType.contains("common:common.connection.BiluEntityDangshiren"))
-                    role += role.contains(Role.BiluEntityDangshiren.toString())? "" : (Role.BiluEntityDangshiren.toString() + "；");
+                    role += role.contains(Role.BiluEntityDangshiren.toString()) ? "" : (Role.BiluEntityDangshiren.toString() + "；");
                 if (connectionType.contains("common:common.connection.BiluEntityShouhairen"))
-                    role += role.contains(Role.BiluEntityShouhairen.toString())? "" : (Role.BiluEntityShouhairen.toString() + "；");
+                    role += role.contains(Role.BiluEntityShouhairen.toString()) ? "" : (Role.BiluEntityShouhairen.toString() + "；");
             }
 
             int roleLength = role.length();
@@ -523,7 +612,7 @@ public class DataFactory {
         return bilu;
     }
 
-    private Case getCaseInfo(Model model, Resource resource) {
+    private Case getCaseInfo(Model model, Resource resource) throws IOException {
         Case aCase = new Case();
 
         if (allSimpleCases.containsKey(resource.toString()))
@@ -560,7 +649,7 @@ public class DataFactory {
                 if (!aCase.getConnections().containsKey(pSubjectId))
                     aCase.getConnections().put(pSubjectId, bilu.getConnections().get(pSubjectId));
                 else {
-                    if(!aCase.getConnections().get(pSubjectId).contains(bilu.getConnections().get(pSubjectId)))
+                    if (!aCase.getConnections().get(pSubjectId).contains(bilu.getConnections().get(pSubjectId)))
                         aCase.getConnections().put(pSubjectId, bilu.getConnections().get(pSubjectId) + "；" + aCase.getConnections().get(pSubjectId));
                 }
             }
@@ -578,7 +667,7 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
-                if(model == null)
+                if (model == null)
                     return new ArrayList<>();
 
                 val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
@@ -588,7 +677,7 @@ public class DataFactory {
                     CaseBaseInfo aCase = getCaseBaseInfo(model, iterator.next().getSubject());
                     String caseMongoString = mongoCaseRepo.getCase(aCase.getCaseId());
                     CaseMongo caseMongo = gson.fromJson(caseMongoString, CaseMongo.class);
-                    if(caseMongo != null && caseMongo.getAJBH() != null && !caseMongo.getAJBH().isEmpty()) {
+                    if (caseMongo != null && caseMongo.getAJBH() != null && !caseMongo.getAJBH().isEmpty()) {
                         caseMongoMap.put(aCase.getCaseId(), caseMongo);
                         if (aCase.getCaseType() == null || aCase.getCaseType().isEmpty())
                             aCase.setCaseType(caseMongo.getAJLXName());
@@ -614,7 +703,7 @@ public class DataFactory {
             try {
                 jenaLibrary.openReadTransaction();
                 Model model = jenaLibrary.getRuntimeModel();
-                if(model == null)
+                if (model == null)
                     throw new NullPointerException("model is null!");
 
                 val iterator = jenaLibrary.getStatementsByEntityType(model, "gongan:gongan.case");
@@ -680,11 +769,11 @@ public class DataFactory {
         return caseBaseInfo;
     }
 
-    public String getSubjectIdById(String id){
+    public String getSubjectIdById(String id) {
         try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
-            if(model == null)
+            if (model == null)
                 throw new NullPointerException("model is null!");
 
             val iterator = jenaLibrary.getStatementsById(model, id);
@@ -700,15 +789,15 @@ public class DataFactory {
         }
     }
 
-    public String getBiluCrimeComponent(String biluSubjectId){
+    public String getBiluCrimeComponent(String biluSubjectId) {
         try {
             jenaLibrary.openReadTransaction();
             Model model = jenaLibrary.getRuntimeModel();
-            if(model == null)
+            if (model == null)
                 throw new NullPointerException("model is null!");
 
             val components = jenaLibrary.getStringValueBySP(model, model.getResource(biluSubjectId), "gongan:gongan.bilu.crimeComponentString");
-            if(components.size() > 0)
+            if (components.size() > 0)
                 return components.get(0);
             else
                 return "";

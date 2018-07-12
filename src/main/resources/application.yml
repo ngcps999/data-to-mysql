@@ -26,3 +26,5 @@ miami:
     database: zhinengtiaojie
     collection:
       case: aj_basic
+  person:
+    uri: http://tahiti-api.test.richinfoai.com/api/v2/person/

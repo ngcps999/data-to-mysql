@@ -9,6 +9,7 @@ import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.stream.Collectors;
 
 @RestController
@@ -20,7 +21,7 @@ public class BiluController {
 
     @ResponseBody
     @GetMapping("/{biluId}")
-    public BiluRichInfo getBiluById(@PathVariable("biluId") String biluId) {
+    public BiluRichInfo getBiluById(@PathVariable("biluId") String biluId) throws IOException {
 
         String subjectId = dataFactory.getSubjectIdById(biluId);
 
