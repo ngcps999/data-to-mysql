@@ -89,6 +89,7 @@ public class DataFactory {
         allSimpleCases.clear();
         personRelationCache.clear();
         phoneCaseRelationCache.clear();
+        identitySubIdMap.clear();
         personBiluCount = null;
         tagBiluCount = null;
         personCountCache = null;
