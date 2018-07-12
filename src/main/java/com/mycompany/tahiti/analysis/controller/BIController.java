@@ -101,6 +101,7 @@ public class BIController {
         Graph graph = new Graph();
         Map<String, Person> personRelationCache = dataFactory.getPersonRelation();
         Map<String, Integer> personCaseCount = new HashMap<>();
+        List<Node> shouldRemove = new ArrayList<>();
         for (String subjectId : personRelationCache.keySet()) {
             personCaseCount.put(subjectId, personRelationCache.get(subjectId).getCaseList().size());
         }
@@ -110,39 +111,47 @@ public class BIController {
         for (Map.Entry<String, Integer> entry : topEntries) {
             Node node = new Node(entry.getKey());
             Map<String, Object> properties = new HashMap<>();
-            if (personRelationCache.get(entry.getKey()).getName() != null && !personRelationCache.get(entry.getKey()).getName().isEmpty()){
+            if (personRelationCache.get(entry.getKey()).getName() != null && !personRelationCache.get(entry.getKey()).getName().isEmpty()) {
                 properties.put("name", personRelationCache.get(entry.getKey()).getName());
                 properties.put("type", NodeType.Person.toString());
-                properties.put("crimeCount",entry.getValue());
+                properties.put("crimeCount", entry.getValue());
                 node.setProperties(properties);
                 graph.getEntities().add(node);
-            }else if(personRelationCache.get(entry.getKey()).getIdentity() != null && !personRelationCache.get(entry.getKey()).getIdentity().isEmpty()){
+                shouldRemove.add(node);
+            } else if (personRelationCache.get(entry.getKey()).getIdentity() != null && !personRelationCache.get(entry.getKey()).getIdentity().isEmpty()) {
                 properties.put("name", personRelationCache.get(entry.getKey()).getIdentity());
-                properties.put("type",NodeType.Identity.toString());
-                properties.put("crimeCount",entry.getValue());
+                properties.put("type", NodeType.Identity.toString());
+                properties.put("crimeCount", entry.getValue());
                 node.setProperties(properties);
                 graph.getEntities().add(node);
+                shouldRemove.add(node);
             }
         }
         //generate edge
-        for(Node node1 : graph.getEntities()){
-            for(Node node2:graph.getEntities()){
-                if(!node1.getId().equals(node2.getId())){
+
+        for (Node node1 : graph.getEntities()) {
+            for (Node node2 : graph.getEntities()) {
+                if (!node1.getId().equals(node2.getId())) {
                     int sameCaseCount = 0;
-                    for(String case1:personRelationCache.get(node1.getId()).getCaseList()){
-                        if(personRelationCache.get(node2.getId()).getCaseList().contains(case1))sameCaseCount++;
+                    for (String case1 : personRelationCache.get(node1.getId()).getCaseList()) {
+                        if (personRelationCache.get(node2.getId()).getCaseList().contains(case1)) sameCaseCount++;
                     }
-                    if(sameCaseCount>0){
-                        Edge edge = new Edge(new Random().nextInt(),node1.getId(),node2.getId());
+                    if (sameCaseCount > 0) {
+                        Edge edge = new Edge(new Random().nextInt(), node1.getId(), node2.getId());
                         edge.setChiType(EdgeType.Gongan.toString());
                         Map<String, Object> properties = new HashMap<>();
-                        properties.put("accompliceCount",sameCaseCount);
+                        properties.put("accompliceCount", sameCaseCount);
                         edge.setProperties(properties);
                         graph.getRelationships().add(edge);
+                        shouldRemove.remove(node1);
+                        shouldRemove.remove(node2);
                     }
                 }
             }
         }
+
+        shouldRemove.forEach(node -> graph.getEntities().remove(node));
+
         return graph;
     }
 
