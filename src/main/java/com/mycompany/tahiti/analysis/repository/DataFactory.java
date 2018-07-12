@@ -22,6 +22,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -515,8 +517,14 @@ public class DataFactory {
                             if (dateOfBirth != null && !dateOfBirth.getAsString().isEmpty()) {
                                 basicInfoJO.remove("dateOfBirth");
                                 BasicInfo basicInfo = gson.fromJson(basicInfoJO.toString(), BasicInfo.class);
+
                                 basicInfo.setDateOfBirth(LocalDate.parse(dateOfBirth.getAsString()));
                                 person.setBasicInfo(basicInfo);
+                                try {
+                                    person.setBirthDay(new SimpleDateFormat("yyyy年MM月dd日").format(new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH).parse(dateOfBirth.getAsString())));
+                                } catch (Exception ignored) {
+                                }
+
                             }
                         }
                         HashMap<String, Object> personMap = gson.fromJson(gson.toJson(person), new TypeToken<HashMap<String, Object>>() {
@@ -529,6 +537,13 @@ public class DataFactory {
             }
 
         }
+
+        try {
+            String formattedDate = new SimpleDateFormat("yyyy年MM月dd日").format(new SimpleDateFormat("MMM dd, yyyy hh:mm:ss aaa",Locale.ENGLISH).parse(person.getBirthDay()));
+            person.setBirthDay(formattedDate);
+        } catch (Exception ignored) {
+        }
+
         return person;
     }
 
