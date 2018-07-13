@@ -107,9 +107,11 @@ public class PersonController {
 
 
     @ResponseBody
-    @GetMapping("/getSubjectIdByIdentity/{id}")
-    public String getPersonSubjectIdByIdentity(@PathVariable("id") String id){
-        return dataFactory.getPersonSubjectIdByIdentity(id);
+    @GetMapping("/getPersonDetailByIdentity")
+    public PersonRichInfo getPersonRichInfoByIdentity(@RequestParam("identity") String identity, @RequestParam("minSameCaseNum") Integer minSameCaseNum) throws IOException {
+        String subjectId = dataFactory.getPersonSubjectIdByIdentity(identity);
+
+        return getPersonDetail(subjectId,minSameCaseNum);
     }
 
     public boolean hasNameOnly(PersonRichInfo.SameCasePerson sameCasePerson) {
