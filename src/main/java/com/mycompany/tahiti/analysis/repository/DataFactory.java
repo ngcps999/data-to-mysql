@@ -449,6 +449,9 @@ public class DataFactory {
         Person person = personRelationCache.getOrDefault(resource.toString(), null);
 
         if (person == null) {
+            val personType = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.type");
+            if(personType.isEmpty())
+                return null;
             person = new Person();
 
             person.setSubjectId(resource.toString());

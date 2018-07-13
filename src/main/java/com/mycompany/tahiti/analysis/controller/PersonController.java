@@ -22,6 +22,7 @@ public class PersonController {
     public PersonRichInfo getPersonDetail(@RequestParam("subjectId") String subjectId, @RequestParam("minSameCaseNum") Integer minSameCaseNum) throws IOException {
         PersonRichInfo personRichInfo = new PersonRichInfo();
         Person person = dataFactory.getPersonById(subjectId);
+        if (person == null) return null;
         personRichInfo.setSubjectId(subjectId);
         personRichInfo.setName(person.getName());
         personRichInfo.setBirthDay(person.getBirthDay());
