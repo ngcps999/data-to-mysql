@@ -22,6 +22,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +46,9 @@ public class DataFactory {
             .connectTimeout(Integer.MAX_VALUE, TimeUnit.MILLISECONDS)
             .readTimeout(Integer.MAX_VALUE, TimeUnit.MILLISECONDS)
             .build();
+
+    private final SimpleDateFormat toDateFormat = new SimpleDateFormat("",Locale.ENGLISH);
+    private final SimpleDateFormat fromDateFormat = new SimpleDateFormat("",Locale.ENGLISH);
     // This is only for cache, not full data
     //For BI overall
     private Integer personCountCache = null;
@@ -515,8 +520,14 @@ public class DataFactory {
                             if (dateOfBirth != null && !dateOfBirth.getAsString().isEmpty()) {
                                 basicInfoJO.remove("dateOfBirth");
                                 BasicInfo basicInfo = gson.fromJson(basicInfoJO.toString(), BasicInfo.class);
+
                                 basicInfo.setDateOfBirth(LocalDate.parse(dateOfBirth.getAsString()));
                                 person.setBasicInfo(basicInfo);
+                                try {
+                                    person.setBirthDay(dateFormater(dateOfBirth.getAsString(),"yyyy-MM-dd","yyyy年MM月dd日"));
+                                } catch (Exception ignored) {
+                                }
+
                             }
                         }
                         HashMap<String, Object> personMap = gson.fromJson(gson.toJson(person), new TypeToken<HashMap<String, Object>>() {
@@ -529,6 +540,12 @@ public class DataFactory {
             }
 
         }
+
+        try {
+            person.setBirthDay(dateFormater(person.getBirthDay(),"MMM dd, yyyy hh:mm:ss aaa","yyyy年MM月dd日"));
+        } catch (Exception ignored) {
+        }
+
         return person;
     }
 
@@ -806,5 +823,11 @@ public class DataFactory {
             jenaLibrary.closeTransaction();
         }
 
+    }
+
+    private String dateFormater(String date, String fromPattern, String toPattern) throws ParseException {
+        fromDateFormat.applyPattern(fromPattern);
+        toDateFormat.applyPattern(toPattern);
+        return toDateFormat.format(fromDateFormat.parse(date));
     }
 }
