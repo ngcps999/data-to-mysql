@@ -16,6 +16,7 @@ import org.apache.jena.ext.com.google.common.collect.Iterators;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.shared.NotFoundException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -412,12 +413,10 @@ public class DataFactory {
                         identitySubIdMap.put(identity, subId);
                         return subId;
                     } else {
-                        LOG.error("can't find id: " + identity);
-                        return "";
+                        throw new NotFoundException("Identity Not Found");
                     }
                 } else {
-                    LOG.error("can't find id: " + identity);
-                    return "";
+                    throw new NotFoundException("Identity Not Found");
                 }
 
             } finally {
