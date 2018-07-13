@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
@@ -45,6 +46,9 @@ public class DataFactory {
             .connectTimeout(Integer.MAX_VALUE, TimeUnit.MILLISECONDS)
             .readTimeout(Integer.MAX_VALUE, TimeUnit.MILLISECONDS)
             .build();
+
+    private final SimpleDateFormat toDateFormat = new SimpleDateFormat("",Locale.ENGLISH);
+    private final SimpleDateFormat fromDateFormat = new SimpleDateFormat("",Locale.ENGLISH);
     // This is only for cache, not full data
     //For BI overall
     private Integer personCountCache = null;
@@ -520,7 +524,7 @@ public class DataFactory {
                                 basicInfo.setDateOfBirth(LocalDate.parse(dateOfBirth.getAsString()));
                                 person.setBasicInfo(basicInfo);
                                 try {
-                                    person.setBirthDay(new SimpleDateFormat("yyyy年MM月dd日").format(new SimpleDateFormat("yyyy-MM-dd",Locale.ENGLISH).parse(dateOfBirth.getAsString())));
+                                    person.setBirthDay(dateFormater(dateOfBirth.getAsString(),"yyyy-MM-dd","yyyy年MM月dd日"));
                                 } catch (Exception ignored) {
                                 }
 
@@ -538,8 +542,7 @@ public class DataFactory {
         }
 
         try {
-            String formattedDate = new SimpleDateFormat("yyyy年MM月dd日").format(new SimpleDateFormat("MMM dd, yyyy hh:mm:ss aaa",Locale.ENGLISH).parse(person.getBirthDay()));
-            person.setBirthDay(formattedDate);
+            person.setBirthDay(dateFormater(person.getBirthDay(),"MMM dd, yyyy hh:mm:ss aaa","yyyy年MM月dd日"));
         } catch (Exception ignored) {
         }
 
@@ -820,5 +823,11 @@ public class DataFactory {
             jenaLibrary.closeTransaction();
         }
 
+    }
+
+    private String dateFormater(String date, String fromPattern, String toPattern) throws ParseException {
+        fromDateFormat.applyPattern(fromPattern);
+        toDateFormat.applyPattern(toPattern);
+        return toDateFormat.format(fromDateFormat.parse(date));
     }
 }
