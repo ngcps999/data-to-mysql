@@ -16,7 +16,6 @@ import org.apache.jena.ext.com.google.common.collect.Iterators;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.shared.NotFoundException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -413,10 +412,12 @@ public class DataFactory {
                         identitySubIdMap.put(identity, subId);
                         return subId;
                     } else {
-                        throw new NotFoundException("Identity Not Found");
+                        LOG.error("can't find id: " + identity);
+                        return null;
                     }
                 } else {
-                    throw new NotFoundException("Identity Not Found");
+                    LOG.error("can't find id: " + identity);
+                    return null;
                 }
 
             } finally {
@@ -448,6 +449,9 @@ public class DataFactory {
         Person person = personRelationCache.getOrDefault(resource.toString(), null);
 
         if (person == null) {
+            val personType = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.type");
+            if(personType.isEmpty())
+                return null;
             person = new Person();
 
             person.setSubjectId(resource.toString());

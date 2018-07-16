@@ -22,6 +22,7 @@ public class PersonController {
     public PersonRichInfo getPersonDetail(@RequestParam("subjectId") String subjectId, @RequestParam("minSameCaseNum") Integer minSameCaseNum) throws IOException {
         PersonRichInfo personRichInfo = new PersonRichInfo();
         Person person = dataFactory.getPersonById(subjectId);
+        if (person == null) return null;
         personRichInfo.setSubjectId(subjectId);
         personRichInfo.setName(person.getName());
         personRichInfo.setBirthDay(person.getBirthDay());
@@ -39,9 +40,9 @@ public class PersonController {
             Case aCase = dataFactory.getCaseById(caseSubjectId);
             PersonRichInfo.InvolvedCaseWithRole involvedCaseWithRole = personRichInfo.new InvolvedCaseWithRole();
             involvedCaseWithRole.setSubjectId(aCase.getSubjectId());
-            if(aCase.getCaseId() != null && !aCase.getCaseId().isEmpty())
+            if (aCase.getCaseId() != null && !aCase.getCaseId().isEmpty())
                 involvedCaseWithRole.setCaseId(aCase.getCaseId());
-            if(aCase.getCaseName() != null && !aCase.getCaseName().isEmpty())
+            if (aCase.getCaseName() != null && !aCase.getCaseName().isEmpty())
                 involvedCaseWithRole.setCaseName(aCase.getCaseName());
             involvedCaseWithRole.setCaseType(aCase.getCaseType());
             involvedCaseWithRole.setBiluNumber(aCase.getBilus().size());
@@ -50,7 +51,7 @@ public class PersonController {
 
             for (Bilu bilu : aCase.getBilus()) {
                 for (Person personInBilu : bilu.getPersons()) {
-                    if (!isNullOrEmpty(personInBilu.getSubjectId())&&!isNullOrEmpty(personRichInfo.getSubjectId())&&!personInBilu.getSubjectId().equals(personRichInfo.getSubjectId())){
+                    if (!isNullOrEmpty(personInBilu.getSubjectId()) && !isNullOrEmpty(personRichInfo.getSubjectId()) && !personInBilu.getSubjectId().equals(personRichInfo.getSubjectId())) {
                         PersonRichInfo.SameCasePerson sameCasePerson = personRichInfo.new SameCasePerson();
                         sameCasePerson.setSubjectId(personInBilu.getSubjectId());
                         sameCasePerson.setName(personInBilu.getName());
@@ -61,22 +62,22 @@ public class PersonController {
                             sameCasePerson.setPhone(personInBilu.getPhone());
                             List<CaseBaseInfo> sameCases = new ArrayList<>();
                             CaseBaseInfo caseBaseInfo = new CaseBaseInfo();
-                            if(aCase.getCaseName() != null && !aCase.getCaseName().isEmpty())
+                            if (aCase.getCaseName() != null && !aCase.getCaseName().isEmpty())
                                 caseBaseInfo.setCaseName(aCase.getCaseName());
                             caseBaseInfo.setSubjectId(aCase.getSubjectId());
-                            if(aCase.getCaseId() != null && !aCase.getCaseId().isEmpty())
+                            if (aCase.getCaseId() != null && !aCase.getCaseId().isEmpty())
                                 caseBaseInfo.setCaseId(aCase.getCaseId());
                             sameCases.add(caseBaseInfo);
                             sameCasePerson.setSameCases(sameCases);
                             sameCasePersonList.add(sameCasePerson);
                         } else {
                             for (PersonRichInfo.SameCasePerson item : sameCasePersonList) {
-                                if ( !isNullOrEmpty(item.getIdentity()) && !isNullOrEmpty(sameCasePerson.getIdentity()) && item.getIdentity().equals(sameCasePerson.getIdentity()) || !isNullOrEmpty(item.getName()) && !isNullOrEmpty(sameCasePerson.getName()) && item.getName().equals(sameCasePerson.getName())) {
+                                if (!isNullOrEmpty(item.getIdentity()) && !isNullOrEmpty(sameCasePerson.getIdentity()) && item.getIdentity().equals(sameCasePerson.getIdentity()) || !isNullOrEmpty(item.getName()) && !isNullOrEmpty(sameCasePerson.getName()) && item.getName().equals(sameCasePerson.getName())) {
                                     CaseBaseInfo caseBaseInfo = new CaseBaseInfo();
-                                    if(aCase.getCaseName() != null && !aCase.getCaseName().isEmpty())
+                                    if (aCase.getCaseName() != null && !aCase.getCaseName().isEmpty())
                                         caseBaseInfo.setCaseName(aCase.getCaseName());
                                     caseBaseInfo.setSubjectId(aCase.getSubjectId());
-                                    if(aCase.getCaseId() != null && !aCase.getCaseId().isEmpty())
+                                    if (aCase.getCaseId() != null && !aCase.getCaseId().isEmpty())
                                         caseBaseInfo.setCaseId(aCase.getCaseId());
                                     if (!item.getSameCases().contains(caseBaseInfo)) {
                                         item.getSameCases().add(caseBaseInfo);
@@ -93,11 +94,11 @@ public class PersonController {
         if (minSameCaseNum == null) minSameCaseNum = 2;
         for (PersonRichInfo.SameCasePerson sameCasePerson : sameCasePersonList) {
             if (sameCasePerson.getSameCases().size() >= minSameCaseNum) {
-                if (hasNameOnly(sameCasePerson)){
+                if (hasNameOnly(sameCasePerson)) {
                     PersonRichInfo.SameCaseEntity sameCaseEntity = personRichInfo.new SameCaseEntity(sameCasePerson.getName());
                     sameCaseEntity.setSubjectId(sameCasePerson.getSubjectId());
                     sameCaseNameList.add(sameCaseEntity);
-                }else{
+                } else {
                     sameCasePersonListFinal.add(sameCasePerson);
                 }
             }
@@ -111,7 +112,7 @@ public class PersonController {
     public PersonRichInfo getPersonRichInfoByIdentity(@RequestParam("identity") String identity, @RequestParam("minSameCaseNum") Integer minSameCaseNum) throws IOException {
         String subjectId = dataFactory.getPersonSubjectIdByIdentity(identity);
 
-        return getPersonDetail(subjectId,minSameCaseNum);
+        return subjectId == null ? null : getPersonDetail(subjectId, minSameCaseNum);
     }
 
     public boolean hasNameOnly(PersonRichInfo.SameCasePerson sameCasePerson) {
