@@ -21,3 +21,5 @@ miami:
     database: bihuan
     collection:
       case: aj_basic
+  person:
+      uri: http://10.53.187.42:871/api/v2/person/
