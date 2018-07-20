@@ -540,7 +540,8 @@ public class DataFactory {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOG.error(e.getMessage());
+                    LOG.error(e.getStackTrace());
                 }
             }
 
