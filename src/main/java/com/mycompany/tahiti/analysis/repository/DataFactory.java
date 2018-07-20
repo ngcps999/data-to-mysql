@@ -47,8 +47,8 @@ public class DataFactory {
             .readTimeout(Integer.MAX_VALUE, TimeUnit.MILLISECONDS)
             .build();
 
-    private final SimpleDateFormat toDateFormat = new SimpleDateFormat("",Locale.ENGLISH);
-    private final SimpleDateFormat fromDateFormat = new SimpleDateFormat("",Locale.ENGLISH);
+    private final SimpleDateFormat toDateFormat = new SimpleDateFormat("", Locale.ENGLISH);
+    private final SimpleDateFormat fromDateFormat = new SimpleDateFormat("", Locale.ENGLISH);
     // This is only for cache, not full data
     //For BI overall
     private Integer personCountCache = null;
@@ -450,7 +450,7 @@ public class DataFactory {
 
         if (person == null) {
             val personType = jenaLibrary.getStringValueBySP(model, resource, "common:type.object.type");
-            if(personType.isEmpty())
+            if (personType.isEmpty())
                 return null;
             person = new Person();
 
@@ -514,38 +514,41 @@ public class DataFactory {
                     .build();
             Response response = client.newCall(request).execute();
             if (response.isSuccessful() && response.body() != null && response.body().source() != null) {
-                val basicInfoElement = jsonParser.parse(Okio.buffer(response.body().source()).readUtf8()).getAsJsonObject().get("basicInfo");
-                if (basicInfoElement != null) {
-                    JsonObject basicInfoJO = basicInfoElement.getAsJsonObject();
-                    if (basicInfoJO != null) {
-                        if (basicInfoJO.has("dateOfBirth")) {
-                            val dateOfBirth = basicInfoJO.get("dateOfBirth");
-                            if (dateOfBirth != null && !dateOfBirth.getAsString().isEmpty()) {
-                                basicInfoJO.remove("dateOfBirth");
-                                BasicInfo basicInfo = gson.fromJson(basicInfoJO.toString(), BasicInfo.class);
-
-                                basicInfo.setDateOfBirth(LocalDate.parse(dateOfBirth.getAsString()));
-                                person.setBasicInfo(basicInfo);
-                                try {
-                                    person.setBirthDay(dateFormater(dateOfBirth.getAsString(),"yyyy-MM-dd","yyyy年MM月dd日"));
-                                } catch (Exception ignored) {
+                try {
+                    val basicInfoElement = jsonParser.parse(Okio.buffer(response.body().source()).readUtf8()).getAsJsonObject().get("basicInfo");
+                    if (basicInfoElement != null) {
+                        JsonObject basicInfoJO = basicInfoElement.getAsJsonObject();
+                        if (basicInfoJO != null) {
+                            if (basicInfoJO.has("dateOfBirth")) {
+                                val dateOfBirth = basicInfoJO.get("dateOfBirth");
+                                if (dateOfBirth != null && !dateOfBirth.getAsString().isEmpty()) {
+                                    basicInfoJO.remove("dateOfBirth");
+                                    BasicInfo basicInfo = gson.fromJson(basicInfoJO.toString(), BasicInfo.class);
+                                    basicInfo.setDateOfBirth(LocalDate.parse(dateOfBirth.getAsString()));
+                                    person.setBasicInfo(basicInfo);
+                                    try {
+                                        person.setBirthDay(dateFormater(dateOfBirth.getAsString(), "yyyy-MM-dd", "yyyy年MM月dd日"));
+                                    } catch (Exception ignored) {
+                                    }
                                 }
-
                             }
+                            HashMap<String, Object> personMap = gson.fromJson(gson.toJson(person), new TypeToken<HashMap<String, Object>>() {
+                            }.getType());
+                            personMap.putAll(gson.fromJson(basicInfoJO, new TypeToken<HashMap<String, Object>>() {
+                            }.getType()));
+                            person = gson.fromJson(gson.toJson(personMap), Person.class);
                         }
-                        HashMap<String, Object> personMap = gson.fromJson(gson.toJson(person), new TypeToken<HashMap<String, Object>>() {
-                        }.getType());
-                        personMap.putAll(gson.fromJson(basicInfoJO, new TypeToken<HashMap<String, Object>>() {
-                        }.getType()));
-                        person = gson.fromJson(gson.toJson(personMap), Person.class);
                     }
+                } catch (Exception e) {
+                    LOG.error(e.getMessage());
+                    LOG.error(e.getStackTrace());
                 }
             }
 
         }
 
         try {
-            person.setBirthDay(dateFormater(person.getBirthDay(),"MMM dd, yyyy hh:mm:ss aaa","yyyy年MM月dd日"));
+            person.setBirthDay(dateFormater(person.getBirthDay(), "MMM dd, yyyy hh:mm:ss aaa", "yyyy年MM月dd日"));
         } catch (Exception ignored) {
         }
 
